@@ -16,6 +16,9 @@ DEFINE_GUID(GUID_DEVINTERFACE_VIGEM,
 
 #define IOCTL_BUSENUM_BASE 0x801
 
+// 
+// IO control codes
+// 
 #define IOCTL_BUSENUM_PLUGIN_HARDWARE   BUSENUM_W_IOCTL (IOCTL_BUSENUM_BASE + 0x0)
 #define IOCTL_BUSENUM_UNPLUG_HARDWARE   BUSENUM_W_IOCTL (IOCTL_BUSENUM_BASE + 0x1)
 #define IOCTL_BUSENUM_EJECT_HARDWARE    BUSENUM_W_IOCTL (IOCTL_BUSENUM_BASE + 0x2)
@@ -27,7 +30,14 @@ DEFINE_GUID(GUID_DEVINTERFACE_VIGEM,
 
 typedef enum _VIGEM_TARGET_TYPE
 {
-    Xbox360Wired
+    // 
+    // Microsoft Xbox 360 Controller (wired)
+    // 
+    Xbox360Wired,
+    //
+    // Sony DualShock 4 (wired)
+    // 
+    DualShock4Wired
 } VIGEM_TARGET_TYPE, *PVIGEM_TARGET_TYPE;
 
 typedef struct _BUSENUM_PLUGIN_HARDWARE
@@ -45,18 +55,21 @@ typedef struct _BUSENUM_PLUGIN_HARDWARE
 
     IN ULONG SerialNo;
 
-    VIGEM_TARGET_TYPE   TargetType;
+    // 
+    // Type of the target device to emulate.
+    // 
+    VIGEM_TARGET_TYPE TargetType;
 
     //
     // An array of (zero terminated wide character strings). The array itself
     //  also null terminated (ie, MULTI_SZ)
     //
-#pragma warning(disable:4200)  // nonstandard extension used
+#pragma warning(disable:4200) // nonstandard extension used
 
-    IN  WCHAR   HardwareIDs[];
+
+    IN  WCHAR HardwareIDs[];
 
 #pragma warning(default:4200)
-
 } BUSENUM_PLUGIN_HARDWARE, *PBUSENUM_PLUGIN_HARDWARE;
 
 typedef struct _BUSENUM_UNPLUG_HARDWARE
@@ -71,10 +84,9 @@ typedef struct _BUSENUM_UNPLUG_HARDWARE
     // Serial number of the device to be plugged out
     //
 
-    ULONG   SerialNo;
+    ULONG SerialNo;
 
-    ULONG Reserved[2];
-
+    ULONG Reserved[2]; // TODO: why?
 } BUSENUM_UNPLUG_HARDWARE, *PBUSENUM_UNPLUG_HARDWARE;
 
 typedef struct _BUSENUM_EJECT_HARDWARE
@@ -89,8 +101,8 @@ typedef struct _BUSENUM_EJECT_HARDWARE
     // Serial number of the device to be ejected
     //
 
-    ULONG   SerialNo;
+    ULONG SerialNo;
 
-    ULONG Reserved[2];
-
+    ULONG Reserved[2]; // TODO: why?
 } BUSENUM_EJECT_HARDWARE, *PBUSENUM_EJECT_HARDWARE;
+

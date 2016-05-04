@@ -33,7 +33,6 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING Registry
 NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 {
     WDF_CHILD_LIST_CONFIG config;
-    WDF_OBJECT_ATTRIBUTES fdoAttributes;
     NTSTATUS status;
     WDFDEVICE device;
     WDF_IO_QUEUE_CONFIG queueConfig;
@@ -54,9 +53,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 
     WdfFdoInitSetDefaultChildListConfig(DeviceInit, &config, WDF_NO_OBJECT_ATTRIBUTES);
 
-    WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&fdoAttributes, FDO_DEVICE_DATA);
-
-    status = WdfDeviceCreate(&DeviceInit, &fdoAttributes, &device);
+    status = WdfDeviceCreate(&DeviceInit, WDF_NO_OBJECT_ATTRIBUTES, &device);
 
     if (!NT_SUCCESS(status))
     {
@@ -70,10 +67,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     queueConfig.EvtIoInternalDeviceControl = Bus_EvtIoInternalDeviceControl;
 
     __analysis_assume(queueConfig.EvtIoStop != 0);
-    status = WdfIoQueueCreate(device,
-                              &queueConfig,
-                              WDF_NO_OBJECT_ATTRIBUTES,
-                              &queue);
+    status = WdfIoQueueCreate(device, &queueConfig, WDF_NO_OBJECT_ATTRIBUTES, &queue);
     __analysis_assume(queueConfig.EvtIoStop == 0);
 
     if (!NT_SUCCESS(status))
@@ -89,6 +83,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
         return status;
     }
 
+    // TODO: required?
     busInfo.BusTypeGuid = GUID_BUS_TYPE_INTERNAL;
     busInfo.LegacyBusType = PNPBus;
     busInfo.BusNumber = 0;
@@ -120,10 +115,8 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
     {
     case IOCTL_BUSENUM_PLUGIN_HARDWARE:
 
-        status = WdfRequestRetrieveInputBuffer(Request,
-                                               sizeof(BUSENUM_PLUGIN_HARDWARE) +
-                                               (sizeof(UNICODE_NULL) * 2), // 2 for double NULL termination (MULTI_SZ)
-                                               &plugIn, &length);
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_PLUGIN_HARDWARE) + (sizeof(UNICODE_NULL) * 2), &plugIn, &length);
+
         if (!NT_SUCCESS(status))
         {
             KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
@@ -141,7 +134,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
             if ((UNICODE_NULL != plugIn->HardwareIDs[length - 1]) ||
                 (UNICODE_NULL != plugIn->HardwareIDs[length - 2]))
             {
-                status = STATUS_INVALID_PARAMETER ;
+                status = STATUS_INVALID_PARAMETER;
                 break;
             }
 
@@ -219,7 +212,7 @@ NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ PWCHAR HardwareIds, _In_ s
         // The description is already present in the list, the serial number is
         // not unique, return error.
         //
-        status = STATUS_INVALID_PARAMETER ;
+        status = STATUS_INVALID_PARAMETER;
     }
 
     return status;
@@ -266,7 +259,7 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
             // application can understand when it gets translated to win32
             // error code.
             //
-            status = STATUS_INVALID_PARAMETER ;
+            status = STATUS_INVALID_PARAMETER;
         }
     }
 
@@ -359,10 +352,10 @@ NTSTATUS Bus_EjectDevice(WDFDEVICE Device, ULONG SerialNo)
 
 VOID Bus_EvtIoInternalDeviceControl(
     _In_ WDFQUEUE Queue,
-         _In_ WDFREQUEST Request,
-         _In_ size_t OutputBufferLength,
-         _In_ size_t InputBufferLength,
-         _In_ ULONG IoControlCode
+    _In_ WDFREQUEST Request,
+    _In_ size_t OutputBufferLength,
+    _In_ size_t InputBufferLength,
+    _In_ ULONG IoControlCode
 )
 {
     UNREFERENCED_PARAMETER(Queue);

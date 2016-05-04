@@ -24,6 +24,8 @@
 #define DS4WIRED_HARDWARE_IDS           L"USB\VID_054C&PID_05C4&REV_0100\0USB\VID_054C&PID_05C4\0"
 #define DS4WIRED_HARDWARE_IDS_LENTH     sizeof(DS4WIRED_HARDWARE_IDS)
 
+#define MAX_INSTANCE_ID_LEN 80
+
 //
 // Helpers
 // 
@@ -58,17 +60,6 @@ typedef struct _PDO_DEVICE_DATA
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(PDO_DEVICE_DATA, PdoGetData)
 
-//
-// The device extension of the bus itself.  From whence the PDO's are born.
-//
-
-typedef struct _FDO_DEVICE_DATA
-{
-    ULONG Dummy; // TODO: what
-
-} FDO_DEVICE_DATA, *PFDO_DEVICE_DATA;
-
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(FDO_DEVICE_DATA, FdoGetData)
 
 
 //
@@ -83,9 +74,7 @@ EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL Bus_EvtIoDeviceControl;
 EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Bus_EvtIoInternalDeviceControl;
 
 EVT_WDF_CHILD_LIST_CREATE_DEVICE Bus_EvtDeviceListCreatePdo;
-EVT_WDF_CHILD_LIST_IDENTIFICATION_DESCRIPTION_COMPARE Bus_EvtChildListIdentificationDescriptionCompare;
-EVT_WDF_CHILD_LIST_IDENTIFICATION_DESCRIPTION_CLEANUP Bus_EvtChildListIdentificationDescriptionCleanup;
-EVT_WDF_CHILD_LIST_IDENTIFICATION_DESCRIPTION_DUPLICATE Bus_EvtChildListIdentificationDescriptionDuplicate;
+
 
 NTSTATUS
 Bus_PlugInDevice(

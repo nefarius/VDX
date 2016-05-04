@@ -72,10 +72,8 @@ typedef struct _BUSENUM_UNPLUG_HARDWARE
     //
     // Serial number of the device to be plugged out
     //
-
     ULONG SerialNo;
 
-    ULONG Reserved[2]; // TODO: why?
 } BUSENUM_UNPLUG_HARDWARE, *PBUSENUM_UNPLUG_HARDWARE;
 
 typedef struct _BUSENUM_EJECT_HARDWARE

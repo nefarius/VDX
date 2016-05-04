@@ -25,6 +25,11 @@ DEFINE_GUID(GUID_DEVINTERFACE_VIGEM,
 //  Data structure used in PlugIn and UnPlug ioctls
 //
 
+typedef enum _VIGEM_TARGET_TYPE
+{
+    Xbox360Wired
+} VIGEM_TARGET_TYPE, *PVIGEM_TARGET_TYPE;
+
 typedef struct _BUSENUM_PLUGIN_HARDWARE
 {
     //
@@ -35,10 +40,12 @@ typedef struct _BUSENUM_PLUGIN_HARDWARE
     //
     // Unique serial number of the device to be enumerated.
     // Enumeration will be failed if another device on the
-    // bus has the same serail number.
+    // bus has the same serial number.
     //
 
     IN ULONG SerialNo;
+
+    VIGEM_TARGET_TYPE   TargetType;
 
     //
     // An array of (zero terminated wide character strings). The array itself

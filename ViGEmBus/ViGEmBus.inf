@@ -1,0 +1,90 @@
+;
+; ViGEmBus.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=ViGEmBus.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+ViGEmBus.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%ViGEmBus.DeviceDesc%=ViGEmBus_Device, Root\ViGEmBus ; TODO: edit hw-id
+
+[ViGEmBus_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+ViGEmBus.sys
+
+;-------------- Service installation
+[ViGEmBus_Device.NT.Services]
+AddService = ViGEmBus,%SPSVCINST_ASSOCSERVICE%, ViGEmBus_Service_Inst
+
+; -------------- ViGEmBus driver install sections
+[ViGEmBus_Service_Inst]
+DisplayName    = %ViGEmBus.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ViGEmBus.sys
+
+;
+;--- ViGEmBus_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+ViGEmBus_Device_CoInstaller_CopyFiles = 11
+
+[ViGEmBus_Device.NT.CoInstallers]
+AddReg=ViGEmBus_Device_CoInstaller_AddReg
+CopyFiles=ViGEmBus_Device_CoInstaller_CopyFiles
+
+[ViGEmBus_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[ViGEmBus_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[SourceDisksFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+[ViGEmBus_Device.NT.Wdf]
+KmdfService =  ViGEmBus, ViGEmBus_wdfsect
+[ViGEmBus_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "ViGEmBus Installation Disk"
+ViGEmBus.DeviceDesc = "ViGEmBus Device"
+ViGEmBus.SVCDESC = "ViGEmBus Service"

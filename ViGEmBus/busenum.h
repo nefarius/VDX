@@ -8,6 +8,10 @@
 
 #pragma once
 
+//
+// Static information
+// 
+
 // Microsoft Xbox 360 Controller (wired) Hardware-IDs
 #define X360WIRED_HARDWARE_IDS          L"USB\\VID_045E&PID_028E&REV_0114\0USB\\VID_045E&PID_028E\0"
 #define X360WIRED_HARDWARE_IDS_LENGTH   sizeof(X360WIRED_HARDWARE_IDS)
@@ -19,6 +23,12 @@
 // Sony DualShock 4 Controller (wired) Hardware-IDs
 #define DS4WIRED_HARDWARE_IDS           L"USB\VID_054C&PID_05C4&REV_0100\0USB\VID_054C&PID_05C4\0"
 #define DS4WIRED_HARDWARE_IDS_LENTH     sizeof(DS4WIRED_HARDWARE_IDS)
+
+//
+// Helpers
+// 
+
+#define CURRENT_PROCESS_ID() ((DWORD)((DWORD_PTR)PsGetCurrentProcessId() & 0xFFFFFFFF))
 
 
 typedef struct _PDO_IDENTIFICATION_DESCRIPTION

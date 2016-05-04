@@ -43,10 +43,6 @@ typedef struct _PDO_IDENTIFICATION_DESCRIPTION
 
     ULONG SerialNo;
 
-    size_t CchHardwareIds;
-
-    _Field_size_bytes_(CchHardwareIds) PWCHAR HardwareIds;
-
     VIGEM_TARGET_TYPE TargetType;
 } PDO_IDENTIFICATION_DESCRIPTION, *PPDO_IDENTIFICATION_DESCRIPTION;
 
@@ -86,8 +82,6 @@ EVT_WDF_CHILD_LIST_CREATE_DEVICE Bus_EvtDeviceListCreatePdo;
 NTSTATUS
 Bus_PlugInDevice(
     _In_ WDFDEVICE Device,
-         _In_ PWCHAR HardwareIds,
-         _In_ size_t CchHardwareIds,
          _In_ ULONG SerialNo
 );
 
@@ -108,7 +102,6 @@ NTSTATUS
 Bus_CreatePdo(
     _In_ WDFDEVICE Device,
          _In_ PWDFDEVICE_INIT ChildInit,
-         _In_reads_(MAX_INSTANCE_ID_LEN) PCWSTR HardwareIds,
          _In_ ULONG SerialNo,
          _In_ VIGEM_TARGET_TYPE TargetType
 );

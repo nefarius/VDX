@@ -50,7 +50,7 @@ int main()
             DWORD transfered = 0;
             BUSENUM_PLUGIN_HARDWARE plugin = { 0 };
             plugin.Size = sizeof(BUSENUM_PLUGIN_HARDWARE);
-            plugin.SerialNo = 1;
+            plugin.SerialNo = 2;
             plugin.TargetType = Xbox360Wired;
 
             auto retval = DeviceIoControl(bus, IOCTL_BUSENUM_PLUGIN_HARDWARE, &plugin, plugin.Size, nullptr, 0, &transfered, nullptr);

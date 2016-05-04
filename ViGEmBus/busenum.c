@@ -5,6 +5,7 @@
 #pragma alloc_text (INIT, DriverEntry)
 #pragma alloc_text (PAGE, Bus_EvtDeviceAdd)
 #pragma alloc_text (PAGE, Bus_EvtIoDeviceControl)
+#pragma alloc_text (PAGE, Bus_EvtIoInternalDeviceControl)
 #pragma alloc_text (PAGE, Bus_PlugInDevice)
 #pragma alloc_text (PAGE, Bus_UnPlugDevice)
 #pragma alloc_text (PAGE, Bus_EjectDevice)
@@ -115,7 +116,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
     {
     case IOCTL_BUSENUM_PLUGIN_HARDWARE:
 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_PLUGIN_HARDWARE) + (sizeof(UNICODE_NULL) * 2), &plugIn, &length);
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_PLUGIN_HARDWARE), &plugIn, &length);
 
         if (!NT_SUCCESS(status))
         {
@@ -127,18 +128,13 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
 
         if (sizeof(BUSENUM_PLUGIN_HARDWARE) == plugIn->Size)
         {
-            length = (InputBufferLength - sizeof(BUSENUM_PLUGIN_HARDWARE)) / sizeof(WCHAR);
-            //
-            // Make sure the IDs is two NULL terminated.
-            //
-            if ((UNICODE_NULL != plugIn->HardwareIDs[length - 1]) ||
-                (UNICODE_NULL != plugIn->HardwareIDs[length - 2]))
+            if (plugIn->SerialNo == 0)
             {
                 status = STATUS_INVALID_PARAMETER;
                 break;
             }
 
-            status = Bus_PlugInDevice(hDevice, plugIn->HardwareIDs, length, plugIn->SerialNo);
+            status = Bus_PlugInDevice(hDevice, plugIn->SerialNo);
         }
 
         break;
@@ -184,7 +180,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
     WdfRequestCompleteWithInformation(Request, status, length);
 }
 
-NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ PWCHAR HardwareIds, _In_ size_t CchHardwareIds, _In_ ULONG SerialNo)
+NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ ULONG SerialNo)
 {
     PDO_IDENTIFICATION_DESCRIPTION description;
     NTSTATUS status;
@@ -201,8 +197,6 @@ NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ PWCHAR HardwareIds, _In_ s
     );
 
     description.SerialNo = SerialNo;
-    description.CchHardwareIds = CchHardwareIds;
-    description.HardwareIds = HardwareIds;
 
     status = WdfChildListAddOrUpdateChildDescriptionAsPresent(WdfFdoGetDefaultChildList(Device), &description.Header, NULL);
 

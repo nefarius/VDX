@@ -16,22 +16,15 @@ NTSTATUS Bus_EvtDeviceListCreatePdo(
 
     pDesc = CONTAINING_RECORD(IdentificationDescription, PDO_IDENTIFICATION_DESCRIPTION, Header);
 
-    return Bus_CreatePdo(WdfChildListGetDevice(DeviceList), ChildInit, pDesc->HardwareIds, pDesc->SerialNo, pDesc->TargetType);
+    return Bus_CreatePdo(WdfChildListGetDevice(DeviceList), ChildInit, pDesc->SerialNo, pDesc->TargetType);
 }
 
 NTSTATUS Bus_CreatePdo(
     _In_ WDFDEVICE Device,
          _In_ PWDFDEVICE_INIT DeviceInit,
-         _In_reads_(MAX_INSTANCE_ID_LEN) PCWSTR HardwareIds,
          _In_ ULONG SerialNo,
          _In_ VIGEM_TARGET_TYPE TargetType)
 {
-    UNREFERENCED_PARAMETER(Device);
-    UNREFERENCED_PARAMETER(DeviceInit);
-    UNREFERENCED_PARAMETER(HardwareIds);
-    UNREFERENCED_PARAMETER(SerialNo);
-
-    // -----------------------------------------------------------------------
     NTSTATUS status;
     PPDO_DEVICE_DATA pdoData = NULL;
     WDFDEVICE hChild = NULL;

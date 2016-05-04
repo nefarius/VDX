@@ -59,17 +59,6 @@ typedef struct _BUSENUM_PLUGIN_HARDWARE
     // Type of the target device to emulate.
     // 
     VIGEM_TARGET_TYPE TargetType;
-
-    //
-    // An array of (zero terminated wide character strings). The array itself
-    //  also null terminated (ie, MULTI_SZ)
-    //
-#pragma warning(disable:4200) // nonstandard extension used
-
-
-    IN  WCHAR HardwareIDs[];
-
-#pragma warning(default:4200)
 } BUSENUM_PLUGIN_HARDWARE, *PBUSENUM_PLUGIN_HARDWARE;
 
 typedef struct _BUSENUM_UNPLUG_HARDWARE

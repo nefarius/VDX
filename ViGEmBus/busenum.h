@@ -21,10 +21,14 @@
 #define X360WIRED_COMPATIBLE_IDS_LENTH  sizeof(X360WIRED_COMPATIBLE_IDS_LENTH)
 
 // Sony DualShock 4 Controller (wired) Hardware-IDs
-#define DS4WIRED_HARDWARE_IDS           L"USB\VID_054C&PID_05C4&REV_0100\0USB\VID_054C&PID_05C4\0"
+#define DS4WIRED_HARDWARE_IDS           L"USB\\VID_054C&PID_05C4&REV_0100\0USB\\VID_054C&PID_05C4\0"
 #define DS4WIRED_HARDWARE_IDS_LENTH     sizeof(DS4WIRED_HARDWARE_IDS)
 
-#define MAX_INSTANCE_ID_LEN 80
+#define DS4WIRED_COMPATIBLE_IDS         L"\0\0"
+#define DS4WIRED_COMPATIBLE_IDS_LENTH   sizeof(DS4WIRED_COMPATIBLE_IDS)
+
+#define MAX_INSTANCE_ID_LEN     80
+#define MAX_COMPATIBLE_IDS_LEN  255
 
 //
 // Helpers
@@ -44,7 +48,6 @@ typedef struct _PDO_IDENTIFICATION_DESCRIPTION
     _Field_size_bytes_(CchHardwareIds) PWCHAR HardwareIds;
 
     VIGEM_TARGET_TYPE TargetType;
-
 } PDO_IDENTIFICATION_DESCRIPTION, *PPDO_IDENTIFICATION_DESCRIPTION;
 
 //
@@ -52,14 +55,18 @@ typedef struct _PDO_IDENTIFICATION_DESCRIPTION
 //
 typedef struct _PDO_DEVICE_DATA
 {
+    //
     // Unique serial number of the device on the bus
-
+    // 
     ULONG SerialNo;
 
+    // 
+    // PID of the process creating this PDO
+    // 
+    DWORD CallingProcessId;
 } PDO_DEVICE_DATA, *PPDO_DEVICE_DATA;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(PDO_DEVICE_DATA, PdoGetData)
-
 
 
 //
@@ -78,29 +85,31 @@ EVT_WDF_CHILD_LIST_CREATE_DEVICE Bus_EvtDeviceListCreatePdo;
 
 NTSTATUS
 Bus_PlugInDevice(
-    _In_ WDFDEVICE       Device,
-    _In_ PWCHAR          HardwareIds,
-    _In_ size_t          CchHardwareIds,
-    _In_ ULONG           SerialNo
+    _In_ WDFDEVICE Device,
+         _In_ PWCHAR HardwareIds,
+         _In_ size_t CchHardwareIds,
+         _In_ ULONG SerialNo
 );
 
 NTSTATUS
 Bus_UnPlugDevice(
-    WDFDEVICE   Device,
-    ULONG       SerialNo
+    WDFDEVICE Device,
+    ULONG SerialNo
 );
 
 
 NTSTATUS
 Bus_EjectDevice(
-    WDFDEVICE   Device,
-    ULONG       SerialNo
+    WDFDEVICE Device,
+    ULONG SerialNo
 );
 
 NTSTATUS
 Bus_CreatePdo(
-    _In_ WDFDEVICE       Device,
-    _In_ PWDFDEVICE_INIT ChildInit,
-    _In_reads_(MAX_INSTANCE_ID_LEN) PCWSTR HardwareIds,
-    _In_ ULONG           SerialNo
+    _In_ WDFDEVICE Device,
+         _In_ PWDFDEVICE_INIT ChildInit,
+         _In_reads_(MAX_INSTANCE_ID_LEN) PCWSTR HardwareIds,
+         _In_ ULONG SerialNo,
+         _In_ VIGEM_TARGET_TYPE TargetType
 );
+

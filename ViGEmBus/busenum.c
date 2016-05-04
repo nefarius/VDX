@@ -67,6 +67,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&queueConfig, WdfIoQueueDispatchParallel);
 
     queueConfig.EvtIoDeviceControl = Bus_EvtIoDeviceControl;
+    queueConfig.EvtIoInternalDeviceControl = Bus_EvtIoInternalDeviceControl;
 
     __analysis_assume(queueConfig.EvtIoStop != 0);
     status = WdfIoQueueCreate(device,
@@ -144,20 +145,15 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
                 break;
             }
 
-            status = Bus_PlugInDevice(hDevice,
-                                      plugIn->HardwareIDs,
-                                      length,
-                                      plugIn->SerialNo);
+            status = Bus_PlugInDevice(hDevice, plugIn->HardwareIDs, length, plugIn->SerialNo);
         }
 
         break;
 
     case IOCTL_BUSENUM_UNPLUG_HARDWARE:
 
-        status = WdfRequestRetrieveInputBuffer(Request,
-                                               sizeof(BUSENUM_UNPLUG_HARDWARE),
-                                               &unPlug,
-                                               &length);
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_UNPLUG_HARDWARE), &unPlug, &length);
+
         if (!NT_SUCCESS(status))
         {
             KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
@@ -173,9 +169,8 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
 
     case IOCTL_BUSENUM_EJECT_HARDWARE:
 
-        status = WdfRequestRetrieveInputBuffer(Request,
-                                               sizeof(BUSENUM_EJECT_HARDWARE),
-                                               &eject, &length);
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_EJECT_HARDWARE), &eject, &length);
+
         if (!NT_SUCCESS(status))
         {
             KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
@@ -262,8 +257,7 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
 
         description.SerialNo = SerialNo;
 
-        status = WdfChildListUpdateChildDescriptionAsMissing(list,
-                                                             &description.Header);
+        status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);
 
         if (status == STATUS_NO_SUCH_DEVICE)
         {
@@ -296,8 +290,7 @@ NTSTATUS Bus_EjectDevice(WDFDEVICE Device, ULONG SerialNo)
     {
         WDF_CHILD_LIST_ITERATOR iterator;
 
-        WDF_CHILD_LIST_ITERATOR_INIT(&iterator,
-                                     WdfRetrievePresentChildren);
+        WDF_CHILD_LIST_ITERATOR_INIT(&iterator, WdfRetrievePresentChildren);
 
         WdfChildListBeginIteration(list, &iterator);
 
@@ -320,10 +313,7 @@ NTSTATUS Bus_EjectDevice(WDFDEVICE Device, ULONG SerialNo)
             //
             // Get the device identification description
             //
-            status = WdfChildListRetrieveNextDevice(list,
-                                                    &iterator,
-                                                    &hChild,
-                                                    &childInfo);
+            status = WdfChildListRetrieveNextDevice(list, &iterator, &hChild, &childInfo);
 
             if (!NT_SUCCESS(status) || status == STATUS_NO_MORE_ENTRIES)
             {
@@ -336,6 +326,7 @@ NTSTATUS Bus_EjectDevice(WDFDEVICE Device, ULONG SerialNo)
             // Use that description to request an eject.
             //
             ret = WdfChildListRequestChildEject(list, &description.Header);
+
             if (!ret)
             {
                 WDFVERIFY(ret);
@@ -353,10 +344,7 @@ NTSTATUS Bus_EjectDevice(WDFDEVICE Device, ULONG SerialNo)
     {
         PDO_IDENTIFICATION_DESCRIPTION description;
 
-        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(
-            &description.Header,
-            sizeof(description)
-        );
+        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
 
         description.SerialNo = SerialNo;
 
@@ -367,5 +355,20 @@ NTSTATUS Bus_EjectDevice(WDFDEVICE Device, ULONG SerialNo)
     }
 
     return status;
+}
+
+VOID Bus_EvtIoInternalDeviceControl(
+    _In_ WDFQUEUE Queue,
+         _In_ WDFREQUEST Request,
+         _In_ size_t OutputBufferLength,
+         _In_ size_t InputBufferLength,
+         _In_ ULONG IoControlCode
+)
+{
+    UNREFERENCED_PARAMETER(Queue);
+    UNREFERENCED_PARAMETER(Request);
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+    UNREFERENCED_PARAMETER(InputBufferLength);
+    UNREFERENCED_PARAMETER(IoControlCode);
 }
 

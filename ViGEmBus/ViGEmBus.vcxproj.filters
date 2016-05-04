@@ -33,10 +33,24 @@
     <ClInclude Include="..\Common\public.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
+    <ClInclude Include="busenum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\driver.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ViGEmBus.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="busenum.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="buspdo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

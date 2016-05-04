@@ -195,11 +195,17 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\driver.h" />
     <ClInclude Include="..\Common\public.h" />
+    <ClInclude Include="busenum.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ViGEmBus.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="busenum.c" />
+    <ClCompile Include="buspdo.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

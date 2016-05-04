@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ViGEmBus", "ViGEmBus\ViGEmBus.vcxproj", "{040101B0-EE5C-4EF1-99EE-9F81C795C001}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ViGEmTester", "ViGEmTester\ViGEmTester.vcxproj", "{B2F186E5-FD05-4434-8A7F-23B03CA2B20F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -41,6 +43,18 @@ Global
 		{040101B0-EE5C-4EF1-99EE-9F81C795C001}.Release|x86.ActiveCfg = Release|Win32
 		{040101B0-EE5C-4EF1-99EE-9F81C795C001}.Release|x86.Build.0 = Release|Win32
 		{040101B0-EE5C-4EF1-99EE-9F81C795C001}.Release|x86.Deploy.0 = Release|Win32
+		{B2F186E5-FD05-4434-8A7F-23B03CA2B20F}.Debug|ARM.ActiveCfg = Debug|Win32
+		{B2F186E5-FD05-4434-8A7F-23B03CA2B20F}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{B2F186E5-FD05-4434-8A7F-23B03CA2B20F}.Debug|x64.ActiveCfg = Debug|x64
+		{B2F186E5-FD05-4434-8A7F-23B03CA2B20F}.Debug|x64.Build.0 = Debug|x64
+		{B2F186E5-FD05-4434-8A7F-23B03CA2B20F}.Debug|x86.ActiveCfg = Debug|Win32
+		{B2F186E5-FD05-4434-8A7F-23B03CA2B20F}.Debug|x86.Build.0 = Debug|Win32
+		{B2F186E5-FD05-4434-8A7F-23B03CA2B20F}.Release|ARM.ActiveCfg = Release|Win32
+		{B2F186E5-FD05-4434-8A7F-23B03CA2B20F}.Release|ARM64.ActiveCfg = Release|Win32
+		{B2F186E5-FD05-4434-8A7F-23B03CA2B20F}.Release|x64.ActiveCfg = Release|x64
+		{B2F186E5-FD05-4434-8A7F-23B03CA2B20F}.Release|x64.Build.0 = Release|x64
+		{B2F186E5-FD05-4434-8A7F-23B03CA2B20F}.Release|x86.ActiveCfg = Release|Win32
+		{B2F186E5-FD05-4434-8A7F-23B03CA2B20F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

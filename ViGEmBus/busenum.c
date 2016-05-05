@@ -1,5 +1,7 @@
 #include "busenum.h"
 #include <wdmguid.h>
+#include <usb.h>
+#include <usbioctl.h>
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (INIT, DriverEntry)
@@ -347,5 +349,76 @@ VOID Bus_EvtIoInternalDeviceControl(
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
     UNREFERENCED_PARAMETER(IoControlCode);
+
+    NTSTATUS status = STATUS_INVALID_PARAMETER;
+    WDFDEVICE hDevice;
+    PIRP irp;
+    PIO_STACK_LOCATION irpSp;
+    PURB urb;
+
+    PAGED_CODE();
+
+    hDevice = WdfIoQueueGetDevice(Queue);
+
+    KdPrint(("Bus_EvtIoInternalDeviceControl: 0x%p\n", hDevice));
+
+    irp = WdfRequestWdmGetIrp(Request);
+
+    irpSp = IoGetCurrentIrpStackLocation(irp);
+
+    urb = irpSp->Parameters.Others.Argument1;
+
+    switch (IoControlCode)
+    {
+    case IOCTL_INTERNAL_USB_SUBMIT_URB:
+
+        switch (urb->UrbHeader.Function)
+        {
+        case URB_FUNCTION_CONTROL_TRANSFER:
+
+            status = STATUS_UNSUCCESSFUL;
+            break;
+
+        case URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER:
+            break;
+
+        case URB_FUNCTION_SELECT_CONFIGURATION:
+            break;
+
+        case URB_FUNCTION_SELECT_INTERFACE:
+            break;
+
+        case URB_FUNCTION_GET_DESCRIPTOR_FROM_DEVICE:
+
+            switch (urb->UrbControlDescriptorRequest.DescriptorType)
+            {
+            case USB_DEVICE_DESCRIPTOR_TYPE:
+                break;
+
+            case USB_CONFIGURATION_DESCRIPTOR_TYPE:
+                break;
+
+            case USB_STRING_DESCRIPTOR_TYPE:
+                break;
+
+            case USB_INTERFACE_DESCRIPTOR_TYPE:
+                break;
+
+            case USB_ENDPOINT_DESCRIPTOR_TYPE:
+                break;
+
+            default:
+                break;
+            }
+            break;
+        }
+        break;
+
+    case IOCTL_INTERNAL_USB_GET_PORT_STATUS:
+        break;
+
+    case IOCTL_INTERNAL_USB_RESET_PORT:
+        break;
+    }
 }
 

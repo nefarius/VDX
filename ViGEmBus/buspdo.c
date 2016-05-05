@@ -21,9 +21,9 @@ NTSTATUS Bus_EvtDeviceListCreatePdo(
 
 NTSTATUS Bus_CreatePdo(
     _In_ WDFDEVICE Device,
-         _In_ PWDFDEVICE_INIT DeviceInit,
-         _In_ ULONG SerialNo,
-         _In_ VIGEM_TARGET_TYPE TargetType)
+    _In_ PWDFDEVICE_INIT DeviceInit,
+    _In_ ULONG SerialNo,
+    _In_ VIGEM_TARGET_TYPE TargetType)
 {
     NTSTATUS status;
     PPDO_DEVICE_DATA pdoData = NULL;
@@ -33,14 +33,20 @@ NTSTATUS Bus_CreatePdo(
     WDF_OBJECT_ATTRIBUTES pdoAttributes;
     DECLARE_CONST_UNICODE_STRING(deviceLocation, L"Virtual Gamepad Emulation Bus");
     DECLARE_UNICODE_STRING_SIZE(buffer, MAX_INSTANCE_ID_LEN);
+    // reserve space for device id
     DECLARE_UNICODE_STRING_SIZE(deviceId, MAX_INSTANCE_ID_LEN);
-    DECLARE_UNICODE_STRING_SIZE(compatId, MAX_COMPATIBLE_IDS_LEN);
+    // reserve space for device description
+    DECLARE_UNICODE_STRING_SIZE(deviceDescription, MAX_DEVICE_DESCRIPTION_LEN);
+
 
     PAGED_CODE();
 
     UNREFERENCED_PARAMETER(Device);
 
     KdPrint(("Entered Bus_CreatePdo\n"));
+
+    // set device type
+    WdfDeviceInitSetDeviceType(DeviceInit, FILE_DEVICE_BUS_EXTENDER);
 
     // set parameters matching desired target device
     switch (TargetType)
@@ -49,37 +55,105 @@ NTSTATUS Bus_CreatePdo(
         // A Xbox 360 device was requested
         // 
     case Xbox360Wired:
-        RtlInitUnicodeString(&deviceId, X360WIRED_HARDWARE_IDS);
-        RtlInitUnicodeString(&compatId, X360WIRED_COMPATIBLE_IDS);
-        break;
-        //
-        // A Sony DualShock 4 device was requested
-        // 
-    case DualShock4Wired:
-        RtlInitUnicodeString(&deviceId, DS4WIRED_HARDWARE_IDS);
-        RtlInitUnicodeString(&compatId, DS4WIRED_COMPATIBLE_IDS);
-        break;
-    }
+    {
+        // set device description
+        {
+            // prepare device description
+            status = RtlUnicodeStringPrintf(&deviceDescription, L"Virtual Xbox 360 Controller");
+            if (!NT_SUCCESS(status)) {
+                return status;
+            }
+        }
 
-    // set device type
-    WdfDeviceInitSetDeviceType(DeviceInit, FILE_DEVICE_BUS_EXTENDER);
+        // set hardware ids
+        {
+            RtlUnicodeStringPrintf(&buffer, L"USB\\VID_045E&PID_028E&REV_0114");
+
+            RtlUnicodeStringCopy(&deviceId, &buffer);
+
+            status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
+            if (!NT_SUCCESS(status)) {
+                return status;
+            }
+
+            RtlUnicodeStringPrintf(&buffer, L"USB\\VID_045E&PID_028E");
+
+            status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
+            if (!NT_SUCCESS(status)) {
+                return status;
+            }
+        }
+
+        // set compatible ids
+        {
+            RtlUnicodeStringPrintf(&buffer, L"USB\\MS_COMP_XUSB10");
+
+            status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
+            if (!NT_SUCCESS(status)) {
+                return status;
+            }
+
+            RtlUnicodeStringPrintf(&buffer, L"USB\\Class_FF&SubClass_5D&Prot_01");
+
+            status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
+            if (!NT_SUCCESS(status)) {
+                return status;
+            }
+
+            RtlUnicodeStringPrintf(&buffer, L"USB\\Class_FF&SubClass_5D");
+
+            status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
+            if (!NT_SUCCESS(status)) {
+                return status;
+            }
+
+            RtlUnicodeStringPrintf(&buffer, L"USB\\Class_FF");
+
+            status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
+            if (!NT_SUCCESS(status)) {
+                return status;
+            }
+        }
+    }
+    break;
+    //
+    // A Sony DualShock 4 device was requested
+    // 
+    case DualShock4Wired:
+    {
+        // set device description
+        {
+            // prepare device description
+            status = RtlUnicodeStringPrintf(&deviceDescription, L"Virtual DualShock 4 Controller");
+            if (!NT_SUCCESS(status)) {
+                return status;
+            }
+        }
+
+        // set hardware ids
+        {
+            RtlUnicodeStringPrintf(&buffer, L"USB\\VID_054C&PID_05C4&REV_0100");
+
+            RtlUnicodeStringCopy(&deviceId, &buffer);
+
+            status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
+            if (!NT_SUCCESS(status)) {
+                return status;
+            }
+
+            RtlUnicodeStringPrintf(&buffer, L"USB\\VID_054C&PID_05C4");
+
+            status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
+            if (!NT_SUCCESS(status)) {
+                return status;
+            }
+        }
+    }
+    break;
+    }
 
     // set device id
     status = WdfPdoInitAssignDeviceID(DeviceInit, &deviceId);
-    if (!NT_SUCCESS(status))
-    {
-        return status;
-    }
-
-    // set hardware ids
-    status = WdfPdoInitAddHardwareID(DeviceInit, &deviceId);
-    if (!NT_SUCCESS(status))
-    {
-        return status;
-    }
-
-    // set compatible ids (if any)
-    status = WdfPdoInitAddCompatibleID(DeviceInit, &compatId);
     if (!NT_SUCCESS(status))
     {
         return status;
@@ -99,15 +173,8 @@ NTSTATUS Bus_CreatePdo(
         return status;
     }
 
-    // prepare device description
-    status = RtlUnicodeStringPrintf(&buffer, L"Virtual Gamepad Emulation Device #%02d", SerialNo);
-    if (!NT_SUCCESS(status))
-    {
-        return status;
-    }
-
     // set device description (for English operating systems)
-    status = WdfPdoInitAddDeviceText(DeviceInit, &buffer, &deviceLocation, 0x409);
+    status = WdfPdoInitAddDeviceText(DeviceInit, &deviceDescription, &deviceLocation, 0x409);
     if (!NT_SUCCESS(status))
     {
         return status;

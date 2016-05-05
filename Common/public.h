@@ -90,6 +90,5 @@ typedef struct _BUSENUM_EJECT_HARDWARE
 
     ULONG SerialNo;
 
-    ULONG Reserved[2]; // TODO: why?
 } BUSENUM_EJECT_HARDWARE, *PBUSENUM_EJECT_HARDWARE;
 

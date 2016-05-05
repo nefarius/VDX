@@ -124,9 +124,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
             break;
         }
 
-        ASSERT(length == InputBufferLength);
-
-        if (sizeof(BUSENUM_PLUGIN_HARDWARE) == plugIn->Size)
+        if ((sizeof(BUSENUM_PLUGIN_HARDWARE) == plugIn->Size) && (length == InputBufferLength))
         {
             if (plugIn->SerialNo == 0)
             {
@@ -149,7 +147,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
             break;
         }
 
-        if (unPlug->Size == InputBufferLength)
+        if ((sizeof(BUSENUM_UNPLUG_HARDWARE) == unPlug->Size) && (length == InputBufferLength))
         {
             status = Bus_UnPlugDevice(hDevice, unPlug->SerialNo);
         }
@@ -191,10 +189,7 @@ NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ ULONG SerialNo)
     // Initialize the description with the information about the newly
     // plugged in device.
     //
-    WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(
-        &description.Header,
-        sizeof(description)
-    );
+    WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
 
     description.SerialNo = SerialNo;
 
@@ -237,10 +232,7 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
     {
         PDO_IDENTIFICATION_DESCRIPTION description;
 
-        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(
-            &description.Header,
-            sizeof(description)
-        );
+        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
 
         description.SerialNo = SerialNo;
 
@@ -293,10 +285,8 @@ NTSTATUS Bus_EjectDevice(WDFDEVICE Device, ULONG SerialNo)
             WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
             WDF_CHILD_RETRIEVE_INFO_INIT(&childInfo, &description.Header);
 
-            WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(
-                &description.Header,
-                sizeof(description)
-            );
+            WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
+
             //
             // Get the device identification description
             //

@@ -12,8 +12,19 @@
 // Static information
 // 
 
-#define MAX_INSTANCE_ID_LEN         80
-#define MAX_DEVICE_DESCRIPTION_LEN  128
+#define MAX_INSTANCE_ID_LEN             80
+#define MAX_DEVICE_DESCRIPTION_LEN      128
+#define DESCRIPTOR_SIZE	                0x0099
+
+#if defined(_X86_)
+#define CONFIGURATION_SIZE              0x00E4
+#else
+#define CONFIGURATION_SIZE              0x0130
+#endif
+
+#define RUMBLE_SIZE                     8
+#define LEDSET_SIZE                     3
+#define LEDNUM_SIZE                     1
 
 //
 // Helpers
@@ -67,7 +78,7 @@ EVT_WDF_CHILD_LIST_CREATE_DEVICE Bus_EvtDeviceListCreatePdo;
 NTSTATUS
 Bus_PlugInDevice(
     _In_ WDFDEVICE Device,
-         _In_ ULONG SerialNo
+    _In_ ULONG SerialNo
 );
 
 NTSTATUS
@@ -86,8 +97,8 @@ Bus_EjectDevice(
 NTSTATUS
 Bus_CreatePdo(
     _In_ WDFDEVICE Device,
-         _In_ PWDFDEVICE_INIT ChildInit,
-         _In_ ULONG SerialNo,
-         _In_ VIGEM_TARGET_TYPE TargetType
+    _In_ PWDFDEVICE_INIT ChildInit,
+    _In_ ULONG SerialNo,
+    _In_ VIGEM_TARGET_TYPE TargetType
 );
 

@@ -355,12 +355,17 @@ VOID Bus_EvtIoInternalDeviceControl(
     PIRP irp;
     PIO_STACK_LOCATION irpSp;
     PURB urb;
+    PPDO_DEVICE_DATA pdoData;
 
     PAGED_CODE();
 
     hDevice = WdfIoQueueGetDevice(Queue);
 
     KdPrint(("Bus_EvtIoInternalDeviceControl: 0x%p\n", hDevice));
+    
+    pdoData = PdoGetData(hDevice);
+
+    KdPrint(("Bus_EvtIoInternalDeviceControl PDO: 0x%p\n", pdoData));
 
     irp = WdfRequestWdmGetIrp(Request);
 
@@ -420,5 +425,7 @@ VOID Bus_EvtIoInternalDeviceControl(
     case IOCTL_INTERNAL_USB_RESET_PORT:
         break;
     }
+
+    WdfRequestCompleteWithInformation(Request, status, 0);
 }
 

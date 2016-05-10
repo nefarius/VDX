@@ -74,6 +74,9 @@ EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Bus_EvtIoInternalDeviceControl;
 
 EVT_WDF_CHILD_LIST_CREATE_DEVICE Bus_EvtDeviceListCreatePdo;
 
+EVT_WDF_DEVICE_PREPARE_HARDWARE Bus_EvtDevicePrepareHardware;
+EVT_WDF_DEVICE_D0_ENTRY Bus_EvtDeviceD0Entry;
+
 
 NTSTATUS
 Bus_PlugInDevice(

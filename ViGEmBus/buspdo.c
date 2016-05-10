@@ -1,8 +1,10 @@
 #include "busenum.h"
+#include <usbiodef.h>
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text(PAGE, Bus_CreatePdo)
 #pragma alloc_text(PAGE, Bus_EvtDeviceListCreatePdo)
+#pragma alloc_text(PAGE, Bus_EvtDevicePrepareHardware)
 #endif
 
 NTSTATUS Bus_EvtDeviceListCreatePdo(
@@ -30,6 +32,7 @@ NTSTATUS Bus_CreatePdo(
     WDFDEVICE hChild = NULL;
     WDF_DEVICE_PNP_CAPABILITIES pnpCaps;
     WDF_DEVICE_POWER_CAPABILITIES powerCaps;
+    WDF_PNPPOWER_EVENT_CALLBACKS pnpPowerCallbacks;
     WDF_OBJECT_ATTRIBUTES pdoAttributes;
     DECLARE_CONST_UNICODE_STRING(deviceLocation, L"Virtual Gamepad Emulation Bus");
     DECLARE_UNICODE_STRING_SIZE(buffer, MAX_INSTANCE_ID_LEN);
@@ -183,6 +186,13 @@ NTSTATUS Bus_CreatePdo(
     // default locale is English
     WdfPdoInitSetDefaultLocale(DeviceInit, 0x409);
 
+    WDF_PNPPOWER_EVENT_CALLBACKS_INIT(&pnpPowerCallbacks);
+
+    pnpPowerCallbacks.EvtDevicePrepareHardware = Bus_EvtDevicePrepareHardware;
+    pnpPowerCallbacks.EvtDeviceD0Entry = Bus_EvtDeviceD0Entry;
+
+    WdfDeviceInitSetPnpPowerEventCallbacks(DeviceInit, &pnpPowerCallbacks);
+
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&pdoAttributes, PDO_DEVICE_DATA);
 
     status = WdfDeviceCreate(&DeviceInit, &pdoAttributes, &hChild);
@@ -218,53 +228,53 @@ NTSTATUS Bus_CreatePdo(
     powerCaps.WakeFromD1 = WdfTrue;
     powerCaps.DeviceWake = PowerDeviceD1;
 
-    powerCaps.DeviceState[PowerSystemWorking] = PowerDeviceD1;
+    powerCaps.DeviceState[PowerSystemWorking] = PowerDeviceD0;
     powerCaps.DeviceState[PowerSystemSleeping1] = PowerDeviceD1;
-    powerCaps.DeviceState[PowerSystemSleeping2] = PowerDeviceD2;
-    powerCaps.DeviceState[PowerSystemSleeping3] = PowerDeviceD2;
+    powerCaps.DeviceState[PowerSystemSleeping2] = PowerDeviceD3;
+    powerCaps.DeviceState[PowerSystemSleeping3] = PowerDeviceD3;
     powerCaps.DeviceState[PowerSystemHibernate] = PowerDeviceD3;
     powerCaps.DeviceState[PowerSystemShutdown] = PowerDeviceD3;
 
     WdfDeviceSetPowerCapabilities(hChild, &powerCaps);
 
-    /*
-    //
-    // Create a custom interface so that other drivers can
-    // query (IRP_MN_QUERY_INTERFACE) and use our callbacks directly.
-    //
-    RtlZeroMemory(&ToasterInterface, sizeof(ToasterInterface));
+    return status;
+}
 
-    ToasterInterface.InterfaceHeader.Size = sizeof(ToasterInterface);
-    ToasterInterface.InterfaceHeader.Version = 1;
-    ToasterInterface.InterfaceHeader.Context = (PVOID)hChild;
+NTSTATUS Bus_EvtDevicePrepareHardware(
+    _In_ WDFDEVICE    Device,
+    _In_ WDFCMRESLIST ResourcesRaw,
+    _In_ WDFCMRESLIST ResourcesTranslated
+)
+{
+    NTSTATUS status;
 
-    //
-    // Let the framework handle reference counting.
-    //
-    ToasterInterface.InterfaceHeader.InterfaceReference =
-        WdfDeviceInterfaceReferenceNoOp;
-    ToasterInterface.InterfaceHeader.InterfaceDereference =
-        WdfDeviceInterfaceDereferenceNoOp;
+    PAGED_CODE();
 
-    ToasterInterface.GetCrispinessLevel = Bus_GetCrispinessLevel;
-    ToasterInterface.SetCrispinessLevel = Bus_SetCrispinessLevel;
-    ToasterInterface.IsSafetyLockEnabled = Bus_IsSafetyLockEnabled;
+    UNREFERENCED_PARAMETER(ResourcesRaw);
+    UNREFERENCED_PARAMETER(ResourcesTranslated);
 
-    WDF_QUERY_INTERFACE_CONFIG_INIT(&qiConfig,
-        (PINTERFACE)&ToasterInterface,
-        &GUID_TOASTER_INTERFACE_STANDARD,
-        NULL);
-    //
-    // If you have multiple interfaces, you can call WdfDeviceAddQueryInterface
-    // multiple times to add additional interfaces.
-    //
-    status = WdfDeviceAddQueryInterface(hChild, &qiConfig);
+    KdPrint(("Bus_EvtDevicePrepareHardware: 0x%p\n", Device));
 
-    if (!NT_SUCCESS(status)) {
+    status = WdfDeviceCreateDeviceInterface(Device, (LPGUID)&GUID_DEVINTERFACE_USB_DEVICE, NULL);
+
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("WdfDeviceCreateDeviceInterface failed status 0x%x\n", status));
         return status;
     }
-    */
 
     return status;
+}
+
+NTSTATUS Bus_EvtDeviceD0Entry(
+    _In_ WDFDEVICE              Device,
+    _In_ WDF_POWER_DEVICE_STATE PreviousState
+)
+{
+    UNREFERENCED_PARAMETER(PreviousState);
+
+    KdPrint(("Bus_EvtDeviceD0Entry: 0x%p\n", Device));
+
+    return STATUS_SUCCESS;
 }
 

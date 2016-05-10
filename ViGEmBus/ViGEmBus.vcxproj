@@ -206,7 +206,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Inf>
-      <TimeStamp>1.1.0.0</TimeStamp>
+      <TimeStamp>1.10.0.0</TimeStamp>
     </Inf>
     <Link>
       <AdditionalDependencies>$(DDK_LIB_PATH)ntstrsafe.lib;%(AdditionalDependencies)</AdditionalDependencies>

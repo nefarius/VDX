@@ -186,12 +186,15 @@ NTSTATUS Bus_CreatePdo(
     // default locale is English
     WdfPdoInitSetDefaultLocale(DeviceInit, 0x409);
 
-    WDF_PNPPOWER_EVENT_CALLBACKS_INIT(&pnpPowerCallbacks);
+    // EXPERIMENTAL
+    {
+        WDF_PNPPOWER_EVENT_CALLBACKS_INIT(&pnpPowerCallbacks);
 
-    pnpPowerCallbacks.EvtDevicePrepareHardware = Bus_EvtDevicePrepareHardware;
-    pnpPowerCallbacks.EvtDeviceD0Entry = Bus_EvtDeviceD0Entry;
+        pnpPowerCallbacks.EvtDevicePrepareHardware = Bus_EvtDevicePrepareHardware;
+        pnpPowerCallbacks.EvtDeviceD0Entry = Bus_EvtDeviceD0Entry;
 
-    WdfDeviceInitSetPnpPowerEventCallbacks(DeviceInit, &pnpPowerCallbacks);
+        WdfDeviceInitSetPnpPowerEventCallbacks(DeviceInit, &pnpPowerCallbacks);
+    }
 
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&pdoAttributes, PDO_DEVICE_DATA);
 
@@ -207,7 +210,7 @@ NTSTATUS Bus_CreatePdo(
     pdoData = PdoGetData(hChild);
 
     pdoData->SerialNo = SerialNo;
-    pdoData->CallingProcessId = CURRENT_PROCESS_ID();
+    pdoData->OwnerProcessId = CURRENT_PROCESS_ID();
 
     //
     // Set some properties for the child device.

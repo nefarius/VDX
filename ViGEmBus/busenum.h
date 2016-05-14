@@ -55,7 +55,7 @@ typedef struct _PDO_DEVICE_DATA
     // 
     // PID of the process creating this PDO
     // 
-    DWORD CallingProcessId;
+    DWORD OwnerProcessId;
 } PDO_DEVICE_DATA, *PPDO_DEVICE_DATA;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(PDO_DEVICE_DATA, PdoGetData)
@@ -81,7 +81,8 @@ EVT_WDF_DEVICE_D0_ENTRY Bus_EvtDeviceD0Entry;
 NTSTATUS
 Bus_PlugInDevice(
     _In_ WDFDEVICE Device,
-    _In_ ULONG SerialNo
+    _In_ ULONG SerialNo,
+    _In_ VIGEM_TARGET_TYPE TargetType
 );
 
 NTSTATUS

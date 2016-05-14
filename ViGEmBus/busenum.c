@@ -118,6 +118,8 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
     {
     case IOCTL_BUSENUM_PLUGIN_HARDWARE:
 
+        KdPrint(("IOCTL_BUSENUM_PLUGIN_HARDWARE"));
+
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_PLUGIN_HARDWARE), &plugIn, &length);
 
         if (!NT_SUCCESS(status))
@@ -134,12 +136,14 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
                 break;
             }
 
-            status = Bus_PlugInDevice(hDevice, plugIn->SerialNo);
+            status = Bus_PlugInDevice(hDevice, plugIn->SerialNo, plugIn->TargetType);
         }
 
         break;
 
     case IOCTL_BUSENUM_UNPLUG_HARDWARE:
+
+        KdPrint(("IOCTL_BUSENUM_UNPLUG_HARDWARE"));
 
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_UNPLUG_HARDWARE), &unPlug, &length);
 
@@ -157,6 +161,8 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
         break;
 
     case IOCTL_BUSENUM_EJECT_HARDWARE:
+
+        KdPrint(("IOCTL_BUSENUM_EJECT_HARDWARE"));
 
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_EJECT_HARDWARE), &eject, &length);
 
@@ -177,10 +183,12 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
         break; // default status is STATUS_INVALID_PARAMETER
     }
 
+    KdPrint(("Bus_EvtIoDeviceControl exiting with 0x%x\n", status));
+
     WdfRequestCompleteWithInformation(Request, status, length);
 }
 
-NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ ULONG SerialNo)
+NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ ULONG SerialNo, _In_ VIGEM_TARGET_TYPE TargetType)
 {
     PDO_IDENTIFICATION_DESCRIPTION description;
     NTSTATUS status;
@@ -194,6 +202,7 @@ NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ ULONG SerialNo)
     WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
 
     description.SerialNo = SerialNo;
+    description.TargetType = TargetType;
 
     status = WdfChildListAddOrUpdateChildDescriptionAsPresent(WdfFdoGetDefaultChildList(Device), &description.Header, NULL);
 
@@ -205,6 +214,8 @@ NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ ULONG SerialNo)
         //
         status = STATUS_INVALID_PARAMETER;
     }
+
+    KdPrint(("Bus_PlugInDevice exiting with 0x%x\n", status));
 
     return status;
 }

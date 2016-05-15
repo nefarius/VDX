@@ -8,6 +8,7 @@
 #pragma alloc_text (PAGE, Bus_EvtDeviceAdd)
 #pragma alloc_text (PAGE, Bus_EvtIoDeviceControl)
 #pragma alloc_text (PAGE, Bus_EvtIoInternalDeviceControl)
+#pragma alloc_text (PAGE, Bus_EvtIoDefault)
 #pragma alloc_text (PAGE, Bus_PlugInDevice)
 #pragma alloc_text (PAGE, Bus_UnPlugDevice)
 #pragma alloc_text (PAGE, Bus_EjectDevice)
@@ -68,6 +69,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 
     queueConfig.EvtIoDeviceControl = Bus_EvtIoDeviceControl;
     queueConfig.EvtIoInternalDeviceControl = Bus_EvtIoInternalDeviceControl;
+    queueConfig.EvtIoDefault = Bus_EvtIoDefault;
 
     __analysis_assume(queueConfig.EvtIoStop != 0);
     status = WdfIoQueueCreate(device, &queueConfig, WDF_NO_OBJECT_ATTRIBUTES, &queue);
@@ -186,6 +188,17 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
     KdPrint(("Bus_EvtIoDeviceControl exiting with 0x%x\n", status));
 
     WdfRequestCompleteWithInformation(Request, status, length);
+}
+
+VOID Bus_EvtIoDefault(
+    _In_ WDFQUEUE   Queue,
+    _In_ WDFREQUEST Request
+)
+{
+    UNREFERENCED_PARAMETER(Queue);
+    UNREFERENCED_PARAMETER(Request);
+
+    KdPrint(("Bus_EvtIoDefault called"));
 }
 
 NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ ULONG SerialNo, _In_ VIGEM_TARGET_TYPE TargetType)

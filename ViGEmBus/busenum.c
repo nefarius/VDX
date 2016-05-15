@@ -31,6 +31,8 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING Registry
         KdPrint(("WdfDriverCreate failed with status 0x%x\n", status));
     }
 
+    KdPrint(("Built: %s %s", __DATE__, __TIME__));
+
     return status;
 }
 
@@ -182,6 +184,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
         break;
 
     default:
+        KdPrint(("UNKNOWN IOCTL CODE 0x%x\n", IoControlCode));
         break; // default status is STATUS_INVALID_PARAMETER
     }
 

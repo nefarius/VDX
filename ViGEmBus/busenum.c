@@ -91,7 +91,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     }
 
     // TODO: required?
-    busInfo.BusTypeGuid = GUID_BUS_TYPE_INTERNAL;
+    busInfo.BusTypeGuid = GUID_BUS_TYPE_USB;
     busInfo.LegacyBusType = PNPBus;
     busInfo.BusNumber = 0;
 

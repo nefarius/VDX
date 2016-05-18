@@ -32,7 +32,7 @@ NTSTATUS Bus_CreatePdo(
     _In_ VIGEM_TARGET_TYPE TargetType)
 {
     NTSTATUS status;
-    PPDO_DEVICE_DATA pdoData = NULL;
+    PPDO_DEVICE_DATA pdoData;
     WDFDEVICE hChild = NULL;
     WDF_DEVICE_PNP_CAPABILITIES pnpCaps;
     WDF_DEVICE_POWER_CAPABILITIES powerCaps;
@@ -211,7 +211,7 @@ NTSTATUS Bus_CreatePdo(
     // default locale is English
     WdfPdoInitSetDefaultLocale(DeviceInit, 0x409);
 
-    // EXPERIMENTAL
+    // PNP/Power event callbacks
     {
         WDF_PNPPOWER_EVENT_CALLBACKS_INIT(&pnpPowerCallbacks);
 
@@ -223,12 +223,15 @@ NTSTATUS Bus_CreatePdo(
 
     WdfPdoInitAllowForwardingRequestToParent(DeviceInit);
 
-    WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&pdoAttributes, PDO_DEVICE_DATA);
-
-    status = WdfDeviceCreate(&DeviceInit, &pdoAttributes, &hChild);
-    if (!NT_SUCCESS(status))
+    // Create PDO
     {
-        return status;
+        WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&pdoAttributes, PDO_DEVICE_DATA);
+
+        status = WdfDeviceCreate(&DeviceInit, &pdoAttributes, &hChild);
+        if (!NT_SUCCESS(status))
+        {
+            return status;
+        }
     }
 
     status = WdfDeviceCreateDeviceInterface(Device, (LPGUID)&GUID_DEVINTERFACE_USB_DEVICE, NULL);
@@ -238,54 +241,64 @@ NTSTATUS Bus_CreatePdo(
         return status;
     }
 
-    //
-    // Get the device context.
-    //
-    pdoData = PdoGetData(hChild);
-
-    pdoData->SerialNo = SerialNo;
-    pdoData->OwnerProcessId = CURRENT_PROCESS_ID();
-
-    WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&ioQueueConfig, WdfIoQueueDispatchSequential);
-
-    ioQueueConfig.EvtIoDefault = RawPdo_EvtIoDefault;
-    ioQueueConfig.EvtIoDeviceControl = RawPdo_EvtIoDeviceControl;
-    ioQueueConfig.EvtIoInternalDeviceControl = RawPdo_EvtIoInternalDeviceControl;
-
-    status = WdfIoQueueCreate(hChild, &ioQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &queue);
-    if (!NT_SUCCESS(status))
+    // PDO properties
     {
-        KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
-        return status;
+        pdoData = PdoGetData(hChild);
+
+        pdoData->SerialNo = SerialNo;
+        pdoData->OwnerProcessId = CURRENT_PROCESS_ID();
     }
 
-    //
-    // Set some properties for the child device.
-    //
-    WDF_DEVICE_PNP_CAPABILITIES_INIT(&pnpCaps);
-    pnpCaps.Removable = WdfTrue;
-    pnpCaps.EjectSupported = WdfTrue;
-    pnpCaps.SurpriseRemovalOK = WdfTrue;
+    // I/O queue setup
+    {
+        WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&ioQueueConfig, WdfIoQueueDispatchSequential);
 
-    pnpCaps.Address = SerialNo;
-    pnpCaps.UINumber = SerialNo;
+        ioQueueConfig.EvtIoDefault = RawPdo_EvtIoDefault;
+        ioQueueConfig.EvtIoDeviceControl = RawPdo_EvtIoDeviceControl;
+        ioQueueConfig.EvtIoInternalDeviceControl = RawPdo_EvtIoInternalDeviceControl;
+    }
 
-    WdfDeviceSetPnpCapabilities(hChild, &pnpCaps);
+    // Create PDO
+    {
+        status = WdfIoQueueCreate(hChild, &ioQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &queue);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+            return status;
+        }
+    }
 
-    WDF_DEVICE_POWER_CAPABILITIES_INIT(&powerCaps);
+    // PNP capabilities
+    {
+        WDF_DEVICE_PNP_CAPABILITIES_INIT(&pnpCaps);
 
-    powerCaps.DeviceD1 = WdfTrue;
-    powerCaps.WakeFromD1 = WdfTrue;
-    powerCaps.DeviceWake = PowerDeviceD1;
+        pnpCaps.Removable = WdfTrue;
+        pnpCaps.EjectSupported = WdfTrue;
+        pnpCaps.SurpriseRemovalOK = WdfTrue;
 
-    powerCaps.DeviceState[PowerSystemWorking] = PowerDeviceD0;
-    powerCaps.DeviceState[PowerSystemSleeping1] = PowerDeviceD1;
-    powerCaps.DeviceState[PowerSystemSleeping2] = PowerDeviceD3;
-    powerCaps.DeviceState[PowerSystemSleeping3] = PowerDeviceD3;
-    powerCaps.DeviceState[PowerSystemHibernate] = PowerDeviceD3;
-    powerCaps.DeviceState[PowerSystemShutdown] = PowerDeviceD3;
+        pnpCaps.Address = SerialNo;
+        pnpCaps.UINumber = SerialNo;
 
-    WdfDeviceSetPowerCapabilities(hChild, &powerCaps);
+        WdfDeviceSetPnpCapabilities(hChild, &pnpCaps);
+    }
+
+    // Power capabilities
+    {
+        WDF_DEVICE_POWER_CAPABILITIES_INIT(&powerCaps);
+
+        powerCaps.DeviceD1 = WdfTrue;
+        powerCaps.WakeFromD1 = WdfTrue;
+        powerCaps.DeviceWake = PowerDeviceD1;
+
+        powerCaps.DeviceState[PowerSystemWorking] = PowerDeviceD0;
+        powerCaps.DeviceState[PowerSystemSleeping1] = PowerDeviceD1;
+        powerCaps.DeviceState[PowerSystemSleeping2] = PowerDeviceD3;
+        powerCaps.DeviceState[PowerSystemSleeping3] = PowerDeviceD3;
+        powerCaps.DeviceState[PowerSystemHibernate] = PowerDeviceD3;
+        powerCaps.DeviceState[PowerSystemShutdown] = PowerDeviceD3;
+
+        WdfDeviceSetPowerCapabilities(hChild, &powerCaps);
+    }
 
     return status;
 }

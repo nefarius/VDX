@@ -53,6 +53,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     KdPrint(("Bus_EvtDeviceAdd: 0x%p\n", Driver));
 
     WdfDeviceInitSetDeviceType(DeviceInit, FILE_DEVICE_BUS_EXTENDER);
+    // TODO: necessary?
     WdfDeviceInitSetExclusive(DeviceInit, TRUE);
 
     WDF_CHILD_LIST_CONFIG_INIT(&config, sizeof(PDO_IDENTIFICATION_DESCRIPTION), Bus_EvtDeviceListCreatePdo);

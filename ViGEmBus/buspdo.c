@@ -11,6 +11,7 @@
 #pragma alloc_text(PAGE, RawPdo_EvtIoDeviceControl)
 #pragma alloc_text(PAGE, RawPdo_EvtIoInternalDeviceControl)
 #pragma alloc_text(PAGE, RawPdo_EvtIoDefault)
+#pragma alloc_text(PAGE, Pdo_ProcessQueryInterfaceRequest)
 #endif
 
 NTSTATUS Bus_EvtDeviceListCreatePdo(
@@ -318,23 +319,55 @@ Pdo_ProcessQueryInterfaceRequest(
     PVOID  ExposedInterfaceSpecificData
 )
 {
-    UNREFERENCED_PARAMETER(Device);
-    UNREFERENCED_PARAMETER(InterfaceType);
-    UNREFERENCED_PARAMETER(ExposedInterface);
     UNREFERENCED_PARAMETER(ExposedInterfaceSpecificData);
 
-    KdPrint(("Pdo_ProcessQueryInterfaceRequest called for interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X\n",
-        InterfaceType->Data1,
-        InterfaceType->Data2,
-        InterfaceType->Data3,
-        InterfaceType->Data4[0],
-        InterfaceType->Data4[1],
-        InterfaceType->Data4[2],
-        InterfaceType->Data4[3],
-        InterfaceType->Data4[4],
-        InterfaceType->Data4[5],
-        InterfaceType->Data4[6],
-        InterfaceType->Data4[7]));
+    PAGED_CODE();
+
+    // Validate requested interface type
+    if (IsEqualGUID(InterfaceType, (PVOID)&USB_BUS_INTERFACE_USBDI_GUID))
+    {
+        KdPrint(("USB_BUS_INTERFACE_USBDI_GUID : Version %d Requested\n", ExposedInterface->Version));
+
+        auto eiVersion = ExposedInterface->Version;
+        auto eiSize = ExposedInterface->Size;
+
+        // Validate queried interface version and size
+        if ((eiVersion != USB_BUSIF_USBDI_VERSION_0 && eiVersion != USB_BUSIF_USBDI_VERSION_1)
+            || (eiVersion == USB_BUSIF_USBDI_VERSION_0 && eiSize < sizeof(USB_BUS_INTERFACE_USBDI_V0))
+            || (eiVersion == USB_BUSIF_USBDI_VERSION_1 && eiSize < sizeof(USB_BUS_INTERFACE_USBDI_V1)))
+        {
+            return STATUS_INVALID_PARAMETER;
+        }
+
+        PUSB_BUS_INTERFACE_USBDI_V1 pInterface = (PUSB_BUS_INTERFACE_USBDI_V1)ExposedInterface;
+
+        pInterface->BusContext = Device;
+
+        pInterface->InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
+        pInterface->InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
+
+        switch (eiVersion)
+        {
+        case USB_BUSIF_USBDI_VERSION_1:
+            pInterface->IsDeviceHighSpeed = UsbPdo_IsDeviceHighSpeed;
+            break;
+        }
+    }
+    else
+    {
+        KdPrint(("Pdo_ProcessQueryInterfaceRequest called for interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X\n",
+            InterfaceType->Data1,
+            InterfaceType->Data2,
+            InterfaceType->Data3,
+            InterfaceType->Data4[0],
+            InterfaceType->Data4[1],
+            InterfaceType->Data4[2],
+            InterfaceType->Data4[3],
+            InterfaceType->Data4[4],
+            InterfaceType->Data4[5],
+            InterfaceType->Data4[6],
+            InterfaceType->Data4[7]));
+    }
 
     return STATUS_SUCCESS;
 }

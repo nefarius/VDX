@@ -149,7 +149,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
     {
     case IOCTL_BUSENUM_PLUGIN_HARDWARE:
 
-        KdPrint(("IOCTL_BUSENUM_PLUGIN_HARDWARE"));
+        KdPrint(("IOCTL_BUSENUM_PLUGIN_HARDWARE\n"));
 
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_PLUGIN_HARDWARE), &plugIn, &length);
 
@@ -174,7 +174,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
 
     case IOCTL_BUSENUM_UNPLUG_HARDWARE:
 
-        KdPrint(("IOCTL_BUSENUM_UNPLUG_HARDWARE"));
+        KdPrint(("IOCTL_BUSENUM_UNPLUG_HARDWARE\n"));
 
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_UNPLUG_HARDWARE), &unPlug, &length);
 
@@ -193,7 +193,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
 
     case IOCTL_BUSENUM_EJECT_HARDWARE:
 
-        KdPrint(("IOCTL_BUSENUM_EJECT_HARDWARE"));
+        KdPrint(("IOCTL_BUSENUM_EJECT_HARDWARE\n"));
 
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_EJECT_HARDWARE), &eject, &length);
 
@@ -228,7 +228,7 @@ VOID Bus_EvtIoDefault(
     UNREFERENCED_PARAMETER(Queue);
     UNREFERENCED_PARAMETER(Request);
 
-    KdPrint(("Bus_EvtIoDefault called"));
+    KdPrint(("Bus_EvtIoDefault called\n"));
 }
 
 NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ ULONG SerialNo, _In_ VIGEM_TARGET_TYPE TargetType)

@@ -5,6 +5,8 @@
 #include <ntintsafe.h>
 #include <initguid.h>
 #include "public.h"
+#include <usb.h>
+#include <usbbusif.h>
 
 // 
 // For children emulating XUSB devices, the following dummy interfaces 
@@ -103,7 +105,9 @@ EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL RawPdo_EvtIoInternalDeviceControl;
 
 EVT_WDF_DEVICE_PROCESS_QUERY_INTERFACE_REQUEST  Pdo_ProcessQueryInterfaceRequest;
 
-
+//
+// Bus enumeration-specific functions
+// 
 NTSTATUS
 Bus_PlugInDevice(
     _In_ WDFDEVICE Device,
@@ -132,3 +136,7 @@ Bus_CreatePdo(
     _In_ VIGEM_TARGET_TYPE TargetType
 );
 
+//
+// USB-specific functions
+// 
+BOOLEAN USB_BUSIFFN UsbPdo_IsDeviceHighSpeed(IN PVOID BusContext);

@@ -7,7 +7,6 @@
 #pragma alloc_text (INIT, DriverEntry)
 #pragma alloc_text (PAGE, Bus_EvtDeviceAdd)
 #pragma alloc_text (PAGE, Bus_EvtIoDeviceControl)
-#pragma alloc_text (PAGE, Bus_EvtIoInternalDeviceControl)
 #pragma alloc_text (PAGE, Bus_EvtIoDefault)
 #pragma alloc_text (PAGE, Bus_PlugInDevice)
 #pragma alloc_text (PAGE, Bus_UnPlugDevice)
@@ -93,7 +92,6 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
         WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&queueConfig, WdfIoQueueDispatchParallel);
 
         queueConfig.EvtIoDeviceControl = Bus_EvtIoDeviceControl;
-        queueConfig.EvtIoInternalDeviceControl = Bus_EvtIoInternalDeviceControl;
         queueConfig.EvtIoDefault = Bus_EvtIoDefault;
 
         __analysis_assume(queueConfig.EvtIoStop != 0);
@@ -127,6 +125,24 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     return status;
 }
 
+///-------------------------------------------------------------------------------------------------
+/// <summary>A driver's EvtIoDeviceControl event callback function processes a specified device
+/// I/O control request.</summary>
+///
+/// <remarks>Benjamin, 22.05.2016.</remarks>
+///
+/// <param name="Queue">                A handle to the framework queue object that is associated
+///                                     with the I/O request.</param>
+/// <param name="Request">           A handle to a framework request object.</param>
+/// <param name="OutputBufferLength">   The length, in bytes, of the request's output buffer, if
+///                                     an output buffer is available.</param>
+/// <param name="InputBufferLength">    The length, in bytes, of the request's input buffer, if
+///                                     an input buffer is available.</param>
+/// <param name="IoControlCode">        The driver-defined or system-defined I/O control code
+///                                     (IOCTL) that is associated with the request.</param>
+///
+/// <returns>None.</returns>
+///-------------------------------------------------------------------------------------------------
 VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t OutputBufferLength, IN size_t InputBufferLength, IN ULONG IoControlCode)
 {
     NTSTATUS status = STATUS_INVALID_PARAMETER;
@@ -388,98 +404,5 @@ NTSTATUS Bus_EjectDevice(WDFDEVICE Device, ULONG SerialNo)
     }
 
     return status;
-}
-
-VOID Bus_EvtIoInternalDeviceControl(
-    _In_ WDFQUEUE Queue,
-    _In_ WDFREQUEST Request,
-    _In_ size_t OutputBufferLength,
-    _In_ size_t InputBufferLength,
-    _In_ ULONG IoControlCode
-)
-{
-    UNREFERENCED_PARAMETER(Queue);
-    UNREFERENCED_PARAMETER(Request);
-    UNREFERENCED_PARAMETER(OutputBufferLength);
-    UNREFERENCED_PARAMETER(InputBufferLength);
-    UNREFERENCED_PARAMETER(IoControlCode);
-
-    NTSTATUS status = STATUS_INVALID_PARAMETER;
-    WDFDEVICE hDevice;
-    PIRP irp;
-    PIO_STACK_LOCATION irpSp;
-    PURB urb;
-    PPDO_DEVICE_DATA pdoData;
-
-    PAGED_CODE();
-
-    hDevice = WdfIoQueueGetDevice(Queue);
-
-    KdPrint(("Bus_EvtIoInternalDeviceControl: 0x%p\n", hDevice));
-    
-    pdoData = PdoGetData(hDevice);
-
-    KdPrint(("Bus_EvtIoInternalDeviceControl PDO: 0x%p\n", pdoData));
-
-    irp = WdfRequestWdmGetIrp(Request);
-
-    irpSp = IoGetCurrentIrpStackLocation(irp);
-
-    urb = irpSp->Parameters.Others.Argument1;
-
-    switch (IoControlCode)
-    {
-    case IOCTL_INTERNAL_USB_SUBMIT_URB:
-
-        switch (urb->UrbHeader.Function)
-        {
-        case URB_FUNCTION_CONTROL_TRANSFER:
-
-            status = STATUS_UNSUCCESSFUL;
-            break;
-
-        case URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER:
-            break;
-
-        case URB_FUNCTION_SELECT_CONFIGURATION:
-            break;
-
-        case URB_FUNCTION_SELECT_INTERFACE:
-            break;
-
-        case URB_FUNCTION_GET_DESCRIPTOR_FROM_DEVICE:
-
-            switch (urb->UrbControlDescriptorRequest.DescriptorType)
-            {
-            case USB_DEVICE_DESCRIPTOR_TYPE:
-                break;
-
-            case USB_CONFIGURATION_DESCRIPTOR_TYPE:
-                break;
-
-            case USB_STRING_DESCRIPTOR_TYPE:
-                break;
-
-            case USB_INTERFACE_DESCRIPTOR_TYPE:
-                break;
-
-            case USB_ENDPOINT_DESCRIPTOR_TYPE:
-                break;
-
-            default:
-                break;
-            }
-            break;
-        }
-        break;
-
-    case IOCTL_INTERNAL_USB_GET_PORT_STATUS:
-        break;
-
-    case IOCTL_INTERNAL_USB_RESET_PORT:
-        break;
-    }
-
-    WdfRequestCompleteWithInformation(Request, status, 0);
 }
 

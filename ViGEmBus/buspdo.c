@@ -3,6 +3,7 @@
 #include <usb.h>
 #include <usbiodef.h>
 #include <usbbusif.h>
+#include <usbioctl.h>
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text(PAGE, Bus_CreatePdo)
@@ -533,15 +534,122 @@ VOID RawPdo_EvtIoInternalDeviceControl(
     _In_ ULONG      IoControlCode
 )
 {
-    UNREFERENCED_PARAMETER(Queue);
-    // UNREFERENCED_PARAMETER(Request);
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
-    UNREFERENCED_PARAMETER(IoControlCode);
 
-    KdPrint(("RawPdo_EvtIoInternalDeviceControl called\n"));
+    NTSTATUS status = STATUS_INVALID_PARAMETER;
+    WDFDEVICE hDevice;
+    PIRP irp;
+    PIO_STACK_LOCATION irpSp;
+    PURB urb;
+    PPDO_DEVICE_DATA pdoData;
 
-    WdfRequestCompleteWithInformation(Request, STATUS_SUCCESS, 0);
+    PAGED_CODE();
+
+    hDevice = WdfIoQueueGetDevice(Queue);
+
+    KdPrint(("RawPdo_EvtIoInternalDeviceControl: 0x%p\n", hDevice));
+
+    pdoData = PdoGetData(hDevice);
+
+    KdPrint(("RawPdo_EvtIoInternalDeviceControl PDO: 0x%p\n", pdoData));
+
+    irp = WdfRequestWdmGetIrp(Request);
+
+    irpSp = IoGetCurrentIrpStackLocation(irp);
+
+    urb = irpSp->Parameters.Others.Argument1;
+
+    switch (IoControlCode)
+    {
+    case IOCTL_INTERNAL_USB_SUBMIT_URB:
+
+        KdPrint((">> IOCTL_INTERNAL_USB_SUBMIT_URB\n"));
+
+        switch (urb->UrbHeader.Function)
+        {
+        case URB_FUNCTION_CONTROL_TRANSFER:
+
+            KdPrint((">> >> URB_FUNCTION_CONTROL_TRANSFER\n"));
+
+            status = STATUS_UNSUCCESSFUL;
+            break;
+
+        case URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER:
+
+            KdPrint((">> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
+
+            break;
+
+        case URB_FUNCTION_SELECT_CONFIGURATION:
+
+            KdPrint((">> >> URB_FUNCTION_SELECT_CONFIGURATION\n"));
+
+            break;
+
+        case URB_FUNCTION_SELECT_INTERFACE:
+
+            KdPrint((">> >> URB_FUNCTION_SELECT_INTERFACE\n"));
+
+            break;
+
+        case URB_FUNCTION_GET_DESCRIPTOR_FROM_DEVICE:
+
+            KdPrint((">> >> URB_FUNCTION_GET_DESCRIPTOR_FROM_DEVICE\n"));
+
+            switch (urb->UrbControlDescriptorRequest.DescriptorType)
+            {
+            case USB_DEVICE_DESCRIPTOR_TYPE:
+
+                KdPrint((">> >> >> USB_DEVICE_DESCRIPTOR_TYPE\n"));
+
+                break;
+
+            case USB_CONFIGURATION_DESCRIPTOR_TYPE:
+
+                KdPrint((">> >> >> USB_CONFIGURATION_DESCRIPTOR_TYPE\n"));
+
+                break;
+
+            case USB_STRING_DESCRIPTOR_TYPE:
+
+                KdPrint((">> >> >> USB_STRING_DESCRIPTOR_TYPE\n"));
+
+                break;
+
+            case USB_INTERFACE_DESCRIPTOR_TYPE:
+
+                KdPrint((">> >> >> USB_INTERFACE_DESCRIPTOR_TYPE\n"));
+
+                break;
+
+            case USB_ENDPOINT_DESCRIPTOR_TYPE:
+
+                KdPrint((">> >> >> USB_ENDPOINT_DESCRIPTOR_TYPE\n"));
+
+                break;
+
+            default:
+                break;
+            }
+            break;
+        }
+        break;
+
+    case IOCTL_INTERNAL_USB_GET_PORT_STATUS:
+
+        KdPrint((">> IOCTL_INTERNAL_USB_GET_PORT_STATUS\n"));
+
+        break;
+
+    case IOCTL_INTERNAL_USB_RESET_PORT:
+
+        KdPrint((">> IOCTL_INTERNAL_USB_RESET_PORT\n"));
+
+        break;
+    }
+
+    WdfRequestCompleteWithInformation(Request, status, 0);
 }
 
 VOID RawPdo_EvtIoDefault(

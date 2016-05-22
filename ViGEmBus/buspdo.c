@@ -603,11 +603,15 @@ VOID RawPdo_EvtIoInternalDeviceControl(
 
                 KdPrint((">> >> >> USB_DEVICE_DESCRIPTOR_TYPE\n"));
 
+                status = UsbPdo_SetDeviceDescriptorType(urb);
+
                 break;
 
             case USB_CONFIGURATION_DESCRIPTOR_TYPE:
 
                 KdPrint((">> >> >> USB_CONFIGURATION_DESCRIPTOR_TYPE\n"));
+
+                status = UsbPdo_SetConfigurationDescriptorType(urb);
 
                 break;
 
@@ -630,8 +634,13 @@ VOID RawPdo_EvtIoInternalDeviceControl(
                 break;
 
             default:
+                KdPrint((">> >> >> Unknown descriptor type\n"));
                 break;
             }
+            break;
+
+        default:
+            KdPrint((">> >> Unknown function\n"));
             break;
         }
         break;
@@ -646,6 +655,10 @@ VOID RawPdo_EvtIoInternalDeviceControl(
 
         KdPrint((">> IOCTL_INTERNAL_USB_RESET_PORT\n"));
 
+        break;
+
+    default:
+        KdPrint((">> Unknown I/O control code\n"));
         break;
     }
 

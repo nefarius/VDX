@@ -139,3 +139,6 @@ Bus_CreatePdo(
 // USB-specific functions
 // 
 BOOLEAN USB_BUSIFFN UsbPdo_IsDeviceHighSpeed(IN PVOID BusContext);
+NTSTATUS UsbPdo_SetDeviceDescriptorType(PURB urb);
+NTSTATUS UsbPdo_SetConfigurationDescriptorType(PURB urb);
+

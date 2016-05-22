@@ -1,6 +1,8 @@
 #include "busenum.h"
 #include <wdmsec.h>
+#include <usb.h>
 #include <usbiodef.h>
+#include <usbbusif.h>
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text(PAGE, Bus_CreatePdo)
@@ -234,18 +236,22 @@ NTSTATUS Bus_CreatePdo(
         }
     }
 
-    status = WdfDeviceCreateDeviceInterface(Device, (LPGUID)&GUID_DEVINTERFACE_USB_DEVICE, NULL);
-    if (!NT_SUCCESS(status))
+    // Expose USB interface
     {
-        KdPrint(("WdfDeviceCreateDeviceInterface failed status 0x%x\n", status));
-        return status;
+        status = WdfDeviceCreateDeviceInterface(Device, (LPGUID)&GUID_DEVINTERFACE_USB_DEVICE, NULL);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfDeviceCreateDeviceInterface failed status 0x%x\n", status));
+            return status;
+        }
     }
 
-    // PDO properties
+    // Set PDO properties
     {
         pdoData = PdoGetData(hChild);
 
         pdoData->SerialNo = SerialNo;
+        pdoData->TargetType = TargetType;
         pdoData->OwnerProcessId = CURRENT_PROCESS_ID();
     }
 
@@ -303,12 +309,45 @@ NTSTATUS Bus_CreatePdo(
     return status;
 }
 
+_Use_decl_annotations_
+NTSTATUS
+Pdo_ProcessQueryInterfaceRequest(
+    WDFDEVICE  Device,
+    LPGUID  InterfaceType,
+    PINTERFACE  ExposedInterface,
+    PVOID  ExposedInterfaceSpecificData
+)
+{
+    UNREFERENCED_PARAMETER(Device);
+    UNREFERENCED_PARAMETER(InterfaceType);
+    UNREFERENCED_PARAMETER(ExposedInterface);
+    UNREFERENCED_PARAMETER(ExposedInterfaceSpecificData);
+
+    KdPrint(("Pdo_ProcessQueryInterfaceRequest called for interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X\n",
+        InterfaceType->Data1,
+        InterfaceType->Data2,
+        InterfaceType->Data3,
+        InterfaceType->Data4[0],
+        InterfaceType->Data4[1],
+        InterfaceType->Data4[2],
+        InterfaceType->Data4[3],
+        InterfaceType->Data4[4],
+        InterfaceType->Data4[5],
+        InterfaceType->Data4[6],
+        InterfaceType->Data4[7]));
+
+    return STATUS_SUCCESS;
+}
+
 NTSTATUS Bus_EvtDevicePrepareHardware(
     _In_ WDFDEVICE    Device,
     _In_ WDFCMRESLIST ResourcesRaw,
     _In_ WDFCMRESLIST ResourcesTranslated
 )
 {
+    WDF_QUERY_INTERFACE_CONFIG ifaceCfg;
+    NTSTATUS status;
+
     PAGED_CODE();
 
     UNREFERENCED_PARAMETER(ResourcesRaw);
@@ -316,7 +355,112 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 
     KdPrint(("Bus_EvtDevicePrepareHardware: 0x%p\n", Device));
 
-    return STATUS_SUCCESS;
+    // Expose USB interface
+    {
+        INTERFACE dummyIface;
+
+        dummyIface.Size = sizeof(INTERFACE);
+        dummyIface.Version = 1;
+        dummyIface.Context = (PVOID)Device;
+
+        dummyIface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
+        dummyIface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
+
+        //
+        // Dummy 0
+        // 
+        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_0, Pdo_ProcessQueryInterfaceRequest);
+
+        status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data1,
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data2,
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data3,
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[0],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[1],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[2],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[3],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[4],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[5],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[6],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[7],
+                status));
+
+            return status;
+        }
+
+        //
+        // Dummy 1
+        // 
+        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_1, Pdo_ProcessQueryInterfaceRequest);
+
+        status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data1,
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data2,
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data3,
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[0],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[1],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[2],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[3],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[4],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[5],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[6],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[7],
+                status));
+
+            return status;
+        }
+
+        //
+        // Dummy 2
+        // 
+        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_2, Pdo_ProcessQueryInterfaceRequest);
+
+        status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data1,
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data2,
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data3,
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[0],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[1],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[2],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[3],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[4],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[5],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[6],
+                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[7],
+                status));
+
+            return status;
+        }
+
+        USB_BUS_INTERFACE_USBDI_V1 pInterface;
+
+        pInterface.Size = sizeof(USB_BUS_INTERFACE_USBDI_V1);
+        pInterface.Version = USB_BUSIF_USBDI_VERSION_1;
+        pInterface.BusContext = (PVOID)Device;
+
+        pInterface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
+        pInterface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
+
+        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&pInterface, &USB_BUS_INTERFACE_USBDI_GUID, Pdo_ProcessQueryInterfaceRequest);
+
+        status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfDeviceAddQueryInterface failed status 0x%x\n", status));
+            return status;
+        }
+    }
+
+    return status;
 }
 
 NTSTATUS Bus_EvtDeviceD0Entry(
@@ -345,7 +489,7 @@ VOID RawPdo_EvtIoDeviceControl(
     UNREFERENCED_PARAMETER(InputBufferLength);
     UNREFERENCED_PARAMETER(IoControlCode);
 
-    KdPrint(("RawPdo_EvtIoDeviceControl called"));
+    KdPrint(("RawPdo_EvtIoDeviceControl called\n"));
 }
 
 VOID RawPdo_EvtIoInternalDeviceControl(
@@ -357,12 +501,14 @@ VOID RawPdo_EvtIoInternalDeviceControl(
 )
 {
     UNREFERENCED_PARAMETER(Queue);
-    UNREFERENCED_PARAMETER(Request);
+    // UNREFERENCED_PARAMETER(Request);
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
     UNREFERENCED_PARAMETER(IoControlCode);
 
-    KdPrint(("RawPdo_EvtIoInternalDeviceControl called"));
+    KdPrint(("RawPdo_EvtIoInternalDeviceControl called\n"));
+
+    WdfRequestCompleteWithInformation(Request, STATUS_SUCCESS, 0);
 }
 
 VOID RawPdo_EvtIoDefault(
@@ -373,5 +519,5 @@ VOID RawPdo_EvtIoDefault(
     UNREFERENCED_PARAMETER(Queue);
     UNREFERENCED_PARAMETER(Request);
 
-    KdPrint(("RawPdo_EvtIoDefault called"));
+    KdPrint(("RawPdo_EvtIoDefault called\n"));
 }

@@ -14,13 +14,29 @@
 #pragma alloc_text (PAGE, Bus_EjectDevice)
 #endif
 
+///-------------------------------------------------------------------------------------------------
+/// <summary>	Driver entry routine. </summary>
+///
+/// <remarks>
+/// DriverEntry is the first routine called after a driver is loaded, and is responsible for
+/// initializing the driver.
+/// </remarks>
+///
+/// <param name="DriverObject">	The driver object. </param>
+/// <param name="RegistryPath">	Full pathname of the registry file. </param>
+///
+/// <returns>
+/// If the routine succeeds, it must return STATUS_SUCCESS. Otherwise, it must return one of the
+/// error status values defined in Ntstatus.h.
+/// </returns>
+///-------------------------------------------------------------------------------------------------
 NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING RegistryPath)
 {
     WDF_DRIVER_CONFIG config;
     NTSTATUS status;
     WDFDRIVER driver;
 
-    KdPrint(("Virtual Gamepad Emulation Bus Driver Entry\n"));
+    KdPrint(("Virtual Gamepad Emulation Bus Driver [built: %s %s]\n", __DATE__, __TIME__));
 
     WDF_DRIVER_CONFIG_INIT(&config, Bus_EvtDeviceAdd);
 
@@ -30,8 +46,6 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING Registry
     {
         KdPrint(("WdfDriverCreate failed with status 0x%x\n", status));
     }
-
-    KdPrint(("Built: %s %s", __DATE__, __TIME__));
 
     return status;
 }
@@ -56,39 +70,51 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     // TODO: necessary?
     WdfDeviceInitSetExclusive(DeviceInit, TRUE);
 
-    WDF_CHILD_LIST_CONFIG_INIT(&config, sizeof(PDO_IDENTIFICATION_DESCRIPTION), Bus_EvtDeviceListCreatePdo);
-
-    WdfFdoInitSetDefaultChildListConfig(DeviceInit, &config, WDF_NO_OBJECT_ATTRIBUTES);
-
-    status = WdfDeviceCreate(&DeviceInit, WDF_NO_OBJECT_ATTRIBUTES, &device);
-
-    if (!NT_SUCCESS(status))
+    // Prepare child list
     {
-        KdPrint(("Error creating device 0x%x\n", status));
-        return status;
+        WDF_CHILD_LIST_CONFIG_INIT(&config, sizeof(PDO_IDENTIFICATION_DESCRIPTION), Bus_EvtDeviceListCreatePdo);
+
+        WdfFdoInitSetDefaultChildListConfig(DeviceInit, &config, WDF_NO_OBJECT_ATTRIBUTES);
     }
 
-    WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&queueConfig, WdfIoQueueDispatchParallel);
-
-    queueConfig.EvtIoDeviceControl = Bus_EvtIoDeviceControl;
-    queueConfig.EvtIoInternalDeviceControl = Bus_EvtIoInternalDeviceControl;
-    queueConfig.EvtIoDefault = Bus_EvtIoDefault;
-
-    __analysis_assume(queueConfig.EvtIoStop != 0);
-    status = WdfIoQueueCreate(device, &queueConfig, WDF_NO_OBJECT_ATTRIBUTES, &queue);
-    __analysis_assume(queueConfig.EvtIoStop == 0);
-
-    if (!NT_SUCCESS(status))
+    // Create FDO
     {
-        KdPrint(("WdfIoQueueCreate failed status 0x%x\n", status));
-        return status;
+        status = WdfDeviceCreate(&DeviceInit, WDF_NO_OBJECT_ATTRIBUTES, &device);
+
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("Error creating device 0x%x\n", status));
+            return status;
+        }
     }
 
-    status = WdfDeviceCreateDeviceInterface(device, &GUID_DEVINTERFACE_BUSENUM_VIGEM, NULL);
-
-    if (!NT_SUCCESS(status))
+    // Create default I/O queue for FDO
     {
-        return status;
+        WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&queueConfig, WdfIoQueueDispatchParallel);
+
+        queueConfig.EvtIoDeviceControl = Bus_EvtIoDeviceControl;
+        queueConfig.EvtIoInternalDeviceControl = Bus_EvtIoInternalDeviceControl;
+        queueConfig.EvtIoDefault = Bus_EvtIoDefault;
+
+        __analysis_assume(queueConfig.EvtIoStop != 0);
+        status = WdfIoQueueCreate(device, &queueConfig, WDF_NO_OBJECT_ATTRIBUTES, &queue);
+        __analysis_assume(queueConfig.EvtIoStop == 0);
+
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfIoQueueCreate failed status 0x%x\n", status));
+            return status;
+        }
+    }
+
+    // Expose FDO interface
+    {
+        status = WdfDeviceCreateDeviceInterface(device, &GUID_DEVINTERFACE_BUSENUM_VIGEM, NULL);
+
+        if (!NT_SUCCESS(status))
+        {
+            return status;
+        }
     }
 
     // TODO: required?

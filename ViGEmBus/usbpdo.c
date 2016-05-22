@@ -214,10 +214,8 @@ NTSTATUS UsbPdo_SetConfigurationDescriptorType(PURB urb)
         {
             Buffer[Index] = DescriptorData[Index];
         }
-
-        return STATUS_SUCCESS;
     }
 
-    return STATUS_BUFFER_TOO_SMALL;
+    return STATUS_SUCCESS;
 }
 

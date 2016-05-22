@@ -540,7 +540,6 @@ VOID RawPdo_EvtIoInternalDeviceControl(
     NTSTATUS status = STATUS_INVALID_PARAMETER;
     WDFDEVICE hDevice;
     PIRP irp;
-    PIO_STACK_LOCATION irpSp;
     PURB urb;
     PPDO_DEVICE_DATA pdoData;
 
@@ -556,9 +555,7 @@ VOID RawPdo_EvtIoInternalDeviceControl(
 
     irp = WdfRequestWdmGetIrp(Request);
 
-    irpSp = IoGetCurrentIrpStackLocation(irp);
-
-    urb = irpSp->Parameters.Others.Argument1;
+    urb = (PURB)URB_FROM_IRP(irp);
 
     switch (IoControlCode)
     {
@@ -662,7 +659,7 @@ VOID RawPdo_EvtIoInternalDeviceControl(
         break;
     }
 
-    WdfRequestCompleteWithInformation(Request, status, 0);
+    WdfRequestComplete(Request, status);
 }
 
 VOID RawPdo_EvtIoDefault(

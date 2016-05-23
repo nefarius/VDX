@@ -555,13 +555,13 @@ VOID RawPdo_EvtIoInternalDeviceControl(
 
     irp = WdfRequestWdmGetIrp(Request);
 
-    urb = (PURB)URB_FROM_IRP(irp);
-
     switch (IoControlCode)
     {
     case IOCTL_INTERNAL_USB_SUBMIT_URB:
 
         KdPrint((">> IOCTL_INTERNAL_USB_SUBMIT_URB\n"));
+
+        urb = (PURB)URB_FROM_IRP(irp);
 
         switch (urb->UrbHeader.Function)
         {

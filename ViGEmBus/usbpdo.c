@@ -1,9 +1,5 @@
 #include "busenum.h"
 
-#ifdef ALLOC_PRAGMA
-#pragma alloc_text(PAGE, UsbPdo_SetDeviceDescriptorType)
-#endif
-
 BOOLEAN USB_BUSIFFN UsbPdo_IsDeviceHighSpeed(IN PVOID BusContext)
 {
     UNREFERENCED_PARAMETER(BusContext);
@@ -15,8 +11,6 @@ BOOLEAN USB_BUSIFFN UsbPdo_IsDeviceHighSpeed(IN PVOID BusContext)
 
 NTSTATUS UsbPdo_SetDeviceDescriptorType(PURB urb)
 {
-    PAGED_CODE();
-
     PUSB_DEVICE_DESCRIPTOR pDescriptor = (PUSB_DEVICE_DESCRIPTOR)urb->UrbControlDescriptorRequest.TransferBuffer;
 
     pDescriptor->bLength = 0x12;

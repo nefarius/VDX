@@ -1,8 +1,5 @@
 #include "busenum.h"
 #include <wdmsec.h>
-#include <usb.h>
-#include <usbiodef.h>
-#include <usbbusif.h>
 #include <usbioctl.h>
 
 #ifdef ALLOC_PRAGMA

@@ -188,25 +188,30 @@ NTSTATUS UsbPdo_SetConfigurationDescriptorType(PURB urb)
         0x01, 0x01, 0x03
     };
 
-    PUSB_CONFIGURATION_DESCRIPTOR pDescriptor = (PUSB_CONFIGURATION_DESCRIPTOR)urb->UrbControlDescriptorRequest.TransferBuffer;
+    KdPrint(("UrbControlDescriptorRequest.TransferBufferLength = %d\n", urb->UrbControlDescriptorRequest.TransferBufferLength));
 
-    pDescriptor->bLength = 0x09;
-    pDescriptor->bDescriptorType = USB_CONFIGURATION_DESCRIPTOR_TYPE;
-    pDescriptor->wTotalLength = DESCRIPTOR_SIZE;
-    pDescriptor->bNumInterfaces = 0x04;
-    pDescriptor->bConfigurationValue = 0x01;
-    pDescriptor->iConfiguration = 0x00;
-    pDescriptor->bmAttributes = 0xA0;
-    pDescriptor->MaxPower = 0xFA;
+    if (urb->UrbControlDescriptorRequest.TransferBufferLength == sizeof(USB_CONFIGURATION_DESCRIPTOR))
+    {
+        PUSB_CONFIGURATION_DESCRIPTOR pDescriptor = (PUSB_CONFIGURATION_DESCRIPTOR)urb->UrbControlDescriptorRequest.TransferBuffer;
+
+        pDescriptor->bLength = 0x09;
+        pDescriptor->bDescriptorType = USB_CONFIGURATION_DESCRIPTOR_TYPE;
+        pDescriptor->wTotalLength = DESCRIPTOR_SIZE;
+        pDescriptor->bNumInterfaces = 0x04;
+        pDescriptor->bConfigurationValue = 0x01;
+        pDescriptor->iConfiguration = 0x00;
+        pDescriptor->bmAttributes = 0xA0;
+        pDescriptor->MaxPower = 0xFA;
+    }
 
     if (urb->UrbControlDescriptorRequest.TransferBufferLength >= DESCRIPTOR_SIZE)
     {
         UCHAR* Buffer = urb->UrbControlDescriptorRequest.TransferBuffer;
         int    Index;
-
-        for (Index = 0; Index < DESCRIPTOR_SIZE; Index++)
+        
+        for (Index = 9; Index < DESCRIPTOR_SIZE; Index++)
         {
-            Buffer[Index] = DescriptorData[Index];
+            Buffer[Index] = DescriptorData[Index - 9];
         }
     }
 

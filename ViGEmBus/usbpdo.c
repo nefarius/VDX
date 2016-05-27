@@ -209,9 +209,9 @@ NTSTATUS UsbPdo_SetConfigurationDescriptorType(PURB urb)
         UCHAR* Buffer = urb->UrbControlDescriptorRequest.TransferBuffer;
         int    Index;
         
-        for (Index = 9; Index < DESCRIPTOR_SIZE; Index++)
+        for (Index = 0; Index < DESCRIPTOR_SIZE; Index++)
         {
-            Buffer[Index] = DescriptorData[Index - 9];
+            Buffer[Index] = DescriptorData[Index];
         }
     }
 

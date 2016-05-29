@@ -48,6 +48,9 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 #define CURRENT_PROCESS_ID() ((DWORD)((DWORD_PTR)PsGetCurrentProcessId() & 0xFFFFFFFF))
 
 
+//
+// Used to identify children in the device list of the bus.
+// 
 typedef struct _PDO_IDENTIFICATION_DESCRIPTION
 {
     WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER Header; // should contain this header
@@ -58,7 +61,7 @@ typedef struct _PDO_IDENTIFICATION_DESCRIPTION
 } PDO_IDENTIFICATION_DESCRIPTION, *PPDO_IDENTIFICATION_DESCRIPTION;
 
 //
-// The PDO device-extension (context)
+// The PDO device-extension (context).
 //
 typedef struct _PDO_DEVICE_DATA
 {

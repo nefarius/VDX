@@ -599,6 +599,8 @@ VOID RawPdo_EvtIoInternalDeviceControl(
 
                 status = UsbPdo_SetDeviceDescriptorType(urb);
 
+                WdfRequestComplete(Request, status);
+
                 break;
 
             case USB_CONFIGURATION_DESCRIPTOR_TYPE:
@@ -606,6 +608,8 @@ VOID RawPdo_EvtIoInternalDeviceControl(
                 KdPrint((">> >> >> USB_CONFIGURATION_DESCRIPTOR_TYPE\n"));
 
                 status = UsbPdo_SetConfigurationDescriptorType(urb);
+
+                WdfRequestComplete(Request, status);
 
                 break;
 
@@ -631,12 +635,28 @@ VOID RawPdo_EvtIoInternalDeviceControl(
                 KdPrint((">> >> >> Unknown descriptor type\n"));
                 break;
             }
+
+            KdPrint(("<< <<\n"));
+
+            break;
+
+        case URB_FUNCTION_GET_STATUS_FROM_DEVICE:
+
+            KdPrint((">> >> URB_FUNCTION_GET_STATUS_FROM_DEVICE\n"));
+
+            // TODO: figure out why this crashes xusb22.sys... ='(
+
+            WdfRequestComplete(Request, STATUS_SUCCESS);
+
             break;
 
         default:
-            KdPrint((">> >> Unknown function\n"));
+            KdPrint((">> >> Unknown function: 0x%X\n", urb->UrbHeader.Function));
             break;
         }
+
+        KdPrint(("<<\n"));
+
         break;
 
     case IOCTL_INTERNAL_USB_GET_PORT_STATUS:
@@ -655,8 +675,6 @@ VOID RawPdo_EvtIoInternalDeviceControl(
         KdPrint((">> Unknown I/O control code\n"));
         break;
     }
-
-    WdfRequestComplete(Request, status);
 }
 
 VOID RawPdo_EvtIoDefault(

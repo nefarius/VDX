@@ -221,12 +221,27 @@ NTSTATUS Bus_CreatePdo(
 
     // Create PDO
     {
+        // Add common device data context
         WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&pdoAttributes, PDO_DEVICE_DATA);
 
         status = WdfDeviceCreate(&DeviceInit, &pdoAttributes, &hChild);
         if (!NT_SUCCESS(status))
         {
             return status;
+        }
+
+        // Add XUSB-specific device data context
+        if (TargetType == Xbox360Wired)
+        {
+            PXUSB_DEVICE_DATA xusbData = NULL;
+            WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&pdoAttributes, XUSB_DEVICE_DATA);
+
+            status = WdfObjectAllocateContext(hChild, &pdoAttributes, (PVOID)&xusbData);
+            if (!NT_SUCCESS(status))
+            {
+                KdPrint(("WdfObjectAllocateContext failed status 0x%x\n", status));
+                return status;
+            }
         }
     }
 
@@ -247,6 +262,15 @@ NTSTATUS Bus_CreatePdo(
         pdoData->SerialNo = SerialNo;
         pdoData->TargetType = TargetType;
         pdoData->OwnerProcessId = CURRENT_PROCESS_ID();
+
+        // Initialize additional contexts (if available)
+        PXUSB_DEVICE_DATA xusb = XusbGetData(hChild);
+        if (xusb != NULL)
+        {
+            RtlZeroMemory(xusb, sizeof(XUSB_DEVICE_DATA));
+
+            xusb->LedNumber = (UCHAR)SerialNo;
+        }
     }
 
     // I/O queue setup
@@ -301,14 +325,18 @@ NTSTATUS Bus_CreatePdo(
     return status;
 }
 
+//
+// Exposes necessary interfaces on PDO power-up.
+// 
 NTSTATUS Bus_EvtDevicePrepareHardware(
     _In_ WDFDEVICE    Device,
     _In_ WDFCMRESLIST ResourcesRaw,
     _In_ WDFCMRESLIST ResourcesTranslated
 )
 {
+    PPDO_DEVICE_DATA pdoData;
     WDF_QUERY_INTERFACE_CONFIG ifaceCfg;
-    NTSTATUS status;
+    NTSTATUS status = STATUS_UNSUCCESSFUL;
 
     PAGED_CODE();
 
@@ -317,7 +345,10 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 
     KdPrint(("Bus_EvtDevicePrepareHardware: 0x%p\n", Device));
 
-    // Expose USB interface
+    pdoData = PdoGetData(Device);
+
+    // Expose XUSB interfaces
+    if (pdoData->TargetType == Xbox360Wired)
     {
         INTERFACE dummyIface;
 
@@ -488,7 +519,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             KdPrint((">> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
 
-            status = UsbPdo_BulkOrInterruptTransfer(urb);
+            status = UsbPdo_BulkOrInterruptTransfer(urb, hDevice);
 
             break;
 

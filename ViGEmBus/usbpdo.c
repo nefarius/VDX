@@ -478,7 +478,7 @@ NTSTATUS UsbPdo_SelectInterface(PURB urb)
 
         return STATUS_SUCCESS;
     }
-    
+
     if (pInfo->InterfaceNumber == 2)
     {
         pInfo[0].Class = 0xFF;
@@ -502,12 +502,22 @@ NTSTATUS UsbPdo_SelectInterface(PURB urb)
     return STATUS_INVALID_PARAMETER;
 }
 
-NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb)
+NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device)
 {
     struct _URB_BULK_OR_INTERRUPT_TRANSFER* pTransfer = &urb->UrbBulkOrInterruptTransfer;
 
     UNREFERENCED_PARAMETER(pTransfer);
 
+    PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
+
+    // Check context
+    if (xusb == NULL)
+    {
+        KdPrint(("No XUSB context found on device %p\n", Device));
+
+        return STATUS_UNSUCCESSFUL;
+    }
+    
     return STATUS_SUCCESS;
 }
 

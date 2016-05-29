@@ -37,6 +37,7 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 #define CONFIGURATION_SIZE              0x0130
 #endif
 
+#define XUSB_REPORT_SIZE                20
 #define XUSB_RUMBLE_SIZE                8
 #define XUSB_LEDSET_SIZE                3
 #define XUSB_LEDNUM_SIZE                1
@@ -82,6 +83,18 @@ typedef struct _PDO_DEVICE_DATA
 } PDO_DEVICE_DATA, *PPDO_DEVICE_DATA;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(PDO_DEVICE_DATA, PdoGetData)
+
+//
+// XUSB-specific device context data.
+// 
+typedef struct _XUSB_DEVICE_DATA
+{
+    UCHAR		Rumble[XUSB_RUMBLE_SIZE];
+    UCHAR		LedNumber;
+    UCHAR		Report[XUSB_REPORT_SIZE];
+} XUSB_DEVICE_DATA, *PXUSB_DEVICE_DATA;
+
+WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XUSB_DEVICE_DATA, XusbGetData)
 
 
 //
@@ -145,5 +158,5 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb);
 NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb);
 NTSTATUS UsbPdo_SelectConfiguration(PURB urb);
 NTSTATUS UsbPdo_SelectInterface(PURB urb);
-NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb);
+NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device);
 

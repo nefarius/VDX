@@ -502,12 +502,13 @@ NTSTATUS UsbPdo_SelectInterface(PURB urb)
     return STATUS_INVALID_PARAMETER;
 }
 
-NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device)
+NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST Request)
 {
     struct _URB_BULK_OR_INTERRUPT_TRANSFER* pTransfer = &urb->UrbBulkOrInterruptTransfer;
 
     UNREFERENCED_PARAMETER(pTransfer);
 
+    NTSTATUS status;
     PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
 
     // Check context
@@ -521,7 +522,12 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device)
     // Data coming FROM us TO higher driver
     if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
     {
-        
+        /* This request is sent periodically and relies on data the "feeder"
+         * has to supply, so we queue this request and return with STATUS_PENDING. 
+         * The request gets completed as soon as the "feeder" sent an update. */
+        status = WdfRequestForwardToIoQueue(Request, xusb->PendingUsbRequests);
+
+        return (NT_SUCCESS(status)) ? STATUS_PENDING : STATUS_UNSUCCESSFUL;
     }
 
     // Data coming FROM the higher driver TO us

@@ -270,12 +270,27 @@ NTSTATUS Bus_CreatePdo(
             RtlZeroMemory(xusb, sizeof(XUSB_DEVICE_DATA));
 
             xusb->LedNumber = (UCHAR)SerialNo;
+
+            // I/O Queue for pending IRPs
+            WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig;
+            WDFQUEUE pendingUsbQueue;
+
+            WDF_IO_QUEUE_CONFIG_INIT(&pendingUsbQueueConfig, WdfIoQueueDispatchManual);
+
+            status = WdfIoQueueCreate(hChild, &pendingUsbQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &pendingUsbQueue);
+            if (!NT_SUCCESS(status))
+            {
+                KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+                return status;
+            }
+
+            xusb->PendingUsbRequests = pendingUsbQueue;
         }
     }
 
     // Default I/O queue setup
     {
-        WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&defaultPdoQueueConfig, WdfIoQueueDispatchSequential);
+        WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&defaultPdoQueueConfig, WdfIoQueueDispatchParallel);
 
         defaultPdoQueueConfig.EvtIoInternalDeviceControl = Pdo_EvtIoInternalDeviceControl;
 
@@ -493,6 +508,12 @@ VOID Pdo_EvtIoInternalDeviceControl(
     irp = WdfRequestWdmGetIrp(Request);
     irpStack = IoGetCurrentIrpStackLocation(irp);
 
+    //WDFREQUEST test;
+    //if (NT_SUCCESS(WdfIoQueueRetrieveNextRequest(pdoData->PendigIrps, &test)))
+    //{
+    //    WdfRequestComplete(test, STATUS_SUCCESS);
+    //}
+
     switch (IoControlCode)
     {
     case IOCTL_INTERNAL_USB_SUBMIT_URB:
@@ -516,7 +537,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             KdPrint((">> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
 
-            status = UsbPdo_BulkOrInterruptTransfer(urb, hDevice);
+            status = UsbPdo_BulkOrInterruptTransfer(urb, hDevice, Request);
 
             break;
 
@@ -628,6 +649,9 @@ VOID Pdo_EvtIoInternalDeviceControl(
         break;
     }
 
-    WdfRequestComplete(Request, status);
+    if (status != STATUS_PENDING)
+    {
+        WdfRequestComplete(Request, status);
+    }
 }
 

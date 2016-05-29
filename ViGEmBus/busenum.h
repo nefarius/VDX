@@ -80,6 +80,7 @@ typedef struct _PDO_DEVICE_DATA
     // Device type this PDO is emulating
     // 
     VIGEM_TARGET_TYPE TargetType;
+
 } PDO_DEVICE_DATA, *PPDO_DEVICE_DATA;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(PDO_DEVICE_DATA, PdoGetData)
@@ -92,6 +93,8 @@ typedef struct _XUSB_DEVICE_DATA
     UCHAR		Rumble[XUSB_RUMBLE_SIZE];
     UCHAR		LedNumber;
     UCHAR		Report[XUSB_REPORT_SIZE];
+    WDFQUEUE    PendingUsbRequests;
+    WDFQUEUE    PendingNotificationRequests;
 } XUSB_DEVICE_DATA, *PXUSB_DEVICE_DATA;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XUSB_DEVICE_DATA, XusbGetData)
@@ -158,5 +161,5 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb);
 NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb);
 NTSTATUS UsbPdo_SelectConfiguration(PURB urb);
 NTSTATUS UsbPdo_SelectInterface(PURB urb);
-NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device);
+NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST Request);
 

@@ -99,8 +99,6 @@ EVT_WDF_DEVICE_PREPARE_HARDWARE Bus_EvtDevicePrepareHardware;
 // Experimental
 EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Pdo_EvtIoInternalDeviceControl;
 
-EVT_WDF_DEVICE_PROCESS_QUERY_INTERFACE_REQUEST  Pdo_ProcessQueryInterfaceRequest;
-
 //
 // Bus enumeration-specific functions
 // 
@@ -136,6 +134,10 @@ Bus_CreatePdo(
 // USB-specific functions
 // 
 BOOLEAN USB_BUSIFFN UsbPdo_IsDeviceHighSpeed(IN PVOID BusContext);
+NTSTATUS USB_BUSIFFN UsbPdo_QueryBusInformation(IN PVOID BusContext, IN ULONG Level, IN OUT PVOID BusInformationBuffer, IN OUT PULONG BusInformationBufferLength, OUT PULONG BusInformationActualLength);
+NTSTATUS USB_BUSIFFN UsbPdo_SubmitIsoOutUrb(IN PVOID BusContext, IN PURB Urb);
+NTSTATUS USB_BUSIFFN UsbPdo_QueryBusTime(IN PVOID BusContext, IN OUT PULONG CurrentUsbFrame);
+VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(IN PVOID BusContext, IN OUT PUSBD_VERSION_INFORMATION VersionInformation, IN OUT PULONG HcdCapabilities);
 NTSTATUS UsbPdo_SetDeviceDescriptorType(PURB urb);
 NTSTATUS UsbPdo_SetConfigurationDescriptorType(PURB urb);
 

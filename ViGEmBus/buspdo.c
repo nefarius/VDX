@@ -6,7 +6,6 @@
 #pragma alloc_text(PAGE, Bus_CreatePdo)
 #pragma alloc_text(PAGE, Bus_EvtDeviceListCreatePdo)
 #pragma alloc_text(PAGE, Bus_EvtDevicePrepareHardware)
-#pragma alloc_text(PAGE, Pdo_ProcessQueryInterfaceRequest)
 #endif
 
 NTSTATUS Bus_EvtDeviceListCreatePdo(
@@ -302,68 +301,6 @@ NTSTATUS Bus_CreatePdo(
     return status;
 }
 
-_Use_decl_annotations_
-NTSTATUS
-Pdo_ProcessQueryInterfaceRequest(
-    WDFDEVICE  Device,
-    LPGUID  InterfaceType,
-    PINTERFACE  ExposedInterface,
-    PVOID  ExposedInterfaceSpecificData
-)
-{
-    UNREFERENCED_PARAMETER(ExposedInterfaceSpecificData);
-
-    PAGED_CODE();
-
-    // Validate requested interface type
-    if (IsEqualGUID(InterfaceType, (PVOID)&USB_BUS_INTERFACE_USBDI_GUID))
-    {
-        KdPrint(("USB_BUS_INTERFACE_USBDI_GUID : Version %d Requested\n", ExposedInterface->Version));
-
-        auto eiVersion = ExposedInterface->Version;
-        auto eiSize = ExposedInterface->Size;
-
-        // Validate queried interface version and size
-        if ((eiVersion != USB_BUSIF_USBDI_VERSION_0 && eiVersion != USB_BUSIF_USBDI_VERSION_1)
-            || (eiVersion == USB_BUSIF_USBDI_VERSION_0 && eiSize < sizeof(USB_BUS_INTERFACE_USBDI_V0))
-            || (eiVersion == USB_BUSIF_USBDI_VERSION_1 && eiSize < sizeof(USB_BUS_INTERFACE_USBDI_V1)))
-        {
-            return STATUS_INVALID_PARAMETER;
-        }
-
-        PUSB_BUS_INTERFACE_USBDI_V1 pInterface = (PUSB_BUS_INTERFACE_USBDI_V1)ExposedInterface;
-
-        pInterface->BusContext = Device;
-
-        pInterface->InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
-        pInterface->InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
-
-        switch (eiVersion)
-        {
-        case USB_BUSIF_USBDI_VERSION_1:
-            pInterface->IsDeviceHighSpeed = UsbPdo_IsDeviceHighSpeed;
-            break;
-        }
-    }
-    else
-    {
-        KdPrint(("Pdo_ProcessQueryInterfaceRequest called for interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X\n",
-            InterfaceType->Data1,
-            InterfaceType->Data2,
-            InterfaceType->Data3,
-            InterfaceType->Data4[0],
-            InterfaceType->Data4[1],
-            InterfaceType->Data4[2],
-            InterfaceType->Data4[3],
-            InterfaceType->Data4[4],
-            InterfaceType->Data4[5],
-            InterfaceType->Data4[6],
-            InterfaceType->Data4[7]));
-    }
-
-    return STATUS_SUCCESS;
-}
-
 NTSTATUS Bus_EvtDevicePrepareHardware(
     _In_ WDFDEVICE    Device,
     _In_ WDFCMRESLIST ResourcesRaw,
@@ -394,7 +331,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
         //
         // Dummy 0
         // 
-        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_0, Pdo_ProcessQueryInterfaceRequest);
+        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_0, NULL);
 
         status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
         if (!NT_SUCCESS(status))
@@ -419,7 +356,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
         //
         // Dummy 1
         // 
-        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_1, Pdo_ProcessQueryInterfaceRequest);
+        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_1, NULL);
 
         status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
         if (!NT_SUCCESS(status))
@@ -444,7 +381,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
         //
         // Dummy 2
         // 
-        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_2, Pdo_ProcessQueryInterfaceRequest);
+        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_2, NULL);
 
         status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
         if (!NT_SUCCESS(status))
@@ -466,16 +403,22 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
             return status;
         }
 
-        USB_BUS_INTERFACE_USBDI_V1 pInterface;
+        USB_BUS_INTERFACE_USBDI_V1 xusbInterface;
 
-        pInterface.Size = sizeof(USB_BUS_INTERFACE_USBDI_V1);
-        pInterface.Version = USB_BUSIF_USBDI_VERSION_1;
-        pInterface.BusContext = (PVOID)Device;
+        xusbInterface.Size = sizeof(USB_BUS_INTERFACE_USBDI_V1);
+        xusbInterface.Version = USB_BUSIF_USBDI_VERSION_1;
+        xusbInterface.BusContext = (PVOID)Device;
 
-        pInterface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
-        pInterface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
+        xusbInterface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
+        xusbInterface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
 
-        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&pInterface, &USB_BUS_INTERFACE_USBDI_GUID, Pdo_ProcessQueryInterfaceRequest);
+        xusbInterface.SubmitIsoOutUrb = UsbPdo_SubmitIsoOutUrb;
+        xusbInterface.GetUSBDIVersion = UsbPdo_GetUSBDIVersion;
+        xusbInterface.QueryBusTime = UsbPdo_QueryBusTime;
+        xusbInterface.QueryBusInformation = UsbPdo_QueryBusInformation;
+        xusbInterface.IsDeviceHighSpeed = UsbPdo_IsDeviceHighSpeed;
+
+        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&xusbInterface, &USB_BUS_INTERFACE_USBDI_GUID, NULL);
 
         status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
         if (!NT_SUCCESS(status))
@@ -605,9 +548,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             // TODO: figure out why this crashes xusb22.sys... ='(
 
-            return;
-
-            //break;
+            break;
 
         default:
             KdPrint((">> >> Unknown function: 0x%X\n", urb->UrbHeader.Function));

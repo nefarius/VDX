@@ -1,5 +1,8 @@
 #include "busenum.h"
 
+//
+// Dummy function to satisfy USB interface
+// 
 BOOLEAN USB_BUSIFFN UsbPdo_IsDeviceHighSpeed(IN PVOID BusContext)
 {
     UNREFERENCED_PARAMETER(BusContext);
@@ -9,6 +12,9 @@ BOOLEAN USB_BUSIFFN UsbPdo_IsDeviceHighSpeed(IN PVOID BusContext)
     return TRUE;
 }
 
+//
+// Dummy function to satisfy USB interface
+// 
 NTSTATUS USB_BUSIFFN UsbPdo_QueryBusInformation(IN PVOID BusContext, IN ULONG Level, IN OUT PVOID BusInformationBuffer, IN OUT PULONG BusInformationBufferLength, OUT PULONG BusInformationActualLength)
 {
     UNREFERENCED_PARAMETER(BusContext);
@@ -21,6 +27,9 @@ NTSTATUS USB_BUSIFFN UsbPdo_QueryBusInformation(IN PVOID BusContext, IN ULONG Le
     return STATUS_UNSUCCESSFUL;
 }
 
+//
+// Dummy function to satisfy USB interface
+// 
 NTSTATUS USB_BUSIFFN UsbPdo_SubmitIsoOutUrb(IN PVOID BusContext, IN PURB Urb)
 {
     UNREFERENCED_PARAMETER(BusContext);
@@ -30,6 +39,9 @@ NTSTATUS USB_BUSIFFN UsbPdo_SubmitIsoOutUrb(IN PVOID BusContext, IN PURB Urb)
     return STATUS_UNSUCCESSFUL;
 }
 
+//
+// Dummy function to satisfy USB interface
+// 
 NTSTATUS USB_BUSIFFN UsbPdo_QueryBusTime(IN PVOID BusContext, IN OUT PULONG CurrentUsbFrame)
 {
     UNREFERENCED_PARAMETER(BusContext);
@@ -39,6 +51,9 @@ NTSTATUS USB_BUSIFFN UsbPdo_QueryBusTime(IN PVOID BusContext, IN OUT PULONG Curr
     return STATUS_UNSUCCESSFUL;
 }
 
+//
+// Dummy function to satisfy USB interface
+// 
 VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(IN PVOID BusContext, IN OUT PUSBD_VERSION_INFORMATION VersionInformation, IN OUT PULONG HcdCapabilities)
 {
     UNREFERENCED_PARAMETER(BusContext);
@@ -57,7 +72,10 @@ VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(IN PVOID BusContext, IN OUT PUSBD_VERSIO
     }
 }
 
-NTSTATUS UsbPdo_SetDeviceDescriptorType(PURB urb)
+//
+// Set device descriptor to identify as wired Microsoft Xbox 360 Controller.
+// 
+NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb)
 {
     PUSB_DEVICE_DESCRIPTOR pDescriptor = (PUSB_DEVICE_DESCRIPTOR)urb->UrbControlDescriptorRequest.TransferBuffer;
 
@@ -79,7 +97,10 @@ NTSTATUS UsbPdo_SetDeviceDescriptorType(PURB urb)
     return STATUS_SUCCESS;
 }
 
-NTSTATUS UsbPdo_SetConfigurationDescriptorType(PURB urb)
+//
+// Set configuration descriptor to identify as HID and exposed endpoints.
+// 
+NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb)
 {
     /*
     0x09,        //   bLength
@@ -236,6 +257,7 @@ NTSTATUS UsbPdo_SetConfigurationDescriptorType(PURB urb)
         0x01, 0x01, 0x03
     };
 
+    // First request just gets required buffer size back
     if (urb->UrbControlDescriptorRequest.TransferBufferLength == sizeof(USB_CONFIGURATION_DESCRIPTOR))
     {
         PUSB_CONFIGURATION_DESCRIPTOR pDescriptor = (PUSB_CONFIGURATION_DESCRIPTOR)urb->UrbControlDescriptorRequest.TransferBuffer;
@@ -250,6 +272,7 @@ NTSTATUS UsbPdo_SetConfigurationDescriptorType(PURB urb)
         pDescriptor->MaxPower = 0xFA;
     }
 
+    // Second request can store the whole descriptor
     if (urb->UrbControlDescriptorRequest.TransferBufferLength >= DESCRIPTOR_SIZE)
     {
         RtlCopyMemory(urb->UrbControlDescriptorRequest.TransferBuffer, DescriptorData, DESCRIPTOR_SIZE);
@@ -258,6 +281,9 @@ NTSTATUS UsbPdo_SetConfigurationDescriptorType(PURB urb)
     return STATUS_SUCCESS;
 }
 
+//
+// Fakes a successfully selected configuration.
+// 
 NTSTATUS UsbPdo_SelectConfiguration(PURB urb)
 {
     PUSBD_INTERFACE_INFORMATION pInfo;
@@ -391,6 +417,9 @@ NTSTATUS UsbPdo_SelectConfiguration(PURB urb)
     return STATUS_SUCCESS;
 }
 
+//
+// Fakes a successfully selected interface.
+// 
 NTSTATUS UsbPdo_SelectInterface(PURB urb)
 {
     PUSBD_INTERFACE_INFORMATION pInfo = &urb->UrbSelectInterface.Interface;
@@ -471,5 +500,14 @@ NTSTATUS UsbPdo_SelectInterface(PURB urb)
     }
 
     return STATUS_INVALID_PARAMETER;
+}
+
+NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb)
+{
+    struct _URB_BULK_OR_INTERRUPT_TRANSFER* pTransfer = &urb->UrbBulkOrInterruptTransfer;
+
+    UNREFERENCED_PARAMETER(pTransfer);
+
+    return STATUS_SUCCESS;
 }
 

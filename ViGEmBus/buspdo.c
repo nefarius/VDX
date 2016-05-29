@@ -431,6 +431,9 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
     return status;
 }
 
+//
+// Responds to IRP_MJ_INTERNAL_DEVICE_CONTROL requests sent to PDO.
+// 
 VOID Pdo_EvtIoInternalDeviceControl(
     _In_ WDFQUEUE   Queue,
     _In_ WDFREQUEST Request,
@@ -439,6 +442,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
     _In_ ULONG      IoControlCode
 )
 {
+    // Regular buffers not used in USB communication
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
 
@@ -447,6 +451,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
     PIRP irp;
     PURB urb;
     PPDO_DEVICE_DATA pdoData;
+    PIO_STACK_LOCATION irpStack;
 
     hDevice = WdfIoQueueGetDevice(Queue);
 
@@ -456,7 +461,9 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
     KdPrint(("Pdo_EvtIoInternalDeviceControl PDO: 0x%p\n", pdoData));
 
+    // No help from the framework available from here on
     irp = WdfRequestWdmGetIrp(Request);
+    irpStack = IoGetCurrentIrpStackLocation(irp);
 
     switch (IoControlCode)
     {
@@ -472,12 +479,16 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             KdPrint((">> >> URB_FUNCTION_CONTROL_TRANSFER\n"));
 
+            // Control transfer can safely be ignored
             status = STATUS_UNSUCCESSFUL;
+
             break;
 
         case URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER:
 
             KdPrint((">> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
+
+            status = UsbPdo_BulkOrInterruptTransfer(urb);
 
             break;
 
@@ -507,7 +518,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
                 KdPrint((">> >> >> USB_DEVICE_DESCRIPTOR_TYPE\n"));
 
-                status = UsbPdo_SetDeviceDescriptorType(urb);
+                status = UsbPdo_GetDeviceDescriptorType(urb);
 
                 break;
 
@@ -515,7 +526,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
                 KdPrint((">> >> >> USB_CONFIGURATION_DESCRIPTOR_TYPE\n"));
 
-                status = UsbPdo_SetConfigurationDescriptorType(urb);
+                status = UsbPdo_GetConfigurationDescriptorType(urb);
 
                 break;
 
@@ -550,6 +561,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             KdPrint((">> >> URB_FUNCTION_GET_STATUS_FROM_DEVICE\n"));
 
+            // Defaults always succeed
             status = STATUS_SUCCESS;
 
             break;
@@ -567,11 +579,19 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
         KdPrint((">> IOCTL_INTERNAL_USB_GET_PORT_STATUS\n"));
 
+        // We report the (virtual) port as always active
+        *(unsigned long *)irpStack->Parameters.Others.Argument1 = USBD_PORT_ENABLED | USBD_PORT_CONNECTED;
+
+        status = STATUS_SUCCESS;
+
         break;
 
     case IOCTL_INTERNAL_USB_RESET_PORT:
 
         KdPrint((">> IOCTL_INTERNAL_USB_RESET_PORT\n"));
+
+        // Sure, why not ;)
+        status = STATUS_SUCCESS;
 
         break;
 

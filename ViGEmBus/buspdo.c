@@ -35,8 +35,8 @@ NTSTATUS Bus_CreatePdo(
     WDF_DEVICE_POWER_CAPABILITIES powerCaps;
     WDF_PNPPOWER_EVENT_CALLBACKS pnpPowerCallbacks;
     WDF_OBJECT_ATTRIBUTES pdoAttributes;
-    WDF_IO_QUEUE_CONFIG  ioQueueConfig;
-    WDFQUEUE queue;
+    WDF_IO_QUEUE_CONFIG  defaultPdoQueueConfig;
+    WDFQUEUE defaultPdoQueue;
     DECLARE_CONST_UNICODE_STRING(deviceLocation, L"Virtual Gamepad Emulation Bus");
     DECLARE_UNICODE_STRING_SIZE(buffer, MAX_INSTANCE_ID_LEN);
     // reserve space for device id
@@ -273,16 +273,13 @@ NTSTATUS Bus_CreatePdo(
         }
     }
 
-    // I/O queue setup
+    // Default I/O queue setup
     {
-        WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&ioQueueConfig, WdfIoQueueDispatchSequential);
+        WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&defaultPdoQueueConfig, WdfIoQueueDispatchSequential);
 
-        ioQueueConfig.EvtIoInternalDeviceControl = Pdo_EvtIoInternalDeviceControl;
-    }
+        defaultPdoQueueConfig.EvtIoInternalDeviceControl = Pdo_EvtIoInternalDeviceControl;
 
-    // Create I/O queue
-    {
-        status = WdfIoQueueCreate(hChild, &ioQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &queue);
+        status = WdfIoQueueCreate(hChild, &defaultPdoQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &defaultPdoQueue);
         if (!NT_SUCCESS(status))
         {
             KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));

@@ -517,6 +517,56 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device)
 
         return STATUS_UNSUCCESSFUL;
     }
+
+    // Data coming FROM us TO higher driver
+    if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
+    {
+        
+    }
+
+    // Data coming FROM the higher driver TO us
+    if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_OUT)
+    {
+        KdPrint(("<< URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER : Handle %p, Flags %X, Length %d\n",
+            pTransfer->PipeHandle,
+            pTransfer->TransferFlags,
+            pTransfer->TransferBufferLength));
+
+        if (pTransfer->TransferBufferLength == XUSB_LEDSET_SIZE) // Led
+        {
+            UCHAR* Buffer = pTransfer->TransferBuffer;
+
+            KdPrint(("-- LED Buffer: %02X %02X %02X", Buffer[0], Buffer[1], Buffer[2]));
+
+            // extract LED byte to get controller slot
+            if (Buffer[0] == 0x01 && Buffer[1] == 0x03 && Buffer[2] >= 0x02)
+            {
+                if (Buffer[2] == 0x02) xusb->LedNumber = 0;
+                if (Buffer[2] == 0x03) xusb->LedNumber = 1;
+                if (Buffer[2] == 0x04) xusb->LedNumber = 2;
+                if (Buffer[2] == 0x05) xusb->LedNumber = 3;
+
+                KdPrint(("-- LED Number: %d", xusb->LedNumber));
+            }
+        }
+
+        if (pTransfer->TransferBufferLength == XUSB_RUMBLE_SIZE) // Rumble
+        {
+            UCHAR* Buffer = pTransfer->TransferBuffer;
+
+            KdPrint(("-- Rumble Buffer: %02X %02X %02X %02X %02X %02X %02X %02X",
+                Buffer[0],
+                Buffer[1],
+                Buffer[2],
+                Buffer[3],
+                Buffer[4],
+                Buffer[5],
+                Buffer[6],
+                Buffer[7]));
+
+            RtlCopyBytes(xusb->Rumble, Buffer, pTransfer->TransferBufferLength);
+        }
+    }
     
     return STATUS_SUCCESS;
 }

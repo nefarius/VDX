@@ -140,4 +140,6 @@ NTSTATUS USB_BUSIFFN UsbPdo_QueryBusTime(IN PVOID BusContext, IN OUT PULONG Curr
 VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(IN PVOID BusContext, IN OUT PUSBD_VERSION_INFORMATION VersionInformation, IN OUT PULONG HcdCapabilities);
 NTSTATUS UsbPdo_SetDeviceDescriptorType(PURB urb);
 NTSTATUS UsbPdo_SetConfigurationDescriptorType(PURB urb);
+NTSTATUS UsbPdo_SelectConfiguration(PURB urb);
+NTSTATUS UsbPdo_SelectInterface(PURB urb);
 

@@ -485,11 +485,15 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             KdPrint((">> >> URB_FUNCTION_SELECT_CONFIGURATION\n"));
 
+            status = UsbPdo_SelectConfiguration(urb);
+
             break;
 
         case URB_FUNCTION_SELECT_INTERFACE:
 
             KdPrint((">> >> URB_FUNCTION_SELECT_INTERFACE\n"));
+
+            status = UsbPdo_SelectInterface(urb);
 
             break;
 
@@ -546,7 +550,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             KdPrint((">> >> URB_FUNCTION_GET_STATUS_FROM_DEVICE\n"));
 
-            // TODO: figure out why this crashes xusb22.sys... ='(
+            status = STATUS_SUCCESS;
 
             break;
 

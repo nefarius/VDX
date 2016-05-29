@@ -236,8 +236,6 @@ NTSTATUS UsbPdo_SetConfigurationDescriptorType(PURB urb)
         0x01, 0x01, 0x03
     };
 
-    KdPrint(("UrbControlDescriptorRequest.TransferBufferLength = %d\n", urb->UrbControlDescriptorRequest.TransferBufferLength));
-
     if (urb->UrbControlDescriptorRequest.TransferBufferLength == sizeof(USB_CONFIGURATION_DESCRIPTOR))
     {
         PUSB_CONFIGURATION_DESCRIPTOR pDescriptor = (PUSB_CONFIGURATION_DESCRIPTOR)urb->UrbControlDescriptorRequest.TransferBuffer;
@@ -254,15 +252,224 @@ NTSTATUS UsbPdo_SetConfigurationDescriptorType(PURB urb)
 
     if (urb->UrbControlDescriptorRequest.TransferBufferLength >= DESCRIPTOR_SIZE)
     {
-        UCHAR* Buffer = urb->UrbControlDescriptorRequest.TransferBuffer;
-        int    Index;
-        
-        for (Index = 0; Index < DESCRIPTOR_SIZE; Index++)
-        {
-            Buffer[Index] = DescriptorData[Index];
-        }
+        RtlCopyMemory(urb->UrbControlDescriptorRequest.TransferBuffer, DescriptorData, DESCRIPTOR_SIZE);
     }
 
     return STATUS_SUCCESS;
+}
+
+NTSTATUS UsbPdo_SelectConfiguration(PURB urb)
+{
+    PUSBD_INTERFACE_INFORMATION pInfo;
+
+    pInfo = &urb->UrbSelectConfiguration.Interface;
+
+    KdPrint((">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: TotalLength %d, Size %d\n", urb->UrbHeader.Length, CONFIGURATION_SIZE));
+
+    if (urb->UrbHeader.Length == sizeof(struct _URB_SELECT_CONFIGURATION))
+    {
+        KdPrint((">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: NULL ConfigurationDescriptor\n"));
+        return STATUS_SUCCESS;
+    }
+
+    if (urb->UrbHeader.Length < CONFIGURATION_SIZE)
+    {
+        KdPrint((">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Invalid ConfigurationDescriptor\n"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    KdPrint((">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
+        (int)pInfo->Length,
+        (int)pInfo->InterfaceNumber,
+        (int)pInfo->AlternateSetting,
+        pInfo->NumberOfPipes));
+
+    pInfo->Class = 0xFF;
+    pInfo->SubClass = 0x5D;
+    pInfo->Protocol = 0x01;
+
+    pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
+
+    pInfo->Pipes[0].MaximumTransferSize = 0x00400000;
+    pInfo->Pipes[0].MaximumPacketSize = 0x20;
+    pInfo->Pipes[0].EndpointAddress = 0x81;
+    pInfo->Pipes[0].Interval = 0x04;
+    pInfo->Pipes[0].PipeType = 0x03;
+    pInfo->Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0081;
+    pInfo->Pipes[0].PipeFlags = 0x00;
+
+    pInfo->Pipes[1].MaximumTransferSize = 0x00400000;
+    pInfo->Pipes[1].MaximumPacketSize = 0x20;
+    pInfo->Pipes[1].EndpointAddress = 0x01;
+    pInfo->Pipes[1].Interval = 0x08;
+    pInfo->Pipes[1].PipeType = 0x03;
+    pInfo->Pipes[1].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0001;
+    pInfo->Pipes[1].PipeFlags = 0x00;
+
+    pInfo = (PUSBD_INTERFACE_INFORMATION)((PCHAR)pInfo + pInfo->Length);
+
+    KdPrint((">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
+        (int)pInfo->Length,
+        (int)pInfo->InterfaceNumber,
+        (int)pInfo->AlternateSetting,
+        pInfo->NumberOfPipes));
+
+    pInfo->Class = 0xFF;
+    pInfo->SubClass = 0x5D;
+    pInfo->Protocol = 0x03;
+
+    pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
+
+    pInfo->Pipes[0].MaximumTransferSize = 0x00400000;
+    pInfo->Pipes[0].MaximumPacketSize = 0x20;
+    pInfo->Pipes[0].EndpointAddress = 0x82;
+    pInfo->Pipes[0].Interval = 0x04;
+    pInfo->Pipes[0].PipeType = 0x03;
+    pInfo->Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0082;
+    pInfo->Pipes[0].PipeFlags = 0x00;
+
+    pInfo->Pipes[1].MaximumTransferSize = 0x00400000;
+    pInfo->Pipes[1].MaximumPacketSize = 0x20;
+    pInfo->Pipes[1].EndpointAddress = 0x02;
+    pInfo->Pipes[1].Interval = 0x08;
+    pInfo->Pipes[1].PipeType = 0x03;
+    pInfo->Pipes[1].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0002;
+    pInfo->Pipes[1].PipeFlags = 0x00;
+
+    pInfo->Pipes[2].MaximumTransferSize = 0x00400000;
+    pInfo->Pipes[2].MaximumPacketSize = 0x20;
+    pInfo->Pipes[2].EndpointAddress = 0x83;
+    pInfo->Pipes[2].Interval = 0x08;
+    pInfo->Pipes[2].PipeType = 0x03;
+    pInfo->Pipes[2].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0083;
+    pInfo->Pipes[2].PipeFlags = 0x00;
+
+    pInfo->Pipes[3].MaximumTransferSize = 0x00400000;
+    pInfo->Pipes[3].MaximumPacketSize = 0x20;
+    pInfo->Pipes[3].EndpointAddress = 0x03;
+    pInfo->Pipes[3].Interval = 0x08;
+    pInfo->Pipes[3].PipeType = 0x03;
+    pInfo->Pipes[3].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0003;
+    pInfo->Pipes[3].PipeFlags = 0x00;
+
+    pInfo = (PUSBD_INTERFACE_INFORMATION)((PCHAR)pInfo + pInfo->Length);
+
+    KdPrint((">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
+        (int)pInfo->Length,
+        (int)pInfo->InterfaceNumber,
+        (int)pInfo->AlternateSetting,
+        pInfo->NumberOfPipes));
+
+    pInfo->Class = 0xFF;
+    pInfo->SubClass = 0x5D;
+    pInfo->Protocol = 0x02;
+
+    pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
+
+    pInfo->Pipes[0].MaximumTransferSize = 0x00400000;
+    pInfo->Pipes[0].MaximumPacketSize = 0x20;
+    pInfo->Pipes[0].EndpointAddress = 0x84;
+    pInfo->Pipes[0].Interval = 0x04;
+    pInfo->Pipes[0].PipeType = 0x03;
+    pInfo->Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0084;
+    pInfo->Pipes[0].PipeFlags = 0x00;
+
+    pInfo = (PUSBD_INTERFACE_INFORMATION)((PCHAR)pInfo + pInfo->Length);
+
+    KdPrint((">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
+        (int)pInfo->Length,
+        (int)pInfo->InterfaceNumber,
+        (int)pInfo->AlternateSetting,
+        pInfo->NumberOfPipes));
+
+    pInfo->Class = 0xFF;
+    pInfo->SubClass = 0xFD;
+    pInfo->Protocol = 0x13;
+
+    pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
+
+    return STATUS_SUCCESS;
+}
+
+NTSTATUS UsbPdo_SelectInterface(PURB urb)
+{
+    PUSBD_INTERFACE_INFORMATION pInfo = &urb->UrbSelectInterface.Interface;
+
+    KdPrint((">> >> >> URB_FUNCTION_SELECT_INTERFACE: Length %d, Interface %d, Alternate %d, Pipes %d\n",
+        (int)pInfo->Length,
+        (int)pInfo->InterfaceNumber,
+        (int)pInfo->AlternateSetting,
+        pInfo->NumberOfPipes));
+
+    KdPrint((">> >> >> URB_FUNCTION_SELECT_INTERFACE: Class %d, SubClass %d, Protocol %d\n",
+        (int)pInfo->Class,
+        (int)pInfo->SubClass,
+        (int)pInfo->Protocol));
+
+    if (pInfo->InterfaceNumber == 1)
+    {
+        pInfo[0].Class = 0xFF;
+        pInfo[0].SubClass = 0x5D;
+        pInfo[0].Protocol = 0x03;
+        pInfo[0].NumberOfPipes = 0x04;
+
+        pInfo[0].InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
+
+        pInfo[0].Pipes[0].MaximumTransferSize = 0x00400000;
+        pInfo[0].Pipes[0].MaximumPacketSize = 0x20;
+        pInfo[0].Pipes[0].EndpointAddress = 0x82;
+        pInfo[0].Pipes[0].Interval = 0x04;
+        pInfo[0].Pipes[0].PipeType = 0x03;
+        pInfo[0].Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0082;
+        pInfo[0].Pipes[0].PipeFlags = 0x00;
+
+        pInfo[0].Pipes[1].MaximumTransferSize = 0x00400000;
+        pInfo[0].Pipes[1].MaximumPacketSize = 0x20;
+        pInfo[0].Pipes[1].EndpointAddress = 0x02;
+        pInfo[0].Pipes[1].Interval = 0x08;
+        pInfo[0].Pipes[1].PipeType = 0x03;
+        pInfo[0].Pipes[1].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0002;
+        pInfo[0].Pipes[1].PipeFlags = 0x00;
+
+        pInfo[0].Pipes[2].MaximumTransferSize = 0x00400000;
+        pInfo[0].Pipes[2].MaximumPacketSize = 0x20;
+        pInfo[0].Pipes[2].EndpointAddress = 0x83;
+        pInfo[0].Pipes[2].Interval = 0x08;
+        pInfo[0].Pipes[2].PipeType = 0x03;
+        pInfo[0].Pipes[2].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0083;
+        pInfo[0].Pipes[2].PipeFlags = 0x00;
+
+        pInfo[0].Pipes[3].MaximumTransferSize = 0x00400000;
+        pInfo[0].Pipes[3].MaximumPacketSize = 0x20;
+        pInfo[0].Pipes[3].EndpointAddress = 0x03;
+        pInfo[0].Pipes[3].Interval = 0x08;
+        pInfo[0].Pipes[3].PipeType = 0x03;
+        pInfo[0].Pipes[3].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0003;
+        pInfo[0].Pipes[3].PipeFlags = 0x00;
+
+        return STATUS_SUCCESS;
+    }
+    
+    if (pInfo->InterfaceNumber == 2)
+    {
+        pInfo[0].Class = 0xFF;
+        pInfo[0].SubClass = 0x5D;
+        pInfo[0].Protocol = 0x02;
+        pInfo[0].NumberOfPipes = 0x01;
+
+        pInfo[0].InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
+
+        pInfo[0].Pipes[0].MaximumTransferSize = 0x00400000;
+        pInfo[0].Pipes[0].MaximumPacketSize = 0x20;
+        pInfo[0].Pipes[0].EndpointAddress = 0x84;
+        pInfo[0].Pipes[0].Interval = 0x04;
+        pInfo[0].Pipes[0].PipeType = 0x03;
+        pInfo[0].Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0084;
+        pInfo[0].Pipes[0].PipeFlags = 0x00;
+
+        return STATUS_SUCCESS;
+    }
+
+    return STATUS_INVALID_PARAMETER;
 }
 

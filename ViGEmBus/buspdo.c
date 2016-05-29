@@ -6,9 +6,6 @@
 #pragma alloc_text(PAGE, Bus_CreatePdo)
 #pragma alloc_text(PAGE, Bus_EvtDeviceListCreatePdo)
 #pragma alloc_text(PAGE, Bus_EvtDevicePrepareHardware)
-#pragma alloc_text(PAGE, RawPdo_EvtIoDeviceControl)
-#pragma alloc_text(PAGE, RawPdo_EvtIoInternalDeviceControl)
-#pragma alloc_text(PAGE, RawPdo_EvtIoDefault)
 #pragma alloc_text(PAGE, Pdo_ProcessQueryInterfaceRequest)
 #endif
 
@@ -217,7 +214,6 @@ NTSTATUS Bus_CreatePdo(
         WDF_PNPPOWER_EVENT_CALLBACKS_INIT(&pnpPowerCallbacks);
 
         pnpPowerCallbacks.EvtDevicePrepareHardware = Bus_EvtDevicePrepareHardware;
-        pnpPowerCallbacks.EvtDeviceD0Entry = Bus_EvtDeviceD0Entry;
 
         WdfDeviceInitSetPnpPowerEventCallbacks(DeviceInit, &pnpPowerCallbacks);
     }
@@ -258,12 +254,10 @@ NTSTATUS Bus_CreatePdo(
     {
         WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&ioQueueConfig, WdfIoQueueDispatchSequential);
 
-        ioQueueConfig.EvtIoDefault = RawPdo_EvtIoDefault;
-        ioQueueConfig.EvtIoDeviceControl = RawPdo_EvtIoDeviceControl;
-        ioQueueConfig.EvtIoInternalDeviceControl = RawPdo_EvtIoInternalDeviceControl;
+        ioQueueConfig.EvtIoInternalDeviceControl = Pdo_EvtIoInternalDeviceControl;
     }
 
-    // Create PDO
+    // Create I/O queue
     {
         status = WdfIoQueueCreate(hChild, &ioQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &queue);
         if (!NT_SUCCESS(status))
@@ -494,36 +488,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
     return status;
 }
 
-NTSTATUS Bus_EvtDeviceD0Entry(
-    _In_ WDFDEVICE              Device,
-    _In_ WDF_POWER_DEVICE_STATE PreviousState
-)
-{
-    UNREFERENCED_PARAMETER(PreviousState);
-
-    KdPrint(("Bus_EvtDeviceD0Entry: 0x%p\n", Device));
-
-    return STATUS_SUCCESS;
-}
-
-VOID RawPdo_EvtIoDeviceControl(
-    _In_ WDFQUEUE   Queue,
-    _In_ WDFREQUEST Request,
-    _In_ size_t     OutputBufferLength,
-    _In_ size_t     InputBufferLength,
-    _In_ ULONG      IoControlCode
-)
-{
-    UNREFERENCED_PARAMETER(Queue);
-    UNREFERENCED_PARAMETER(Request);
-    UNREFERENCED_PARAMETER(OutputBufferLength);
-    UNREFERENCED_PARAMETER(InputBufferLength);
-    UNREFERENCED_PARAMETER(IoControlCode);
-
-    KdPrint(("RawPdo_EvtIoDeviceControl called\n"));
-}
-
-VOID RawPdo_EvtIoInternalDeviceControl(
+VOID Pdo_EvtIoInternalDeviceControl(
     _In_ WDFQUEUE   Queue,
     _In_ WDFREQUEST Request,
     _In_ size_t     OutputBufferLength,
@@ -540,15 +505,13 @@ VOID RawPdo_EvtIoInternalDeviceControl(
     PURB urb;
     PPDO_DEVICE_DATA pdoData;
 
-    PAGED_CODE();
-
     hDevice = WdfIoQueueGetDevice(Queue);
 
-    KdPrint(("RawPdo_EvtIoInternalDeviceControl: 0x%p\n", hDevice));
+    KdPrint(("Pdo_EvtIoInternalDeviceControl: 0x%p\n", hDevice));
 
     pdoData = PdoGetData(hDevice);
 
-    KdPrint(("RawPdo_EvtIoInternalDeviceControl PDO: 0x%p\n", pdoData));
+    KdPrint(("Pdo_EvtIoInternalDeviceControl PDO: 0x%p\n", pdoData));
 
     irp = WdfRequestWdmGetIrp(Request);
 
@@ -599,8 +562,6 @@ VOID RawPdo_EvtIoInternalDeviceControl(
 
                 status = UsbPdo_SetDeviceDescriptorType(urb);
 
-                WdfRequestComplete(Request, status);
-
                 break;
 
             case USB_CONFIGURATION_DESCRIPTOR_TYPE:
@@ -608,8 +569,6 @@ VOID RawPdo_EvtIoInternalDeviceControl(
                 KdPrint((">> >> >> USB_CONFIGURATION_DESCRIPTOR_TYPE\n"));
 
                 status = UsbPdo_SetConfigurationDescriptorType(urb);
-
-                WdfRequestComplete(Request, status);
 
                 break;
 
@@ -646,9 +605,9 @@ VOID RawPdo_EvtIoInternalDeviceControl(
 
             // TODO: figure out why this crashes xusb22.sys... ='(
 
-            WdfRequestComplete(Request, STATUS_SUCCESS);
+            return;
 
-            break;
+            //break;
 
         default:
             KdPrint((">> >> Unknown function: 0x%X\n", urb->UrbHeader.Function));
@@ -675,15 +634,7 @@ VOID RawPdo_EvtIoInternalDeviceControl(
         KdPrint((">> Unknown I/O control code\n"));
         break;
     }
+
+    WdfRequestComplete(Request, status);
 }
 
-VOID RawPdo_EvtIoDefault(
-    _In_ WDFQUEUE   Queue,
-    _In_ WDFREQUEST Request
-)
-{
-    UNREFERENCED_PARAMETER(Queue);
-    UNREFERENCED_PARAMETER(Request);
-
-    KdPrint(("RawPdo_EvtIoDefault called\n"));
-}

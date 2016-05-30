@@ -113,6 +113,8 @@ EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL Bus_EvtIoDeviceControl;
 
 EVT_WDF_CHILD_LIST_CREATE_DEVICE Bus_EvtDeviceListCreatePdo;
 
+EVT_WDF_CHILD_LIST_IDENTIFICATION_DESCRIPTION_COMPARE Bus_EvtChildListIdentificationDescriptionCompare;
+
 EVT_WDF_DEVICE_PREPARE_HARDWARE Bus_EvtDevicePrepareHardware;
 
 EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Pdo_EvtIoInternalDeviceControl;
@@ -147,6 +149,14 @@ Bus_CreatePdo(
     _In_ ULONG SerialNo,
     _In_ VIGEM_TARGET_TYPE TargetType
 );
+
+NTSTATUS
+Bus_XusbQueueNotification(
+    WDFDEVICE Device,
+    ULONG SerialNo,
+    WDFREQUEST Request
+);
+
 
 //
 // USB-specific functions

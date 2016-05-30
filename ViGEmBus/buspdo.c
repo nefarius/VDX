@@ -22,6 +22,25 @@ NTSTATUS Bus_EvtDeviceListCreatePdo(
     return Bus_CreatePdo(WdfChildListGetDevice(DeviceList), ChildInit, pDesc->SerialNo, pDesc->TargetType);
 }
 
+BOOLEAN Bus_EvtChildListIdentificationDescriptionCompare(
+    WDFCHILDLIST DeviceList,
+    PWDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER FirstIdentificationDescription,
+    PWDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER SecondIdentificationDescription)
+{
+    PPDO_IDENTIFICATION_DESCRIPTION lhs, rhs;
+
+    UNREFERENCED_PARAMETER(DeviceList);
+
+    lhs = CONTAINING_RECORD(FirstIdentificationDescription,
+        PDO_IDENTIFICATION_DESCRIPTION,
+        Header);
+    rhs = CONTAINING_RECORD(SecondIdentificationDescription,
+        PDO_IDENTIFICATION_DESCRIPTION,
+        Header);
+
+    return (lhs->SerialNo == rhs->SerialNo) ? TRUE : FALSE;
+}
+
 NTSTATUS Bus_CreatePdo(
     _In_ WDFDEVICE Device,
     _In_ PWDFDEVICE_INIT DeviceInit,
@@ -272,8 +291,8 @@ NTSTATUS Bus_CreatePdo(
             xusb->LedNumber = (UCHAR)SerialNo;
 
             // I/O Queue for pending IRPs
-            WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig;
-            WDFQUEUE pendingUsbQueue;
+            WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig, notificationsQueueConfig;
+            WDFQUEUE pendingUsbQueue, notificationsQueue;
 
             WDF_IO_QUEUE_CONFIG_INIT(&pendingUsbQueueConfig, WdfIoQueueDispatchManual);
 
@@ -285,6 +304,17 @@ NTSTATUS Bus_CreatePdo(
             }
 
             xusb->PendingUsbRequests = pendingUsbQueue;
+
+            WDF_IO_QUEUE_CONFIG_INIT(&notificationsQueueConfig, WdfIoQueueDispatchManual);
+
+            status = WdfIoQueueCreate(hChild, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &notificationsQueue);
+            if (!NT_SUCCESS(status))
+            {
+                KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+                return status;
+            }
+
+            xusb->PendingNotificationRequests = notificationsQueue;
         }
     }
 

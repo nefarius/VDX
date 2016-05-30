@@ -57,11 +57,17 @@ int main()
 
             printf("IOCTL_BUSENUM_PLUGIN_HARDWARE retval: %d, trans: %d\n", retval, transfered);
 
-            getchar();
-
             BUSENUM_UNPLUG_HARDWARE unplug = { 0 };
             unplug.Size = sizeof(BUSENUM_UNPLUG_HARDWARE);
             unplug.SerialNo = 0;
+
+            getchar();
+
+            retval = DeviceIoControl(bus, IOCTL_XUSB_REQUEST_NOTIFICATION, &unplug, unplug.Size, nullptr, 0, &transfered, nullptr);
+
+            printf("IOCTL_XUSB_REQUEST_NOTIFICATION retval: %d, trans: %d\n", retval, transfered);
+
+            getchar();
 
             retval = DeviceIoControl(bus, IOCTL_BUSENUM_UNPLUG_HARDWARE, &unplug, unplug.Size, nullptr, 0, &transfered, nullptr);
 

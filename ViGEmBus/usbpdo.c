@@ -510,6 +510,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 
     NTSTATUS status;
     PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
+    //WDFREQUEST notifyRequest;
 
     // Check context
     if (xusb == NULL)
@@ -523,7 +524,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
     {
         /* This request is sent periodically and relies on data the "feeder"
-         * has to supply, so we queue this request and return with STATUS_PENDING. 
+         * has to supply, so we queue this request and return with STATUS_PENDING.
          * The request gets completed as soon as the "feeder" sent an update. */
         status = WdfRequestForwardToIoQueue(Request, xusb->PendingUsbRequests);
 
@@ -572,8 +573,14 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 
             RtlCopyBytes(xusb->Rumble, Buffer, pTransfer->TransferBufferLength);
         }
+
+        //status = WdfIoQueueRetrieveNextRequest(xusb->PendingNotificationRequests, &notifyRequest);
+        //if (NT_SUCCESS(status))
+        //{
+        //    WdfRequestComplete(notifyRequest, status);
+        //}
     }
-    
+
     return STATUS_SUCCESS;
 }
 

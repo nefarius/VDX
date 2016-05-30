@@ -206,7 +206,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Inf>
-      <TimeStamp>1.60.0.0</TimeStamp>
+      <TimeStamp>1.63.0.0</TimeStamp>
     </Inf>
     <Link>
       <AdditionalDependencies>$(DDK_LIB_PATH)ntstrsafe.lib;$(DDK_LIB_PATH)wdmsec.lib;%(AdditionalDependencies)</AdditionalDependencies>

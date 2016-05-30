@@ -11,6 +11,7 @@
 #pragma alloc_text (PAGE, Bus_PlugInDevice)
 #pragma alloc_text (PAGE, Bus_UnPlugDevice)
 #pragma alloc_text (PAGE, Bus_EjectDevice)
+#pragma alloc_text (PAGE, Bus_XusbQueueNotification)
 #endif
 
 ///-------------------------------------------------------------------------------------------------
@@ -72,6 +73,8 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     // Prepare child list
     {
         WDF_CHILD_LIST_CONFIG_INIT(&config, sizeof(PDO_IDENTIFICATION_DESCRIPTION), Bus_EvtDeviceListCreatePdo);
+
+        config.EvtChildListIdentificationDescriptionCompare = Bus_EvtChildListIdentificationDescriptionCompare;
 
         WdfFdoInitSetDefaultChildListConfig(DeviceInit, &config, WDF_NO_OBJECT_ATTRIBUTES);
     }
@@ -226,12 +229,29 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
 
         break;
 
+    case IOCTL_XUSB_REQUEST_NOTIFICATION:
+
+        KdPrint(("IOCTL_XUSB_REQUEST_NOTIFICATION\n"));
+
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_UNPLUG_HARDWARE), &unPlug, &length);
+
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            break;
+        }
+
+        if ((sizeof(BUSENUM_UNPLUG_HARDWARE) == unPlug->Size) && (length == InputBufferLength))
+        {
+            status = Bus_XusbQueueNotification(hDevice, unPlug->SerialNo, Request);
+        }
+
+        break;
+
     default:
         KdPrint(("UNKNOWN IOCTL CODE 0x%x\n", IoControlCode));
         break; // default status is STATUS_INVALID_PARAMETER
     }
-
-    KdPrint(("Bus_EvtIoDeviceControl exiting with 0x%x\n", status));
 
     WdfRequestCompleteWithInformation(Request, status, length);
 }
@@ -322,6 +342,47 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
     }
 
     return status;
+}
+
+//
+// Experimental
+// 
+NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Request)
+{
+    NTSTATUS status;
+    WDFCHILDLIST list;
+    WDF_CHILD_RETRIEVE_INFO  info;
+    WDFDEVICE  hChild;
+    PXUSB_DEVICE_DATA xusbData;
+
+    UNREFERENCED_PARAMETER(SerialNo);
+
+    PAGED_CODE();
+
+    list = WdfFdoGetDefaultChildList(Device);
+
+    PDO_IDENTIFICATION_DESCRIPTION description;
+
+    WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
+
+    description.SerialNo = 1;
+    description.TargetType = Xbox360Wired;
+
+    WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
+
+    hChild = WdfChildListRetrievePdo(list, &info);
+
+    if (hChild == NULL)
+    {
+        KdPrint(("PDO NOT FOUND\n"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    xusbData = XusbGetData(hChild);
+    
+    status = WdfRequestForwardToIoQueue(Request, xusbData->PendingNotificationRequests);
+    
+    return (NT_SUCCESS(status)) ? STATUS_PENDING : STATUS_UNSUCCESSFUL;
 }
 
 NTSTATUS Bus_EjectDevice(WDFDEVICE Device, ULONG SerialNo)

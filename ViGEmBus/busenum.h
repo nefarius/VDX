@@ -37,7 +37,6 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 #define CONFIGURATION_SIZE              0x0130
 #endif
 
-#define XUSB_REPORT_SIZE                20
 #define XUSB_RUMBLE_SIZE                8
 #define XUSB_LEDSET_SIZE                3
 #define XUSB_LEDNUM_SIZE                1
@@ -122,6 +121,7 @@ EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Pdo_EvtIoInternalDeviceControl;
 //
 // Bus enumeration-specific functions
 // 
+
 NTSTATUS
 Bus_PlugInDevice(
     _In_ WDFDEVICE Device,
@@ -135,7 +135,6 @@ Bus_UnPlugDevice(
     ULONG SerialNo
 );
 
-
 NTSTATUS
 Bus_EjectDevice(
     WDFDEVICE Device,
@@ -148,6 +147,13 @@ Bus_CreatePdo(
     _In_ PWDFDEVICE_INIT ChildInit,
     _In_ ULONG SerialNo,
     _In_ VIGEM_TARGET_TYPE TargetType
+);
+
+NTSTATUS
+Bus_XusbSubmitReport(
+    WDFDEVICE Device,
+    ULONG SerialNo,
+    PXUSB_SUBMIT_REPORT Report
 );
 
 NTSTATUS

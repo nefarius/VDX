@@ -506,11 +506,9 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 {
     struct _URB_BULK_OR_INTERRUPT_TRANSFER* pTransfer = &urb->UrbBulkOrInterruptTransfer;
 
-    UNREFERENCED_PARAMETER(pTransfer);
-
     NTSTATUS status;
     PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
-    //WDFREQUEST notifyRequest;
+    WDFREQUEST notifyRequest;
 
     // Check context
     if (xusb == NULL)
@@ -523,6 +521,8 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     // Data coming FROM us TO higher driver
     if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
     {
+        KdPrint((">> >> >> Incoming request, queuing...\n"));
+
         /* This request is sent periodically and relies on data the "feeder"
          * has to supply, so we queue this request and return with STATUS_PENDING.
          * The request gets completed as soon as the "feeder" sent an update. */
@@ -534,14 +534,14 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     // Data coming FROM the higher driver TO us
     if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_OUT)
     {
-        KdPrint(("<< URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER : Handle %p, Flags %X, Length %d\n",
+        KdPrint(("<< URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER: Handle %p, Flags %X, Length %d\n",
             pTransfer->PipeHandle,
             pTransfer->TransferFlags,
             pTransfer->TransferBufferLength));
 
         if (pTransfer->TransferBufferLength == XUSB_LEDSET_SIZE) // Led
         {
-            UCHAR* Buffer = pTransfer->TransferBuffer;
+            PUCHAR Buffer = pTransfer->TransferBuffer;
 
             KdPrint(("-- LED Buffer: %02X %02X %02X", Buffer[0], Buffer[1], Buffer[2]));
 
@@ -557,9 +557,10 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
             }
         }
 
-        if (pTransfer->TransferBufferLength == XUSB_RUMBLE_SIZE) // Rumble
+        // Extract rumble (vibration) information
+        if (pTransfer->TransferBufferLength == XUSB_RUMBLE_SIZE)
         {
-            UCHAR* Buffer = pTransfer->TransferBuffer;
+            PUCHAR Buffer = pTransfer->TransferBuffer;
 
             KdPrint(("-- Rumble Buffer: %02X %02X %02X %02X %02X %02X %02X %02X",
                 Buffer[0],
@@ -574,11 +575,12 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
             RtlCopyBytes(xusb->Rumble, Buffer, pTransfer->TransferBufferLength);
         }
 
-        //status = WdfIoQueueRetrieveNextRequest(xusb->PendingNotificationRequests, &notifyRequest);
-        //if (NT_SUCCESS(status))
-        //{
-        //    WdfRequestComplete(notifyRequest, status);
-        //}
+        // Notify user-mode process that new data is available
+        status = WdfIoQueueRetrieveNextRequest(xusb->PendingNotificationRequests, &notifyRequest);
+        if (NT_SUCCESS(status))
+        {
+            WdfRequestComplete(notifyRequest, status);
+        }
     }
 
     return STATUS_SUCCESS;

@@ -31,6 +31,10 @@ DEFINE_GUID(GUID_DEVCLASS_VIGEM_RAWPDO,
 #define IOCTL_XUSB_REQUEST_NOTIFICATION BUSENUM_RW_IOCTL(IOCTL_BUSENUM_BASE + 0x200)
 #define IOCTL_XUSB_SUBMIT_REPORT        BUSENUM_W_IOCTL (IOCTL_BUSENUM_BASE + 0x201)
 
+
+#define XUSB_REPORT_SIZE 20
+
+
 //
 //  Data structure used in PlugIn and UnPlug ioctls
 //
@@ -59,7 +63,6 @@ typedef struct _BUSENUM_PLUGIN_HARDWARE
     // Enumeration will be failed if another device on the
     // bus has the same serial number.
     //
-
     IN ULONG SerialNo;
 
     // 
@@ -73,7 +76,6 @@ typedef struct _BUSENUM_UNPLUG_HARDWARE
     //
     // sizeof (struct _REMOVE_HARDWARE)
     //
-
     IN ULONG Size;
 
     //
@@ -88,14 +90,42 @@ typedef struct _BUSENUM_EJECT_HARDWARE
     //
     // sizeof (struct _EJECT_HARDWARE)
     //
-
     IN ULONG Size;
 
     //
     // Serial number of the device to be ejected
     //
-
     ULONG SerialNo;
 
 } BUSENUM_EJECT_HARDWARE, *PBUSENUM_EJECT_HARDWARE;
+
+typedef struct _XUSB_REQUEST_NOTIFICATION
+{
+    //
+    // sizeof(struct _XUSB_REQUEST_NOTIFICATION)
+    // 
+    ULONG Size;
+
+    ULONG SerialNo;
+
+    BOOLEAN Vibrate;
+
+    UCHAR LargeMotor;
+
+    UCHAR SmallMotor;
+
+    UCHAR LedNumber;
+} XUSB_REQUEST_NOTIFICATION, *PXUSB_REQUEST_NOTIFICATION;
+
+typedef struct _XUSB_SUBMIT_REPORT
+{
+    //
+    // sizeof(struct _XUSB_SUBMIT_REPORT)
+    // 
+    ULONG Size;
+
+    ULONG SerialNo;
+
+    UCHAR Report[XUSB_REPORT_SIZE];
+} XUSB_SUBMIT_REPORT, *PXUSB_SUBMIT_REPORT;
 

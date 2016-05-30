@@ -6,6 +6,7 @@
 #include <initguid.h>
 #include <public.h>
 #include <SetupAPI.h>
+#include <Xinput.h>
 
 
 int main()
@@ -57,17 +58,25 @@ int main()
 
             printf("IOCTL_BUSENUM_PLUGIN_HARDWARE retval: %d, trans: %d\n", retval, transfered);
 
+            getchar();
+
+            XINPUT_GAMEPAD pad = { 0 };
+            pad.bLeftTrigger = 0x80;
+
+            XUSB_SUBMIT_REPORT report = { 0 };
+            report.Size = sizeof(XUSB_SUBMIT_REPORT);
+            report.SerialNo = 1;
+            memcpy(report.Report, &pad, sizeof(XINPUT_GAMEPAD));
+            
+            while (getchar() != 'a')
+            {
+                retval = DeviceIoControl(bus, IOCTL_XUSB_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);
+                printf("IOCTL_XUSB_SUBMIT_REPORT retval: %d, trans: %d\n", retval, transfered);
+            }
+
             BUSENUM_UNPLUG_HARDWARE unplug = { 0 };
             unplug.Size = sizeof(BUSENUM_UNPLUG_HARDWARE);
             unplug.SerialNo = 0;
-
-            getchar();
-
-            retval = DeviceIoControl(bus, IOCTL_XUSB_REQUEST_NOTIFICATION, &unplug, unplug.Size, nullptr, 0, &transfered, nullptr);
-
-            printf("IOCTL_XUSB_REQUEST_NOTIFICATION retval: %d, trans: %d\n", retval, transfered);
-
-            getchar();
 
             retval = DeviceIoControl(bus, IOCTL_BUSENUM_UNPLUG_HARDWARE, &unplug, unplug.Size, nullptr, 0, &transfered, nullptr);
 

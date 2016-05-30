@@ -11,6 +11,7 @@
 #pragma alloc_text (PAGE, Bus_PlugInDevice)
 #pragma alloc_text (PAGE, Bus_UnPlugDevice)
 #pragma alloc_text (PAGE, Bus_EjectDevice)
+#pragma alloc_text (PAGE, Bus_XusbSubmitReport)
 #pragma alloc_text (PAGE, Bus_XusbQueueNotification)
 #endif
 
@@ -154,7 +155,8 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
     PBUSENUM_PLUGIN_HARDWARE plugIn = NULL;
     PBUSENUM_UNPLUG_HARDWARE unPlug = NULL;
     PBUSENUM_EJECT_HARDWARE eject = NULL;
-
+    PXUSB_SUBMIT_REPORT xusbSubmit = NULL;
+    PXUSB_REQUEST_NOTIFICATION xusbNotify = NULL;
 
     UNREFERENCED_PARAMETER(OutputBufferLength);
 
@@ -170,7 +172,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
 
         KdPrint(("IOCTL_BUSENUM_PLUGIN_HARDWARE\n"));
 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_PLUGIN_HARDWARE), &plugIn, &length);
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_PLUGIN_HARDWARE), (PVOID)&plugIn, &length);
 
         if (!NT_SUCCESS(status))
         {
@@ -195,7 +197,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
 
         KdPrint(("IOCTL_BUSENUM_UNPLUG_HARDWARE\n"));
 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_UNPLUG_HARDWARE), &unPlug, &length);
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_UNPLUG_HARDWARE), (PVOID)&unPlug, &length);
 
         if (!NT_SUCCESS(status))
         {
@@ -214,7 +216,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
 
         KdPrint(("IOCTL_BUSENUM_EJECT_HARDWARE\n"));
 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_EJECT_HARDWARE), &eject, &length);
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_EJECT_HARDWARE), (PVOID)&eject, &length);
 
         if (!NT_SUCCESS(status))
         {
@@ -229,11 +231,11 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
 
         break;
 
-    case IOCTL_XUSB_REQUEST_NOTIFICATION:
+    case IOCTL_XUSB_SUBMIT_REPORT:
 
-        KdPrint(("IOCTL_XUSB_REQUEST_NOTIFICATION\n"));
+        KdPrint(("IOCTL_XUSB_SUBMIT_REPORT\n"));
 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_UNPLUG_HARDWARE), &unPlug, &length);
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(XUSB_SUBMIT_REPORT), (PVOID)&xusbSubmit, &length);
 
         if (!NT_SUCCESS(status))
         {
@@ -241,9 +243,40 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
             break;
         }
 
-        if ((sizeof(BUSENUM_UNPLUG_HARDWARE) == unPlug->Size) && (length == InputBufferLength))
+        if ((sizeof(XUSB_SUBMIT_REPORT) == xusbSubmit->Size) && (length == InputBufferLength))
         {
-            status = Bus_XusbQueueNotification(hDevice, unPlug->SerialNo, Request);
+            if (xusbSubmit->SerialNo == 0)
+            {
+                status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+        
+            status = Bus_XusbSubmitReport(hDevice, xusbSubmit->SerialNo, xusbSubmit);
+        }
+
+        break;
+
+    case IOCTL_XUSB_REQUEST_NOTIFICATION:
+
+        KdPrint(("IOCTL_XUSB_REQUEST_NOTIFICATION\n"));
+
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(XUSB_REQUEST_NOTIFICATION), (PVOID)&xusbNotify, &length);
+
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            break;
+        }
+
+        if ((sizeof(XUSB_REQUEST_NOTIFICATION) == xusbNotify->Size) && (length == InputBufferLength))
+        {
+            if (xusbNotify->SerialNo == 0)
+            {
+                status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            status = Bus_XusbQueueNotification(hDevice, xusbNotify->SerialNo, Request);
         }
 
         break;
@@ -344,6 +377,99 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
     return status;
 }
 
+NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REPORT Report)
+{
+    NTSTATUS status = STATUS_SUCCESS;
+    WDFCHILDLIST list;
+    WDF_CHILD_RETRIEVE_INFO info;
+    WDFDEVICE  hChild;
+    PPDO_DEVICE_DATA pdoData;
+    PXUSB_DEVICE_DATA xusbData;
+    WDFREQUEST usbRequest;
+    PIRP pendingIrp;
+    PIO_STACK_LOCATION irpStack;
+
+
+    PAGED_CODE();
+
+    KdPrint(("Entered Bus_XusbSubmitReport\n"));
+
+    //if (TRUE)
+    //    goto test;
+
+    list = WdfFdoGetDefaultChildList(Device);
+
+    PDO_IDENTIFICATION_DESCRIPTION description;
+
+    WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
+
+    description.SerialNo = SerialNo;
+
+    WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
+
+    hChild = WdfChildListRetrievePdo(list, &info);
+
+    if (hChild == NULL)
+    {
+        KdPrint(("Bus_XusbSubmitReport: PDO with serial %d not found\n", SerialNo));
+        return STATUS_NO_SUCH_DEVICE;
+    }
+
+    pdoData = PdoGetData(hChild);
+    if (pdoData == NULL)
+    {
+        KdPrint(("Bus_XusbSubmitReport: PDO context not found\n"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    xusbData = XusbGetData(hChild);
+    if (xusbData == NULL)
+    {
+        KdPrint(("Bus_XusbSubmitReport: XUSB context not found\n"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    //if (pdoData->OwnerProcessId != CURRENT_PROCESS_ID())
+    //{
+    //    KdPrint(("Bus_XusbSubmitReport: PID mismatch\n"));
+    //    return STATUS_ACCESS_DENIED;
+    //}
+
+    BOOLEAN changed = TRUE; // (RtlCompareMemory(xusbData->Report, &Report->Report, sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
+
+    if (changed)
+    {
+        KdPrint(("Bus_XusbSubmitReport: received new report\n"));
+
+        status = WdfIoQueueRetrieveNextRequest(xusbData->PendingUsbRequests, &usbRequest);
+
+        if (NT_SUCCESS(status))
+        {
+            KdPrint(("Bus_XusbSubmitReport: pending IRP found\n"));
+
+            pendingIrp = WdfRequestWdmGetIrp(usbRequest);
+            irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
+
+            // get USB request block
+            PURB pHxp = (PURB)irpStack->Parameters.Others.Argument1;
+
+            // get transfer buffer
+            PUCHAR Buffer = (PUCHAR)pHxp->UrbBulkOrInterruptTransfer.TransferBuffer;
+            // set buffer length to report size
+            pHxp->UrbBulkOrInterruptTransfer.TransferBufferLength = XUSB_REPORT_SIZE;
+
+            RtlCopyMemory(Buffer, Report->Report, XUSB_REPORT_SIZE);
+            RtlCopyMemory(xusbData->Report, Report->Report, XUSB_REPORT_SIZE);
+
+            WdfRequestComplete(usbRequest, status);
+        }
+    }
+
+//test:
+
+    return status;
+}
+
 //
 // Experimental
 // 
@@ -355,8 +481,6 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
     WDFDEVICE  hChild;
     PXUSB_DEVICE_DATA xusbData;
 
-    UNREFERENCED_PARAMETER(SerialNo);
-
     PAGED_CODE();
 
     list = WdfFdoGetDefaultChildList(Device);
@@ -365,8 +489,7 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
 
     WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
 
-    description.SerialNo = 1;
-    description.TargetType = Xbox360Wired;
+    description.SerialNo = SerialNo;
 
     WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
 
@@ -374,14 +497,14 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
 
     if (hChild == NULL)
     {
-        KdPrint(("PDO NOT FOUND\n"));
-        return STATUS_INVALID_PARAMETER;
+        KdPrint(("Bus_XusbQueueNotification: PDO with serial %d not found\n", SerialNo));
+        return STATUS_NO_SUCH_DEVICE;
     }
 
     xusbData = XusbGetData(hChild);
-    
+
     status = WdfRequestForwardToIoQueue(Request, xusbData->PendingNotificationRequests);
-    
+
     return (NT_SUCCESS(status)) ? STATUS_PENDING : STATUS_UNSUCCESSFUL;
 }
 

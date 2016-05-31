@@ -640,9 +640,13 @@ VOID Pdo_EvtIoInternalDeviceControl(
             // Defaults always succeed
             status = STATUS_SUCCESS;
 
+            break;
+
         case URB_FUNCTION_ABORT_PIPE:
 
-            
+            KdPrint((">> >> URB_FUNCTION_ABORT_PIPE\n"));
+
+            status = UsbPdo_AbortPipe(hDevice);
 
             break;
 

@@ -388,6 +388,7 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
     WDFREQUEST usbRequest;
     PIRP pendingIrp;
     PIO_STACK_LOCATION irpStack;
+    BOOLEAN changed;
 
 
     PAGED_CODE();
@@ -432,7 +433,7 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
     //    return STATUS_ACCESS_DENIED;
     //}
 
-    BOOLEAN changed = (RtlCompareMemory(xusbData->Report + 2, &Report->Report, sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
+    changed = (RtlCompareMemory(xusbData->Report + 2, &Report->Report, sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
 
     if (changed)
     {

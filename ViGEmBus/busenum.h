@@ -179,4 +179,5 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb);
 NTSTATUS UsbPdo_SelectConfiguration(PURB urb);
 NTSTATUS UsbPdo_SelectInterface(PURB urb);
 NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST Request);
+NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device);
 

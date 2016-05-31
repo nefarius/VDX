@@ -108,14 +108,23 @@ typedef struct _XUSB_REQUEST_NOTIFICATION
 
     ULONG SerialNo;
 
-    BOOLEAN Vibrate;
-
     UCHAR LargeMotor;
 
     UCHAR SmallMotor;
 
     UCHAR LedNumber;
 } XUSB_REQUEST_NOTIFICATION, *PXUSB_REQUEST_NOTIFICATION;
+
+typedef struct _XUSB_REPORT
+{
+    WORD wButtons;
+    BYTE bLeftTrigger;
+    BYTE bRightTrigger;
+    SHORT sThumbLX;
+    SHORT sThumbLY;
+    SHORT sThumbRX;
+    SHORT sThumbRY;
+} XUSB_REPORT, *PXUSB_REPORT;
 
 typedef struct _XUSB_SUBMIT_REPORT
 {
@@ -126,6 +135,6 @@ typedef struct _XUSB_SUBMIT_REPORT
 
     ULONG SerialNo;
 
-    UCHAR Report[XUSB_REPORT_SIZE];
+    XUSB_REPORT Report;
 } XUSB_SUBMIT_REPORT, *PXUSB_SUBMIT_REPORT;
 

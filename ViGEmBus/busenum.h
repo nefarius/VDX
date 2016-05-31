@@ -37,6 +37,7 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 #define CONFIGURATION_SIZE              0x0130
 #endif
 
+#define XUSB_REPORT_SIZE                20
 #define XUSB_RUMBLE_SIZE                8
 #define XUSB_LEDSET_SIZE                3
 #define XUSB_LEDNUM_SIZE                1

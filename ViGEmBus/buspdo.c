@@ -315,6 +315,9 @@ NTSTATUS Bus_CreatePdo(
             }
 
             xusb->PendingNotificationRequests = notificationsQueue;
+
+            // Reset report buffer
+            RtlZeroMemory(xusb->Report, XUSB_REPORT_SIZE);
         }
     }
 
@@ -538,12 +541,6 @@ VOID Pdo_EvtIoInternalDeviceControl(
     irp = WdfRequestWdmGetIrp(Request);
     irpStack = IoGetCurrentIrpStackLocation(irp);
 
-    //WDFREQUEST test;
-    //if (NT_SUCCESS(WdfIoQueueRetrieveNextRequest(pdoData->PendigIrps, &test)))
-    //{
-    //    WdfRequestComplete(test, STATUS_SUCCESS);
-    //}
-
     switch (IoControlCode)
     {
     case IOCTL_INTERNAL_USB_SUBMIT_URB:
@@ -642,6 +639,10 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             // Defaults always succeed
             status = STATUS_SUCCESS;
+
+        case URB_FUNCTION_ABORT_PIPE:
+
+            
 
             break;
 

@@ -250,7 +250,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
                 status = STATUS_INVALID_PARAMETER;
                 break;
             }
-        
+
             status = Bus_XusbSubmitReport(hDevice, xusbSubmit->SerialNo, xusbSubmit);
         }
 
@@ -394,9 +394,6 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
 
     KdPrint(("Entered Bus_XusbSubmitReport\n"));
 
-    //if (TRUE)
-    //    goto test;
-
     list = WdfFdoGetDefaultChildList(Device);
 
     PDO_IDENTIFICATION_DESCRIPTION description;
@@ -435,7 +432,7 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
     //    return STATUS_ACCESS_DENIED;
     //}
 
-    BOOLEAN changed = TRUE; // (RtlCompareMemory(xusbData->Report, &Report->Report, sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
+    BOOLEAN changed = (RtlCompareMemory(xusbData->Report + 2, &Report->Report, sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
 
     if (changed)
     {
@@ -451,21 +448,21 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
             irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
 
             // get USB request block
-            PURB pHxp = (PURB)irpStack->Parameters.Others.Argument1;
+            PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
 
             // get transfer buffer
-            PUCHAR Buffer = (PUCHAR)pHxp->UrbBulkOrInterruptTransfer.TransferBuffer;
+            PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
             // set buffer length to report size
-            pHxp->UrbBulkOrInterruptTransfer.TransferBufferLength = XUSB_REPORT_SIZE;
+            urb->UrbBulkOrInterruptTransfer.TransferBufferLength = XUSB_REPORT_SIZE;
 
-            RtlCopyMemory(Buffer, Report->Report, XUSB_REPORT_SIZE);
-            RtlCopyMemory(xusbData->Report, Report->Report, XUSB_REPORT_SIZE);
+            xusbData->Report[1] = 0x14;
+
+            RtlCopyBytes(xusbData->Report + 2, &Report->Report, sizeof(XUSB_REPORT));
+            RtlCopyBytes(Buffer, xusbData->Report, XUSB_REPORT_SIZE);
 
             WdfRequestComplete(usbRequest, status);
         }
     }
-
-//test:
 
     return status;
 }

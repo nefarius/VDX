@@ -11,6 +11,8 @@
 
 int main()
 {
+    printf("XUSB_SUBMIT_REPORT = %llu, XINPUT_GAMEPAD = %llu, XUSB_REPORT = %llu\n\n\n", sizeof(XUSB_SUBMIT_REPORT), sizeof(XINPUT_GAMEPAD), sizeof(XUSB_REPORT));
+    
     SP_DEVICE_INTERFACE_DATA deviceInterfaceData = {};
     deviceInterfaceData.cbSize = sizeof(deviceInterfaceData);
     DWORD memberIndex = 0;
@@ -60,14 +62,11 @@ int main()
 
             getchar();
 
-            XINPUT_GAMEPAD pad = { 0 };
-            pad.bLeftTrigger = 0x80;
-
             XUSB_SUBMIT_REPORT report = { 0 };
             report.Size = sizeof(XUSB_SUBMIT_REPORT);
             report.SerialNo = 1;
-            memcpy(report.Report, &pad, sizeof(XINPUT_GAMEPAD));
-            
+            report.Report.bLeftTrigger = 0x80;
+
             while (getchar() != 'a')
             {
                 retval = DeviceIoControl(bus, IOCTL_XUSB_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);

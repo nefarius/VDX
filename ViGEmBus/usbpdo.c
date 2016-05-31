@@ -532,55 +532,52 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     }
 
     // Data coming FROM the higher driver TO us
-    if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_OUT)
+    KdPrint(("<< URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER: Handle %p, Flags %X, Length %d\n",
+        pTransfer->PipeHandle,
+        pTransfer->TransferFlags,
+        pTransfer->TransferBufferLength));
+
+    if (pTransfer->TransferBufferLength == XUSB_LEDSET_SIZE) // Led
     {
-        KdPrint(("<< URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER: Handle %p, Flags %X, Length %d\n",
-            pTransfer->PipeHandle,
-            pTransfer->TransferFlags,
-            pTransfer->TransferBufferLength));
+        PUCHAR Buffer = pTransfer->TransferBuffer;
 
-        if (pTransfer->TransferBufferLength == XUSB_LEDSET_SIZE) // Led
+        KdPrint(("-- LED Buffer: %02X %02X %02X", Buffer[0], Buffer[1], Buffer[2]));
+
+        // extract LED byte to get controller slot
+        if (Buffer[0] == 0x01 && Buffer[1] == 0x03 && Buffer[2] >= 0x02)
         {
-            PUCHAR Buffer = pTransfer->TransferBuffer;
+            if (Buffer[2] == 0x02) xusb->LedNumber = 0;
+            if (Buffer[2] == 0x03) xusb->LedNumber = 1;
+            if (Buffer[2] == 0x04) xusb->LedNumber = 2;
+            if (Buffer[2] == 0x05) xusb->LedNumber = 3;
 
-            KdPrint(("-- LED Buffer: %02X %02X %02X", Buffer[0], Buffer[1], Buffer[2]));
-
-            // extract LED byte to get controller slot
-            if (Buffer[0] == 0x01 && Buffer[1] == 0x03 && Buffer[2] >= 0x02)
-            {
-                if (Buffer[2] == 0x02) xusb->LedNumber = 0;
-                if (Buffer[2] == 0x03) xusb->LedNumber = 1;
-                if (Buffer[2] == 0x04) xusb->LedNumber = 2;
-                if (Buffer[2] == 0x05) xusb->LedNumber = 3;
-
-                KdPrint(("-- LED Number: %d", xusb->LedNumber));
-            }
+            KdPrint(("-- LED Number: %d", xusb->LedNumber));
         }
+    }
 
-        // Extract rumble (vibration) information
-        if (pTransfer->TransferBufferLength == XUSB_RUMBLE_SIZE)
-        {
-            PUCHAR Buffer = pTransfer->TransferBuffer;
+    // Extract rumble (vibration) information
+    if (pTransfer->TransferBufferLength == XUSB_RUMBLE_SIZE)
+    {
+        PUCHAR Buffer = pTransfer->TransferBuffer;
 
-            KdPrint(("-- Rumble Buffer: %02X %02X %02X %02X %02X %02X %02X %02X",
-                Buffer[0],
-                Buffer[1],
-                Buffer[2],
-                Buffer[3],
-                Buffer[4],
-                Buffer[5],
-                Buffer[6],
-                Buffer[7]));
+        KdPrint(("-- Rumble Buffer: %02X %02X %02X %02X %02X %02X %02X %02X",
+            Buffer[0],
+            Buffer[1],
+            Buffer[2],
+            Buffer[3],
+            Buffer[4],
+            Buffer[5],
+            Buffer[6],
+            Buffer[7]));
 
-            RtlCopyBytes(xusb->Rumble, Buffer, pTransfer->TransferBufferLength);
-        }
+        RtlCopyBytes(xusb->Rumble, Buffer, pTransfer->TransferBufferLength);
+    }
 
-        // Notify user-mode process that new data is available
-        status = WdfIoQueueRetrieveNextRequest(xusb->PendingNotificationRequests, &notifyRequest);
-        if (NT_SUCCESS(status))
-        {
-            WdfRequestComplete(notifyRequest, status);
-        }
+    // Notify user-mode process that new data is available
+    status = WdfIoQueueRetrieveNextRequest(xusb->PendingNotificationRequests, &notifyRequest);
+    if (NT_SUCCESS(status))
+    {
+        WdfRequestComplete(notifyRequest, status);
     }
 
     return STATUS_SUCCESS;

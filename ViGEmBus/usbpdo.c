@@ -502,6 +502,9 @@ NTSTATUS UsbPdo_SelectInterface(PURB urb)
     return STATUS_INVALID_PARAMETER;
 }
 
+//
+// Dispatch bulk (or interrupt, if any) transfers.
+// 
 NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST Request)
 {
     struct _URB_BULK_OR_INTERRUPT_TRANSFER* pTransfer = &urb->UrbBulkOrInterruptTransfer;
@@ -583,6 +586,9 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     return STATUS_SUCCESS;
 }
 
+//
+// Clean-up actions on shutdown.
+// 
 NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device)
 {
     PXUSB_DEVICE_DATA xusb = XusbGetData(Device);

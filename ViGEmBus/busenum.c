@@ -315,6 +315,7 @@ NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ ULONG SerialNo, _In_ VIGEM
 
     description.SerialNo = SerialNo;
     description.TargetType = TargetType;
+    description.OwnerProcessId = CURRENT_PROCESS_ID();
 
     status = WdfChildListAddOrUpdateChildDescriptionAsPresent(WdfFdoGetDefaultChildList(Device), &description.Header, NULL);
 
@@ -427,11 +428,11 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
         return STATUS_INVALID_PARAMETER;
     }
 
-    //if (pdoData->OwnerProcessId != CURRENT_PROCESS_ID())
-    //{
-    //    KdPrint(("Bus_XusbSubmitReport: PID mismatch\n"));
-    //    return STATUS_ACCESS_DENIED;
-    //}
+    if (pdoData->OwnerProcessId != CURRENT_PROCESS_ID())
+    {
+        KdPrint(("Bus_XusbSubmitReport: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
+        return STATUS_ACCESS_DENIED;
+    }
 
     changed = (RtlCompareMemory(xusbData->Report + 2, &Report->Report, sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
 

@@ -58,6 +58,11 @@ typedef struct _PDO_IDENTIFICATION_DESCRIPTION
 
     ULONG SerialNo;
 
+    // 
+    // PID of the process creating this PDO
+    // 
+    DWORD OwnerProcessId;
+
     VIGEM_TARGET_TYPE TargetType;
 } PDO_IDENTIFICATION_DESCRIPTION, *PPDO_IDENTIFICATION_DESCRIPTION;
 
@@ -147,7 +152,8 @@ Bus_CreatePdo(
     _In_ WDFDEVICE Device,
     _In_ PWDFDEVICE_INIT ChildInit,
     _In_ ULONG SerialNo,
-    _In_ VIGEM_TARGET_TYPE TargetType
+    _In_ VIGEM_TARGET_TYPE TargetType,
+    _In_ DWORD OwnerProcessId
 );
 
 NTSTATUS

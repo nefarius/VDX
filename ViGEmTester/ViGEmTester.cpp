@@ -65,10 +65,11 @@ int main()
             XUSB_SUBMIT_REPORT report = { 0 };
             report.Size = sizeof(XUSB_SUBMIT_REPORT);
             report.SerialNo = 1;
-            report.Report.bLeftTrigger = 0x80;
 
             while (getchar() != 'a')
             {
+                report.Report.bLeftTrigger++;
+
                 retval = DeviceIoControl(bus, IOCTL_XUSB_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);
                 printf("IOCTL_XUSB_SUBMIT_REPORT retval: %d, trans: %d\n", retval, transfered);
             }

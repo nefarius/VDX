@@ -19,7 +19,7 @@ NTSTATUS Bus_EvtDeviceListCreatePdo(
 
     pDesc = CONTAINING_RECORD(IdentificationDescription, PDO_IDENTIFICATION_DESCRIPTION, Header);
 
-    return Bus_CreatePdo(WdfChildListGetDevice(DeviceList), ChildInit, pDesc->SerialNo, pDesc->TargetType);
+    return Bus_CreatePdo(WdfChildListGetDevice(DeviceList), ChildInit, pDesc->SerialNo, pDesc->TargetType, pDesc->OwnerProcessId);
 }
 
 BOOLEAN Bus_EvtChildListIdentificationDescriptionCompare(
@@ -45,7 +45,8 @@ NTSTATUS Bus_CreatePdo(
     _In_ WDFDEVICE Device,
     _In_ PWDFDEVICE_INIT DeviceInit,
     _In_ ULONG SerialNo,
-    _In_ VIGEM_TARGET_TYPE TargetType)
+    _In_ VIGEM_TARGET_TYPE TargetType,
+    _In_ DWORD OwnerProcessId)
 {
     NTSTATUS status;
     PPDO_DEVICE_DATA pdoData;
@@ -280,7 +281,7 @@ NTSTATUS Bus_CreatePdo(
 
         pdoData->SerialNo = SerialNo;
         pdoData->TargetType = TargetType;
-        pdoData->OwnerProcessId = CURRENT_PROCESS_ID();
+        pdoData->OwnerProcessId = OwnerProcessId;
 
         // Initialize additional contexts (if available)
         PXUSB_DEVICE_DATA xusb = XusbGetData(hChild);

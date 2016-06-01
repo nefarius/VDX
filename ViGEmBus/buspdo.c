@@ -275,7 +275,7 @@ NTSTATUS Bus_CreatePdo(
         }
     }
 
-    // Set PDO properties
+    // Set PDO contexts
     {
         pdoData = PdoGetData(hChild);
 
@@ -285,6 +285,7 @@ NTSTATUS Bus_CreatePdo(
 
         // Initialize additional contexts (if available)
         PXUSB_DEVICE_DATA xusb = XusbGetData(hChild);
+
         if (xusb != NULL)
         {
             RtlZeroMemory(xusb, sizeof(XUSB_DEVICE_DATA));
@@ -295,30 +296,39 @@ NTSTATUS Bus_CreatePdo(
             WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig, notificationsQueueConfig;
             WDFQUEUE pendingUsbQueue, notificationsQueue;
 
-            WDF_IO_QUEUE_CONFIG_INIT(&pendingUsbQueueConfig, WdfIoQueueDispatchManual);
-
-            status = WdfIoQueueCreate(hChild, &pendingUsbQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &pendingUsbQueue);
-            if (!NT_SUCCESS(status))
+            // Create and assign queue for incoming bulk transfer
             {
-                KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
-                return status;
+                WDF_IO_QUEUE_CONFIG_INIT(&pendingUsbQueueConfig, WdfIoQueueDispatchManual);
+
+                status = WdfIoQueueCreate(hChild, &pendingUsbQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &pendingUsbQueue);
+                if (!NT_SUCCESS(status))
+                {
+                    KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+                    return status;
+                }
+
+                xusb->PendingUsbRequests = pendingUsbQueue;
             }
 
-            xusb->PendingUsbRequests = pendingUsbQueue;
-
-            WDF_IO_QUEUE_CONFIG_INIT(&notificationsQueueConfig, WdfIoQueueDispatchManual);
-
-            status = WdfIoQueueCreate(hChild, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &notificationsQueue);
-            if (!NT_SUCCESS(status))
+            // Create and assign queue for user-land notification requests
             {
-                KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
-                return status;
-            }
+                WDF_IO_QUEUE_CONFIG_INIT(&notificationsQueueConfig, WdfIoQueueDispatchManual);
 
-            xusb->PendingNotificationRequests = notificationsQueue;
+                status = WdfIoQueueCreate(hChild, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &notificationsQueue);
+                if (!NT_SUCCESS(status))
+                {
+                    KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+                    return status;
+                }
+
+                xusb->PendingNotificationRequests = notificationsQueue;
+            }
 
             // Reset report buffer
             RtlZeroMemory(xusb->Report, XUSB_REPORT_SIZE);
+
+            // This value never changes
+            xusb->Report[1] = 0x14;
         }
     }
 
@@ -405,6 +415,9 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
         dummyIface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
         dummyIface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
 
+        /* XUSB.sys will query for the following three (unknown) interfaces 
+         * BUT WONT USE IT so we just expose them to satisfy initialization. */
+
         //
         // Dummy 0
         // 
@@ -480,6 +493,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
             return status;
         }
 
+        // This interface actually IS used
         USB_BUS_INTERFACE_USBDI_V1 xusbInterface;
 
         xusbInterface.Size = sizeof(USB_BUS_INTERFACE_USBDI_V1);

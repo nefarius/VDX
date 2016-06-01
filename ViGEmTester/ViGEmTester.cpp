@@ -60,6 +60,7 @@ int main()
 
             printf("IOCTL_BUSENUM_PLUGIN_HARDWARE retval: %d, trans: %d\n", retval, transfered);
 
+#ifdef OUTPUT
             getchar();
 
             XUSB_SUBMIT_REPORT report = { 0 };
@@ -73,6 +74,26 @@ int main()
                 retval = DeviceIoControl(bus, IOCTL_XUSB_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);
                 printf("IOCTL_XUSB_SUBMIT_REPORT retval: %d, trans: %d\n", retval, transfered);
             }
+#endif
+
+            getchar();
+
+            HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+            OVERLAPPED  lOverlapped = { 0 };
+            lOverlapped.hEvent = hEvent;
+
+            XUSB_REQUEST_NOTIFICATION notify = { 0 };
+            notify.Size = sizeof(XUSB_REQUEST_NOTIFICATION);
+            notify.SerialNo = 1;
+
+            retval = DeviceIoControl(bus, IOCTL_XUSB_REQUEST_NOTIFICATION, &notify, notify.Size, &notify, notify.Size, &transfered, nullptr);
+            printf("IOCTL_XUSB_REQUEST_NOTIFICATION retval: %d, trans: %d\n", retval, transfered);
+
+            WaitForSingleObject(lOverlapped.hEvent, INFINITE);
+
+            printf("IOCTL_XUSB_REQUEST_NOTIFICATION completed, LED: %d\n", notify.LedNumber);
+
+            getchar();
 
             BUSENUM_UNPLUG_HARDWARE unplug = { 0 };
             unplug.Size = sizeof(BUSENUM_UNPLUG_HARDWARE);

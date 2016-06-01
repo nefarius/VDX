@@ -510,6 +510,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     struct _URB_BULK_OR_INTERRUPT_TRANSFER* pTransfer = &urb->UrbBulkOrInterruptTransfer;
 
     NTSTATUS status;
+    PPDO_DEVICE_DATA pdoData = PdoGetData(Device);
     PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
     WDFREQUEST notifyRequest;
 
@@ -576,11 +577,28 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         RtlCopyBytes(xusb->Rumble, Buffer, pTransfer->TransferBufferLength);
     }
 
+    if (pdoData == NULL || xusb == NULL)
+    {
+        KdPrint((">> >> >> Invalid context!\n"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
     // Notify user-mode process that new data is available
     status = WdfIoQueueRetrieveNextRequest(xusb->PendingNotificationRequests, &notifyRequest);
     if (NT_SUCCESS(status))
     {
-        WdfRequestComplete(notifyRequest, status);
+        PXUSB_REQUEST_NOTIFICATION notify = NULL;
+
+        status = WdfRequestRetrieveOutputBuffer(notifyRequest, sizeof(XUSB_REQUEST_NOTIFICATION), (PVOID)&notify, NULL);
+
+        if (NT_SUCCESS(status))
+        {
+            notify->Size = sizeof(XUSB_REQUEST_NOTIFICATION);
+            notify->SerialNo = pdoData->SerialNo;
+            notify->LedNumber = xusb->LedNumber;
+
+            WdfRequestCompleteWithInformation(notifyRequest, status, notify->Size);
+        }
     }
 
     return STATUS_SUCCESS;

@@ -584,6 +584,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     }
 
     // Notify user-mode process that new data is available
+    // TODO: crashes!
     status = WdfIoQueueRetrieveNextRequest(xusb->PendingNotificationRequests, &notifyRequest);
     if (NT_SUCCESS(status))
     {

@@ -58,8 +58,9 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     WDFDEVICE device;
     WDF_IO_QUEUE_CONFIG queueConfig;
     PNP_BUS_INFORMATION busInfo;
-    //PFDO_DEVICE_DATA           deviceData;
+    PFDO_DEVICE_DATA deviceData;
     WDFQUEUE queue;
+    WDF_OBJECT_ATTRIBUTES fdoAttribs;
 
     UNREFERENCED_PARAMETER(Driver);
 
@@ -80,9 +81,11 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
         WdfFdoInitSetDefaultChildListConfig(DeviceInit, &config, WDF_NO_OBJECT_ATTRIBUTES);
     }
 
-    // Create FDO
+    // Create FDO, assign context
     {
-        status = WdfDeviceCreate(&DeviceInit, WDF_NO_OBJECT_ATTRIBUTES, &device);
+        WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&fdoAttribs, FDO_DEVICE_DATA);
+
+        status = WdfDeviceCreate(&DeviceInit, &fdoAttribs, &device);
 
         if (!NT_SUCCESS(status))
         {
@@ -100,6 +103,25 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 
         __analysis_assume(queueConfig.EvtIoStop != 0);
         status = WdfIoQueueCreate(device, &queueConfig, WDF_NO_OBJECT_ATTRIBUTES, &queue);
+        __analysis_assume(queueConfig.EvtIoStop == 0);
+
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfIoQueueCreate failed status 0x%x\n", status));
+            return status;
+        }
+    }
+
+    // Create child processing I/O queue
+    {
+        deviceData = FdoGetData(device);
+
+        WDF_IO_QUEUE_CONFIG_INIT(&queueConfig, WdfIoQueueDispatchSequential);
+
+        queueConfig.EvtIoInternalDeviceControl = Bus_EvtIoInternalDeviceControl;
+
+        __analysis_assume(queueConfig.EvtIoStop != 0);
+        status = WdfIoQueueCreate(device, &queueConfig, WDF_NO_OBJECT_ATTRIBUTES, &deviceData->ChildProcessingQueue);
         __analysis_assume(queueConfig.EvtIoStop == 0);
 
         if (!NT_SUCCESS(status))
@@ -287,6 +309,62 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
     }
 
     WdfRequestCompleteWithInformation(Request, status, length);
+}
+
+VOID Bus_EvtIoInternalDeviceControl(
+    _In_ WDFQUEUE   Queue,
+    _In_ WDFREQUEST Request,
+    _In_ size_t     OutputBufferLength,
+    _In_ size_t     InputBufferLength,
+    _In_ ULONG      IoControlCode
+)
+{
+    NTSTATUS status = STATUS_UNSUCCESSFUL;
+    WDFDEVICE hDevice;
+    PPDO_DEVICE_DATA pdoData;
+    PXUSB_DEVICE_DATA xusbData;
+    WDFREQUEST notifyRequest;
+
+    UNREFERENCED_PARAMETER(Request);
+    UNREFERENCED_PARAMETER(Queue);
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+    UNREFERENCED_PARAMETER(InputBufferLength);
+    UNREFERENCED_PARAMETER(IoControlCode);
+
+    KdPrint(("Bus_EvtIoInternalDeviceControl called\n"));
+
+    hDevice = WdfIoQueueGetDevice(Queue);
+
+    pdoData = PdoGetData(hDevice);
+
+    xusbData = XusbGetData(hDevice);
+
+    if (xusbData == NULL)
+    {
+        KdPrint(("Bus_EvtIoInternalDeviceControl: invalid context!\n"));
+        //WdfRequestComplete(Request, status);
+        return;
+    }
+
+    UNREFERENCED_PARAMETER(notifyRequest);
+    UNREFERENCED_PARAMETER(status);
+
+    //status = WdfIoQueueRetrieveNextRequest(xusbData->PendingNotificationRequests, &notifyRequest);
+    //if (NT_SUCCESS(status))
+    //{
+    //    PXUSB_REQUEST_NOTIFICATION notify = NULL;
+    //
+    //    status = WdfRequestRetrieveOutputBuffer(notifyRequest, sizeof(XUSB_REQUEST_NOTIFICATION), (PVOID)&notify, NULL);
+    //
+    //    if (NT_SUCCESS(status))
+    //    {
+    //        notify->Size = sizeof(XUSB_REQUEST_NOTIFICATION);
+    //        notify->SerialNo = pdoData->SerialNo;
+    //        notify->LedNumber = xusbData->LedNumber;
+    //
+    //        WdfRequestCompleteWithInformation(notifyRequest, status, notify->Size);
+    //    }
+    //}
 }
 
 VOID Bus_EvtIoDefault(

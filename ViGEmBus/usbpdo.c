@@ -512,7 +512,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     NTSTATUS status;
     PPDO_DEVICE_DATA pdoData = PdoGetData(Device);
     PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
-    WDFREQUEST notifyRequest;
+    WDF_REQUEST_FORWARD_OPTIONS forwardOptions;
 
     // Check context
     if (xusb == NULL)
@@ -585,6 +585,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 
     // Notify user-mode process that new data is available
     // TODO: crashes!
+#ifdef NOCRASH
     status = WdfIoQueueRetrieveNextRequest(xusb->PendingNotificationRequests, &notifyRequest);
     if (NT_SUCCESS(status))
     {
@@ -600,6 +601,21 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 
             WdfRequestCompleteWithInformation(notifyRequest, status, notify->Size);
         }
+    }
+#endif
+
+    WdfRequestFormatRequestUsingCurrentType(Request);
+
+    PFDO_DEVICE_DATA fdoData = FdoGetData(WdfPdoGetParent(Device));
+
+    WDF_REQUEST_FORWARD_OPTIONS_INIT(&forwardOptions);
+
+    status = WdfRequestForwardToParentDeviceIoQueue(Request, fdoData->ChildProcessingQueue, &forwardOptions);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("WdfRequestForwardToParentDeviceIoQueue failed with status 0x%X\n", status));
+
+        return STATUS_UNSUCCESSFUL;
     }
 
     return STATUS_SUCCESS;

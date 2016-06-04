@@ -335,11 +335,10 @@ VOID Bus_EvtIoInternalDeviceControl(
 
     hDevice = WdfIoQueueGetDevice(Queue);
 
-    pdoData = PdoGetData(hDevice);
+    pdoData = PdoGetData(Request);
+    xusbData = XusbGetData(Request);
 
-    xusbData = XusbGetData(hDevice);
-
-    if (xusbData == NULL)
+    if (pdoData == NULL || xusbData == NULL)
     {
         KdPrint(("Bus_EvtIoInternalDeviceControl: invalid context!\n"));
         //WdfRequestComplete(Request, status);
@@ -349,7 +348,7 @@ VOID Bus_EvtIoInternalDeviceControl(
     UNREFERENCED_PARAMETER(notifyRequest);
     UNREFERENCED_PARAMETER(status);
 
-    //status = WdfIoQueueRetrieveNextRequest(xusbData->PendingNotificationRequests, &notifyRequest);
+    status = WdfIoQueueRetrieveNextRequest(xusbData->PendingNotificationRequests, &notifyRequest);
     //if (NT_SUCCESS(status))
     //{
     //    PXUSB_REQUEST_NOTIFICATION notify = NULL;

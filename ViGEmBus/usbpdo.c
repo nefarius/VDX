@@ -610,12 +610,37 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 
     WDF_REQUEST_FORWARD_OPTIONS_INIT(&forwardOptions);
 
+    // Assign common PDO context to request
+    {
+        WDF_OBJECT_ATTRIBUTES attribs;
+        WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attribs, PDO_DEVICE_DATA);
+
+        status = WdfObjectAllocateContext(Request, &attribs, (PVOID)&pdoData);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfObjectAllocateContext failed status 0x%x\n", status));
+            return status;
+        }
+    }
+
+    // Assign common PDO context to request
+    {
+        WDF_OBJECT_ATTRIBUTES attribs;
+        WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attribs, XUSB_DEVICE_DATA);
+
+        status = WdfObjectAllocateContext(Request, &attribs, (PVOID)&xusb);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfObjectAllocateContext failed status 0x%x\n", status));
+            return status;
+        }
+    }
+
     status = WdfRequestForwardToParentDeviceIoQueue(Request, fdoData->ChildProcessingQueue, &forwardOptions);
     if (!NT_SUCCESS(status))
     {
         KdPrint(("WdfRequestForwardToParentDeviceIoQueue failed with status 0x%X\n", status));
-
-        return STATUS_UNSUCCESSFUL;
+        return status;
     }
 
     return STATUS_SUCCESS;

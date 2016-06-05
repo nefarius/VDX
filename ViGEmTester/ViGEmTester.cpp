@@ -111,6 +111,10 @@ int main()
 
             CloseHandle(bus);
         }
+        else
+        {
+            printf("Couldn't open bus: 0x%X", GetLastError());
+        }
 
         free(detailDataBuffer);
         break;

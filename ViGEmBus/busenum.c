@@ -8,6 +8,7 @@
 #pragma alloc_text (PAGE, Bus_EvtDeviceAdd)
 #pragma alloc_text (PAGE, Bus_EvtIoDeviceControl)
 #pragma alloc_text (PAGE, Bus_EvtIoDefault)
+#pragma alloc_text (PAGE, Bus_FileCleanup)
 #pragma alloc_text (PAGE, Bus_PlugInDevice)
 #pragma alloc_text (PAGE, Bus_UnPlugDevice)
 #pragma alloc_text (PAGE, Bus_EjectDevice)
@@ -151,6 +152,9 @@ Bus_FileCleanup(
     WDF_CHILD_LIST_ITERATOR iterator;
     WDF_CHILD_RETRIEVE_INFO  childInfo;
     PDO_IDENTIFICATION_DESCRIPTION  description;
+
+    PAGED_CODE();
+
     
     KdPrint(("Bus_FileCleanup called\n"));
 

@@ -19,11 +19,17 @@ DWORD WINAPI notify(LPVOID param)
     notify.Size = sizeof(XUSB_REQUEST_NOTIFICATION);
     notify.SerialNo = 1;
 
+    HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    OVERLAPPED  lOverlapped = { 0 };
+    lOverlapped.hEvent = hEvent;
+
     while (TRUE)
     {
         printf("Sending IOCTL_XUSB_REQUEST_NOTIFICATION request...\n");
-        retval = DeviceIoControl(bus, IOCTL_XUSB_REQUEST_NOTIFICATION, &notify, notify.Size, &notify, notify.Size, &transfered, nullptr);
+        retval = DeviceIoControl(bus, IOCTL_XUSB_REQUEST_NOTIFICATION, &notify, notify.Size, &notify, notify.Size, &transfered, &lOverlapped);
         printf("IOCTL_XUSB_REQUEST_NOTIFICATION retval: %d, trans: %d\n", retval, transfered);
+
+        WaitForSingleObject(hEvent, INFINITE);
 
         printf("IOCTL_XUSB_REQUEST_NOTIFICATION completed, LED: %d, Large: %d, Small: %d\n", notify.LedNumber, notify.LargeMotor, notify.SmallMotor);
     }
@@ -96,7 +102,7 @@ int main()
                 report.Report.bLeftTrigger++;
 
                 retval = DeviceIoControl(bus, IOCTL_XUSB_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);
-                printf("IOCTL_XUSB_SUBMIT_REPORT retval: %d, trans: %d\n", retval, transfered);
+                printf("IOCTL_XUSB_SUBMIT_REPORT retval: %d, trans: %d, report.Report.bLeftTrigger = %d\n", retval, transfered, report.Report.bLeftTrigger);
             }
 
             getchar();

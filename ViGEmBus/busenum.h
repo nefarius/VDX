@@ -23,12 +23,6 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 
 #pragma once
 
-//
-// Internal I/O control codes
-// 
-
-#define IOCTL_INTERNAL_XUSB_REQUEST_NOTIFICATION BUSENUM_RW_IOCTL(IOCTL_BUSENUM_BASE + 0x300)
-
 
 //
 // Static information
@@ -55,16 +49,6 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 
 #define CURRENT_PROCESS_ID() ((DWORD)((DWORD_PTR)PsGetCurrentProcessId() & 0xFFFFFFFF))
 
-
-//
-// The FDO device-extension (context).
-//
-typedef struct _FDO_DEVICE_DATA
-{
-    WDFQUEUE ChildProcessingQueue;
-} FDO_DEVICE_DATA, *PFDO_DEVICE_DATA;
-
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(FDO_DEVICE_DATA, FdoGetData)
 
 //
 // Used to identify children in the device list of the bus.

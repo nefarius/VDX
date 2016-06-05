@@ -512,7 +512,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     NTSTATUS status;
     PPDO_DEVICE_DATA pdoData = PdoGetData(Device);
     PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
-    WDF_REQUEST_FORWARD_OPTIONS forwardOptions;
+    WDFREQUEST notifyRequest;
 
     // Check context
     if (xusb == NULL)
@@ -584,9 +584,8 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     }
 
     // Notify user-mode process that new data is available
-    // TODO: crashes!
-#ifdef NOCRASH
     status = WdfIoQueueRetrieveNextRequest(xusb->PendingNotificationRequests, &notifyRequest);
+
     if (NT_SUCCESS(status))
     {
         PXUSB_REQUEST_NOTIFICATION notify = NULL;
@@ -598,49 +597,15 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
             notify->Size = sizeof(XUSB_REQUEST_NOTIFICATION);
             notify->SerialNo = pdoData->SerialNo;
             notify->LedNumber = xusb->LedNumber;
+            notify->LargeMotor = xusb->Rumble[3];
+            notify->SmallMotor = xusb->Rumble[4];
 
             WdfRequestCompleteWithInformation(notifyRequest, status, notify->Size);
         }
-    }
-#endif
-
-    WdfRequestFormatRequestUsingCurrentType(Request);
-
-    PFDO_DEVICE_DATA fdoData = FdoGetData(WdfPdoGetParent(Device));
-
-    WDF_REQUEST_FORWARD_OPTIONS_INIT(&forwardOptions);
-
-    // Assign common PDO context to request
-    {
-        WDF_OBJECT_ATTRIBUTES attribs;
-        WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attribs, PDO_DEVICE_DATA);
-
-        status = WdfObjectAllocateContext(Request, &attribs, (PVOID)&pdoData);
-        if (!NT_SUCCESS(status))
+        else
         {
-            KdPrint(("WdfObjectAllocateContext failed status 0x%x\n", status));
-            return status;
+            KdPrint(("WdfRequestRetrieveOutputBuffer failed with status 0x%X\n", status));
         }
-    }
-
-    // Assign common PDO context to request
-    {
-        WDF_OBJECT_ATTRIBUTES attribs;
-        WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attribs, XUSB_DEVICE_DATA);
-
-        status = WdfObjectAllocateContext(Request, &attribs, (PVOID)&xusb);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfObjectAllocateContext failed status 0x%x\n", status));
-            return status;
-        }
-    }
-
-    status = WdfRequestForwardToParentDeviceIoQueue(Request, fdoData->ChildProcessingQueue, &forwardOptions);
-    if (!NT_SUCCESS(status))
-    {
-        KdPrint(("WdfRequestForwardToParentDeviceIoQueue failed with status 0x%X\n", status));
-        return status;
     }
 
     return STATUS_SUCCESS;

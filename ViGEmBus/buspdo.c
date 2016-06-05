@@ -22,6 +22,9 @@ NTSTATUS Bus_EvtDeviceListCreatePdo(
     return Bus_CreatePdo(WdfChildListGetDevice(DeviceList), ChildInit, pDesc->SerialNo, pDesc->TargetType, pDesc->OwnerProcessId);
 }
 
+//
+// Compares two children on the bus based on their serial numbers.
+// 
 BOOLEAN Bus_EvtChildListIdentificationDescriptionCompare(
     WDFCHILDLIST DeviceList,
     PWDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER FirstIdentificationDescription,
@@ -41,6 +44,9 @@ BOOLEAN Bus_EvtChildListIdentificationDescriptionCompare(
     return (lhs->SerialNo == rhs->SerialNo) ? TRUE : FALSE;
 }
 
+//
+// Creates and initializes a PDO (child).
+// 
 NTSTATUS Bus_CreatePdo(
     _In_ WDFDEVICE Device,
     _In_ PWDFDEVICE_INIT DeviceInit,
@@ -55,7 +61,7 @@ NTSTATUS Bus_CreatePdo(
     WDF_DEVICE_POWER_CAPABILITIES powerCaps;
     WDF_PNPPOWER_EVENT_CALLBACKS pnpPowerCallbacks;
     WDF_OBJECT_ATTRIBUTES pdoAttributes;
-    WDF_IO_QUEUE_CONFIG  defaultPdoQueueConfig;
+    WDF_IO_QUEUE_CONFIG defaultPdoQueueConfig;
     WDFQUEUE defaultPdoQueue;
     DECLARE_CONST_UNICODE_STRING(deviceLocation, L"Virtual Gamepad Emulation Bus");
     DECLARE_UNICODE_STRING_SIZE(buffer, MAX_INSTANCE_ID_LEN);
@@ -105,7 +111,8 @@ NTSTATUS Bus_CreatePdo(
         {
             // prepare device description
             status = RtlUnicodeStringPrintf(&deviceDescription, L"Virtual Xbox 360 Controller");
-            if (!NT_SUCCESS(status)) {
+            if (!NT_SUCCESS(status))
+            {
                 return status;
             }
         }
@@ -117,14 +124,16 @@ NTSTATUS Bus_CreatePdo(
             RtlUnicodeStringCopy(&deviceId, &buffer);
 
             status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
-            if (!NT_SUCCESS(status)) {
+            if (!NT_SUCCESS(status))
+            {
                 return status;
             }
 
             RtlUnicodeStringPrintf(&buffer, L"USB\\VID_045E&PID_028E");
 
             status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
-            if (!NT_SUCCESS(status)) {
+            if (!NT_SUCCESS(status))
+            {
                 return status;
             }
         }
@@ -134,28 +143,32 @@ NTSTATUS Bus_CreatePdo(
             RtlUnicodeStringPrintf(&buffer, L"USB\\MS_COMP_XUSB10");
 
             status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
-            if (!NT_SUCCESS(status)) {
+            if (!NT_SUCCESS(status))
+            {
                 return status;
             }
 
             RtlUnicodeStringPrintf(&buffer, L"USB\\Class_FF&SubClass_5D&Prot_01");
 
             status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
-            if (!NT_SUCCESS(status)) {
+            if (!NT_SUCCESS(status))
+            {
                 return status;
             }
 
             RtlUnicodeStringPrintf(&buffer, L"USB\\Class_FF&SubClass_5D");
 
             status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
-            if (!NT_SUCCESS(status)) {
+            if (!NT_SUCCESS(status))
+            {
                 return status;
             }
 
             RtlUnicodeStringPrintf(&buffer, L"USB\\Class_FF");
 
             status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
-            if (!NT_SUCCESS(status)) {
+            if (!NT_SUCCESS(status))
+            {
                 return status;
             }
         }
@@ -170,7 +183,8 @@ NTSTATUS Bus_CreatePdo(
         {
             // prepare device description
             status = RtlUnicodeStringPrintf(&deviceDescription, L"Virtual DualShock 4 Controller");
-            if (!NT_SUCCESS(status)) {
+            if (!NT_SUCCESS(status))
+            {
                 return status;
             }
         }
@@ -182,14 +196,16 @@ NTSTATUS Bus_CreatePdo(
             RtlUnicodeStringCopy(&deviceId, &buffer);
 
             status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
-            if (!NT_SUCCESS(status)) {
+            if (!NT_SUCCESS(status))
+            {
                 return status;
             }
 
             RtlUnicodeStringPrintf(&buffer, L"USB\\VID_054C&PID_05C4");
 
             status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
-            if (!NT_SUCCESS(status)) {
+            if (!NT_SUCCESS(status))
+            {
                 return status;
             }
         }
@@ -387,7 +403,7 @@ NTSTATUS Bus_CreatePdo(
 // Exposes necessary interfaces on PDO power-up.
 // 
 NTSTATUS Bus_EvtDevicePrepareHardware(
-    _In_ WDFDEVICE    Device,
+    _In_ WDFDEVICE Device,
     _In_ WDFCMRESLIST ResourcesRaw,
     _In_ WDFCMRESLIST ResourcesTranslated
 )
@@ -417,12 +433,12 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
         dummyIface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
         dummyIface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
 
-        /* XUSB.sys will query for the following three (unknown) interfaces 
+        /* XUSB.sys will query for the following three (unknown) interfaces
          * BUT WONT USE IT so we just expose them to satisfy initialization. */
 
-        //
-        // Dummy 0
-        // 
+         //
+         // Dummy 0
+         // 
         WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_0, NULL);
 
         status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
@@ -528,11 +544,11 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 // Responds to IRP_MJ_INTERNAL_DEVICE_CONTROL requests sent to PDO.
 // 
 VOID Pdo_EvtIoInternalDeviceControl(
-    _In_ WDFQUEUE   Queue,
+    _In_ WDFQUEUE Queue,
     _In_ WDFREQUEST Request,
-    _In_ size_t     OutputBufferLength,
-    _In_ size_t     InputBufferLength,
-    _In_ ULONG      IoControlCode
+    _In_ size_t OutputBufferLength,
+    _In_ size_t InputBufferLength,
+    _In_ ULONG IoControlCode
 )
 {
     // Regular buffers not used in USB communication

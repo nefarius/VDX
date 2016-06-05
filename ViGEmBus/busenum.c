@@ -143,19 +143,19 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 _Use_decl_annotations_
 VOID
 Bus_FileCleanup(
-    WDFFILEOBJECT  FileObject
+    WDFFILEOBJECT FileObject
 )
 {
     WDFDEVICE device, hChild;
     NTSTATUS status;
     WDFCHILDLIST list;
     WDF_CHILD_LIST_ITERATOR iterator;
-    WDF_CHILD_RETRIEVE_INFO  childInfo;
-    PDO_IDENTIFICATION_DESCRIPTION  description;
+    WDF_CHILD_RETRIEVE_INFO childInfo;
+    PDO_IDENTIFICATION_DESCRIPTION description;
 
     PAGED_CODE();
 
-    
+
     KdPrint(("Bus_FileCleanup called\n"));
 
     device = WdfFileObjectGetDevice(FileObject);
@@ -172,7 +172,8 @@ Bus_FileCleanup(
         WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
 
         status = WdfChildListRetrieveNextDevice(list, &iterator, &hChild, &childInfo);
-        if (!NT_SUCCESS(status) || status == STATUS_NO_MORE_ENTRIES) {
+        if (!NT_SUCCESS(status) || status == STATUS_NO_MORE_ENTRIES)
+        {
             break;
         }
 
@@ -181,7 +182,7 @@ Bus_FileCleanup(
         {
             // "Unplug" child
             status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);
-            if(!NT_SUCCESS(status))
+            if (!NT_SUCCESS(status))
             {
                 KdPrint(("WdfChildListUpdateChildDescriptionAsMissing failed with status 0x%X\n", status));
             }
@@ -194,7 +195,13 @@ Bus_FileCleanup(
 //
 // Responds to I/O control requests sent to the FDO.
 // 
-VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t OutputBufferLength, IN size_t InputBufferLength, IN ULONG IoControlCode)
+VOID Bus_EvtIoDeviceControl(
+    IN WDFQUEUE Queue,
+    IN WDFREQUEST Request,
+    IN size_t OutputBufferLength,
+    IN size_t InputBufferLength,
+    IN ULONG IoControlCode
+)
 {
     NTSTATUS status = STATUS_INVALID_PARAMETER;
     WDFDEVICE hDevice;
@@ -348,7 +355,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
 }
 
 VOID Bus_EvtIoDefault(
-    _In_ WDFQUEUE   Queue,
+    _In_ WDFQUEUE Queue,
     _In_ WDFREQUEST Request
 )
 {
@@ -450,7 +457,7 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
     NTSTATUS status = STATUS_SUCCESS;
     WDFCHILDLIST list;
     WDF_CHILD_RETRIEVE_INFO info;
-    WDFDEVICE  hChild;
+    WDFDEVICE hChild;
     PPDO_DEVICE_DATA pdoData;
     PXUSB_DEVICE_DATA xusbData;
     WDFREQUEST usbRequest;
@@ -553,8 +560,8 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
 {
     NTSTATUS status = STATUS_INVALID_PARAMETER;
     WDFCHILDLIST list;
-    WDF_CHILD_RETRIEVE_INFO  info;
-    WDFDEVICE  hChild;
+    WDF_CHILD_RETRIEVE_INFO info;
+    WDFDEVICE hChild;
     PXUSB_DEVICE_DATA xusbData;
 
     PAGED_CODE();

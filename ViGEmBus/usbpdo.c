@@ -16,10 +16,10 @@ BOOLEAN USB_BUSIFFN UsbPdo_IsDeviceHighSpeed(IN PVOID BusContext)
 // Dummy function to satisfy USB interface
 // 
 NTSTATUS USB_BUSIFFN UsbPdo_QueryBusInformation(
-    IN PVOID BusContext, 
-    IN ULONG Level, 
-    IN OUT PVOID BusInformationBuffer, 
-    IN OUT PULONG BusInformationBufferLength, 
+    IN PVOID BusContext,
+    IN ULONG Level,
+    IN OUT PVOID BusInformationBuffer,
+    IN OUT PULONG BusInformationBufferLength,
     OUT PULONG BusInformationActualLength
 )
 {

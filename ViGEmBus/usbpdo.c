@@ -542,7 +542,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
          * The request gets completed as soon as the "feeder" sent an update. */
         status = WdfRequestForwardToIoQueue(Request, xusb->PendingUsbRequests);
 
-        return (NT_SUCCESS(status)) ? STATUS_PENDING : STATUS_UNSUCCESSFUL;
+        return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
     }
 
     // Data coming FROM the higher driver TO us

@@ -8,6 +8,28 @@
 #include <SetupAPI.h>
 #include <Xinput.h>
 
+HANDLE bus;
+
+
+DWORD WINAPI notify(LPVOID param)
+{
+    DWORD transfered = 0;
+    BOOLEAN retval;
+    XUSB_REQUEST_NOTIFICATION notify = { 0 };
+    notify.Size = sizeof(XUSB_REQUEST_NOTIFICATION);
+    notify.SerialNo = 1;
+
+    while (TRUE)
+    {
+        printf("Sending IOCTL_XUSB_REQUEST_NOTIFICATION request...\n");
+        retval = DeviceIoControl(bus, IOCTL_XUSB_REQUEST_NOTIFICATION, &notify, notify.Size, &notify, notify.Size, &transfered, nullptr);
+        printf("IOCTL_XUSB_REQUEST_NOTIFICATION retval: %d, trans: %d\n", retval, transfered);
+
+        printf("IOCTL_XUSB_REQUEST_NOTIFICATION completed, LED: %d, Large: %d, Small: %d\n", notify.LedNumber, notify.LargeMotor, notify.SmallMotor);
+    }
+
+    return 0;
+}
 
 int main()
 {
@@ -38,7 +60,7 @@ int main()
         }
 
         // bus found, open it
-        auto bus = CreateFile(detailDataBuffer->DevicePath,
+        bus = CreateFile(detailDataBuffer->DevicePath,
             GENERIC_READ | GENERIC_WRITE,
             FILE_SHARE_READ | FILE_SHARE_WRITE,
             nullptr,
@@ -60,7 +82,9 @@ int main()
 
             printf("IOCTL_BUSENUM_PLUGIN_HARDWARE retval: %d, trans: %d\n", retval, transfered);
 
-#ifdef OUTPUT
+            DWORD myThreadID;
+            HANDLE myHandle = CreateThread(0, 0, notify, NULL, 0, &myThreadID);
+
             getchar();
 
             XUSB_SUBMIT_REPORT report = { 0 };
@@ -73,22 +97,6 @@ int main()
 
                 retval = DeviceIoControl(bus, IOCTL_XUSB_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);
                 printf("IOCTL_XUSB_SUBMIT_REPORT retval: %d, trans: %d\n", retval, transfered);
-            }
-#endif
-
-            getchar();
-
-            XUSB_REQUEST_NOTIFICATION notify = { 0 };
-            notify.Size = sizeof(XUSB_REQUEST_NOTIFICATION);
-            notify.SerialNo = 1;
-
-            while (TRUE)
-            {
-                printf("Sending IOCTL_XUSB_REQUEST_NOTIFICATION request...\n");
-                retval = DeviceIoControl(bus, IOCTL_XUSB_REQUEST_NOTIFICATION, &notify, notify.Size, &notify, notify.Size, &transfered, nullptr);
-                printf("IOCTL_XUSB_REQUEST_NOTIFICATION retval: %d, trans: %d\n", retval, transfered);
-
-                printf("IOCTL_XUSB_REQUEST_NOTIFICATION completed, LED: %d, Large: %d, Small: %d\n", notify.LedNumber, notify.LargeMotor, notify.SmallMotor);
             }
 
             getchar();

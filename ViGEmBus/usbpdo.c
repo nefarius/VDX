@@ -15,7 +15,13 @@ BOOLEAN USB_BUSIFFN UsbPdo_IsDeviceHighSpeed(IN PVOID BusContext)
 //
 // Dummy function to satisfy USB interface
 // 
-NTSTATUS USB_BUSIFFN UsbPdo_QueryBusInformation(IN PVOID BusContext, IN ULONG Level, IN OUT PVOID BusInformationBuffer, IN OUT PULONG BusInformationBufferLength, OUT PULONG BusInformationActualLength)
+NTSTATUS USB_BUSIFFN UsbPdo_QueryBusInformation(
+    IN PVOID BusContext, 
+    IN ULONG Level, 
+    IN OUT PVOID BusInformationBuffer, 
+    IN OUT PULONG BusInformationBufferLength, 
+    OUT PULONG BusInformationActualLength
+)
 {
     UNREFERENCED_PARAMETER(BusContext);
     UNREFERENCED_PARAMETER(Level);
@@ -54,7 +60,11 @@ NTSTATUS USB_BUSIFFN UsbPdo_QueryBusTime(IN PVOID BusContext, IN OUT PULONG Curr
 //
 // Dummy function to satisfy USB interface
 // 
-VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(IN PVOID BusContext, IN OUT PUSBD_VERSION_INFORMATION VersionInformation, IN OUT PULONG HcdCapabilities)
+VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(
+    IN PVOID BusContext,
+    IN OUT PUSBD_VERSION_INFORMATION VersionInformation,
+    IN OUT PULONG HcdCapabilities
+)
 {
     UNREFERENCED_PARAMETER(BusContext);
 
@@ -536,7 +546,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     }
 
     // Data coming FROM the higher driver TO us
-    KdPrint(("<< URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER: Handle %p, Flags %X, Length %d\n",
+    KdPrint((">> >> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER: Handle %p, Flags %X, Length %d\n",
         pTransfer->PipeHandle,
         pTransfer->TransferFlags,
         pTransfer->TransferBufferLength));
@@ -594,6 +604,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 
         if (NT_SUCCESS(status))
         {
+            // Assign values to output buffer
             notify->Size = sizeof(XUSB_REQUEST_NOTIFICATION);
             notify->SerialNo = pdoData->SerialNo;
             notify->LedNumber = xusb->LedNumber;

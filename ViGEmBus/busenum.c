@@ -128,24 +128,9 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     return status;
 }
 
-///-------------------------------------------------------------------------------------------------
-/// <summary>A driver's EvtIoDeviceControl event callback function processes a specified device
-/// I/O control request.</summary>
-///
-/// <remarks>Benjamin, 22.05.2016.</remarks>
-///
-/// <param name="Queue">                A handle to the framework queue object that is associated
-///                                     with the I/O request.</param>
-/// <param name="Request">           A handle to a framework request object.</param>
-/// <param name="OutputBufferLength">   The length, in bytes, of the request's output buffer, if
-///                                     an output buffer is available.</param>
-/// <param name="InputBufferLength">    The length, in bytes, of the request's input buffer, if
-///                                     an input buffer is available.</param>
-/// <param name="IoControlCode">        The driver-defined or system-defined I/O control code
-///                                     (IOCTL) that is associated with the request.</param>
-///
-/// <returns>None.</returns>
-///-------------------------------------------------------------------------------------------------
+//
+// Responds to I/O control requests sent to the FDO.
+// 
 VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t OutputBufferLength, IN size_t InputBufferLength, IN ULONG IoControlCode)
 {
     NTSTATUS status = STATUS_INVALID_PARAMETER;
@@ -157,7 +142,6 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
     PXUSB_SUBMIT_REPORT xusbSubmit = NULL;
     PXUSB_REQUEST_NOTIFICATION xusbNotify = NULL;
 
-    UNREFERENCED_PARAMETER(OutputBufferLength);
 
     PAGED_CODE();
 
@@ -244,6 +228,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
 
         if ((sizeof(XUSB_SUBMIT_REPORT) == xusbSubmit->Size) && (length == InputBufferLength))
         {
+            // This request only supports a single PDO at a time
             if (xusbSubmit->SerialNo == 0)
             {
                 status = STATUS_INVALID_PARAMETER;
@@ -259,6 +244,13 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
 
         KdPrint(("IOCTL_XUSB_REQUEST_NOTIFICATION\n"));
 
+        // Don't accept the request if the output buffer can't hold the results
+        if (OutputBufferLength < sizeof(XUSB_REQUEST_NOTIFICATION))
+        {
+            KdPrint(("IOCTL_XUSB_REQUEST_NOTIFICATION: output buffer too small: %ul\n", OutputBufferLength));
+            break;
+        }
+
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(XUSB_REQUEST_NOTIFICATION), (PVOID)&xusbNotify, &length);
 
         if (!NT_SUCCESS(status))
@@ -269,6 +261,7 @@ VOID Bus_EvtIoDeviceControl(IN WDFQUEUE Queue, IN WDFREQUEST Request, IN size_t 
 
         if ((sizeof(XUSB_REQUEST_NOTIFICATION) == xusbNotify->Size) && (length == InputBufferLength))
         {
+            // This request only supports a single PDO at a time
             if (xusbNotify->SerialNo == 0)
             {
                 status = STATUS_INVALID_PARAMETER;
@@ -491,7 +484,7 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
 }
 
 //
-// Experimental
+// Queues an inverted call to receive XUSB-specific updates.
 // 
 NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Request)
 {
@@ -528,6 +521,7 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
 
     if (xusbData != NULL)
     {
+        // Queue the request for later completion by the PDO and return STATUS_PENDING
         status = WdfRequestForwardToIoQueue(Request, xusbData->PendingNotificationRequests);
         if (!NT_SUCCESS(status))
         {

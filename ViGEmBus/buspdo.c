@@ -226,6 +226,7 @@ NTSTATUS Bus_CreatePdo(
     }
 
     // default locale is English
+    // TODO: add more locales
     WdfPdoInitSetDefaultLocale(DeviceInit, 0x409);
 
     // PNP/Power event callbacks
@@ -237,6 +238,7 @@ NTSTATUS Bus_CreatePdo(
         WdfDeviceInitSetPnpPowerEventCallbacks(DeviceInit, &pnpPowerCallbacks);
     }
 
+    // NOTE: not utilized at the moment
     WdfPdoInitAllowForwardingRequestToParent(DeviceInit);
 
     // Create PDO

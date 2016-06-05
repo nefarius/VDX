@@ -59,6 +59,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     WDF_IO_QUEUE_CONFIG queueConfig;
     PNP_BUS_INFORMATION busInfo;
     WDFQUEUE queue;
+    WDF_FILEOBJECT_CONFIG foConfig;
 
     UNREFERENCED_PARAMETER(Driver);
 
@@ -77,6 +78,13 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
         config.EvtChildListIdentificationDescriptionCompare = Bus_EvtChildListIdentificationDescriptionCompare;
 
         WdfFdoInitSetDefaultChildListConfig(DeviceInit, &config, WDF_NO_OBJECT_ATTRIBUTES);
+    }
+
+    // Assign File Object Configuration
+    {
+        WDF_FILEOBJECT_CONFIG_INIT(&foConfig, NULL, NULL, Bus_FileCleanup);
+
+        WdfDeviceInitSetFileObjectConfig(DeviceInit, &foConfig, WDF_NO_OBJECT_ATTRIBUTES);
     }
 
     // Create FDO, assign context
@@ -126,6 +134,57 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     WdfDeviceSetBusInformationForChildren(device, &busInfo);
 
     return status;
+}
+
+//
+// Gets called when the user-land process exits.
+// 
+_Use_decl_annotations_
+VOID
+Bus_FileCleanup(
+    WDFFILEOBJECT  FileObject
+)
+{
+    WDFDEVICE device, hChild;
+    NTSTATUS status;
+    WDFCHILDLIST list;
+    WDF_CHILD_LIST_ITERATOR iterator;
+    WDF_CHILD_RETRIEVE_INFO  childInfo;
+    PDO_IDENTIFICATION_DESCRIPTION  description;
+    
+    KdPrint(("Bus_FileCleanup called\n"));
+
+    device = WdfFileObjectGetDevice(FileObject);
+
+    list = WdfFdoGetDefaultChildList(device);
+
+    WDF_CHILD_LIST_ITERATOR_INIT(&iterator, WdfRetrievePresentChildren);
+
+    WdfChildListBeginIteration(list, &iterator);
+
+    for (;;)
+    {
+        WDF_CHILD_RETRIEVE_INFO_INIT(&childInfo, &description.Header);
+        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
+
+        status = WdfChildListRetrieveNextDevice(list, &iterator, &hChild, &childInfo);
+        if (!NT_SUCCESS(status) || status == STATUS_NO_MORE_ENTRIES) {
+            break;
+        }
+
+        if (childInfo.Status == WdfChildListRetrieveDeviceSuccess
+            && description.OwnerProcessId == CURRENT_PROCESS_ID())
+        {
+            // "Unplug" child
+            status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);
+            if(!NT_SUCCESS(status))
+            {
+                KdPrint(("WdfChildListUpdateChildDescriptionAsMissing failed with status 0x%X\n", status));
+            }
+        }
+    }
+
+    WdfChildListEndIteration(list, &iterator);
 }
 
 //

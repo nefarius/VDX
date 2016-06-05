@@ -69,8 +69,8 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     KdPrint(("Bus_EvtDeviceAdd: 0x%p\n", Driver));
 
     WdfDeviceInitSetDeviceType(DeviceInit, FILE_DEVICE_BUS_EXTENDER);
-    // TODO: necessary?
-    WdfDeviceInitSetExclusive(DeviceInit, TRUE);
+    // More than one process may talk to the bus at the same time
+    WdfDeviceInitSetExclusive(DeviceInit, FALSE);
 
     // Prepare child list
     {

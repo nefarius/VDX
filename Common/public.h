@@ -36,6 +36,9 @@ DEFINE_GUID(GUID_DEVCLASS_VIGEM_RAWPDO,
 //  Data structure used in PlugIn and UnPlug ioctls
 //
 
+//
+// Represents the desired target type for the emulated device.
+//  
 typedef enum _VIGEM_TARGET_TYPE
 {
     // 

@@ -167,6 +167,7 @@ Bus_FileCleanup(
             break;
         }
 
+        // Only unplug owned children
         if (childInfo.Status == WdfChildListRetrieveDeviceSuccess
             && description.OwnerProcessId == CURRENT_PROCESS_ID())
         {
@@ -552,6 +553,7 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
     WDFCHILDLIST list;
     WDF_CHILD_RETRIEVE_INFO info;
     WDFDEVICE hChild;
+    PPDO_DEVICE_DATA pdoData;
     PXUSB_DEVICE_DATA xusbData;
 
     PAGED_CODE();
@@ -571,10 +573,26 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
         hChild = WdfChildListRetrievePdo(list, &info);
     }
 
+    // Validate child
     if (hChild == NULL)
     {
         KdPrint(("Bus_XusbQueueNotification: PDO with serial %d not found\n", SerialNo));
         return STATUS_NO_SUCH_DEVICE;
+    }
+
+    // Check common context
+    pdoData = PdoGetData(hChild);
+    if (pdoData == NULL)
+    {
+        KdPrint(("Bus_XusbQueueNotification: PDO context not found\n"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    // Check if caller owns this PDO
+    if (pdoData->OwnerProcessId != CURRENT_PROCESS_ID())
+    {
+        KdPrint(("Bus_XusbQueueNotification: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
+        return STATUS_ACCESS_DENIED;
     }
 
     xusbData = XusbGetData(hChild);

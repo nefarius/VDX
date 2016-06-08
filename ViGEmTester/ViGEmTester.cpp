@@ -9,7 +9,7 @@
 #include <Xinput.h>
 
 HANDLE bus;
-
+int serial = 0;
 
 DWORD WINAPI notify(LPVOID param)
 {
@@ -17,7 +17,7 @@ DWORD WINAPI notify(LPVOID param)
     BOOLEAN retval;
     XUSB_REQUEST_NOTIFICATION notify = { 0 };
     notify.Size = sizeof(XUSB_REQUEST_NOTIFICATION);
-    notify.SerialNo = 1;
+    notify.SerialNo = serial;
 
     HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     OVERLAPPED  lOverlapped = { 0 };
@@ -40,7 +40,7 @@ DWORD WINAPI notify(LPVOID param)
 int main()
 {
     printf("XUSB_SUBMIT_REPORT = %llu, XINPUT_GAMEPAD = %llu, XUSB_REPORT = %llu\n\n\n", sizeof(XUSB_SUBMIT_REPORT), sizeof(XINPUT_GAMEPAD), sizeof(XUSB_REPORT));
-    
+
     SP_DEVICE_INTERFACE_DATA deviceInterfaceData = {};
     deviceInterfaceData.cbSize = sizeof(deviceInterfaceData);
     DWORD memberIndex = 0;
@@ -76,12 +76,14 @@ int main()
 
         if (INVALID_HANDLE_VALUE != bus)
         {
-            printf("bus opened!\n");
+            printf("bus opened! Enter serial:\n");
+
+            serial = getchar() - 48;
 
             DWORD transfered = 0;
             BUSENUM_PLUGIN_HARDWARE plugin = { 0 };
             plugin.Size = sizeof(BUSENUM_PLUGIN_HARDWARE);
-            plugin.SerialNo = 1;
+            plugin.SerialNo = serial;
             plugin.TargetType = Xbox360Wired;
 
             auto retval = DeviceIoControl(bus, IOCTL_BUSENUM_PLUGIN_HARDWARE, &plugin, plugin.Size, nullptr, 0, &transfered, nullptr);
@@ -95,7 +97,7 @@ int main()
 
             XUSB_SUBMIT_REPORT report = { 0 };
             report.Size = sizeof(XUSB_SUBMIT_REPORT);
-            report.SerialNo = 1;
+            report.SerialNo = serial;
 
             while (getchar() != 'a')
             {
@@ -105,11 +107,11 @@ int main()
                 printf("IOCTL_XUSB_SUBMIT_REPORT retval: %d, trans: %d, report.Report.bLeftTrigger = %d\n", retval, transfered, report.Report.bLeftTrigger);
             }
 
-            getchar();
+            printf("Enter unplug serial:\n");
 
             BUSENUM_UNPLUG_HARDWARE unplug = { 0 };
             unplug.Size = sizeof(BUSENUM_UNPLUG_HARDWARE);
-            unplug.SerialNo = 0;
+            unplug.SerialNo = getchar() - 48;
 
             retval = DeviceIoControl(bus, IOCTL_BUSENUM_UNPLUG_HARDWARE, &unplug, unplug.Size, nullptr, 0, &transfered, nullptr);
 

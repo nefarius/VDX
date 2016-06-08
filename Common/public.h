@@ -26,13 +26,10 @@ DEFINE_GUID(GUID_DEVCLASS_VIGEM_RAWPDO,
 #define IOCTL_BUSENUM_PLUGIN_HARDWARE   BUSENUM_W_IOCTL (IOCTL_BUSENUM_BASE + 0x0)
 #define IOCTL_BUSENUM_UNPLUG_HARDWARE   BUSENUM_W_IOCTL (IOCTL_BUSENUM_BASE + 0x1)
 #define IOCTL_BUSENUM_EJECT_HARDWARE    BUSENUM_W_IOCTL (IOCTL_BUSENUM_BASE + 0x2)
-#define IOCTL_BUSENUM_REPORT_HARDWARE   BUSENUM_RW_IOCTL(IOCTL_BUSENUM_BASE + 0x3)
 
 #define IOCTL_XUSB_REQUEST_NOTIFICATION BUSENUM_RW_IOCTL(IOCTL_BUSENUM_BASE + 0x200)
 #define IOCTL_XUSB_SUBMIT_REPORT        BUSENUM_W_IOCTL (IOCTL_BUSENUM_BASE + 0x201)
 
-
-#define XUSB_REPORT_SIZE 20
 
 
 //
@@ -51,6 +48,9 @@ typedef enum _VIGEM_TARGET_TYPE
     DualShock4Wired
 } VIGEM_TARGET_TYPE, *PVIGEM_TARGET_TYPE;
 
+//
+// Data structure used in IOCTL_BUSENUM_PLUGIN_HARDWARE requests.
+// 
 typedef struct _BUSENUM_PLUGIN_HARDWARE
 {
     //
@@ -59,10 +59,8 @@ typedef struct _BUSENUM_PLUGIN_HARDWARE
     IN ULONG Size;
 
     //
-    // Unique serial number of the device to be enumerated.
-    // Enumeration will be failed if another device on the
-    // bus has the same serial number.
-    //
+    // Serial number of target device.
+    // 
     IN ULONG SerialNo;
 
     // 
@@ -71,6 +69,9 @@ typedef struct _BUSENUM_PLUGIN_HARDWARE
     VIGEM_TARGET_TYPE TargetType;
 } BUSENUM_PLUGIN_HARDWARE, *PBUSENUM_PLUGIN_HARDWARE;
 
+//
+// Data structure used in IOCTL_BUSENUM_UNPLUG_HARDWARE requests.
+// 
 typedef struct _BUSENUM_UNPLUG_HARDWARE
 {
     //
@@ -79,12 +80,15 @@ typedef struct _BUSENUM_UNPLUG_HARDWARE
     IN ULONG Size;
 
     //
-    // Serial number of the device to be plugged out
-    //
+    // Serial number of target device.
+    // 
     ULONG SerialNo;
 
 } BUSENUM_UNPLUG_HARDWARE, *PBUSENUM_UNPLUG_HARDWARE;
 
+//
+// Data structure used in IOCTL_BUSENUM_EJECT_HARDWARE requests.
+// 
 typedef struct _BUSENUM_EJECT_HARDWARE
 {
     //
@@ -93,12 +97,15 @@ typedef struct _BUSENUM_EJECT_HARDWARE
     IN ULONG Size;
 
     //
-    // Serial number of the device to be ejected
-    //
+    // Serial number of target device.
+    // 
     ULONG SerialNo;
 
 } BUSENUM_EJECT_HARDWARE, *PBUSENUM_EJECT_HARDWARE;
 
+//
+// Data structure used in IOCTL_XUSB_REQUEST_NOTIFICATION requests.
+// 
 typedef struct _XUSB_REQUEST_NOTIFICATION
 {
     //
@@ -106,15 +113,30 @@ typedef struct _XUSB_REQUEST_NOTIFICATION
     // 
     ULONG Size;
 
+    //
+    // Serial number of target device.
+    // 
     ULONG SerialNo;
 
+    //
+    // Vibration intensity value of the large motor (0-255).
+    // 
     UCHAR LargeMotor;
 
+    //
+    // Vibration intensity value of the small motor (0-255).
+    // 
     UCHAR SmallMotor;
 
+    //
+    // Index number of the slot/LED that XUSB.sys has assigned.
+    // 
     UCHAR LedNumber;
 } XUSB_REQUEST_NOTIFICATION, *PXUSB_REQUEST_NOTIFICATION;
 
+//
+// Represents an XINPUT_GAMEPAD-compatible report structure.
+// 
 typedef struct _XUSB_REPORT
 {
     WORD wButtons;
@@ -126,6 +148,9 @@ typedef struct _XUSB_REPORT
     SHORT sThumbRY;
 } XUSB_REPORT, *PXUSB_REPORT;
 
+//
+// Data structure used in IOCTL_XUSB_SUBMIT_REPORT requests.
+// 
 typedef struct _XUSB_SUBMIT_REPORT
 {
     //
@@ -133,8 +158,14 @@ typedef struct _XUSB_SUBMIT_REPORT
     // 
     ULONG Size;
 
+    //
+    // Serial number of target device.
+    // 
     ULONG SerialNo;
 
+    //
+    // Report to submit to the target device.
+    // 
     XUSB_REPORT Report;
 } XUSB_SUBMIT_REPORT, *PXUSB_SUBMIT_REPORT;
 

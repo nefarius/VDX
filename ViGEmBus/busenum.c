@@ -16,22 +16,9 @@
 #pragma alloc_text (PAGE, Bus_XusbQueueNotification)
 #endif
 
-///-------------------------------------------------------------------------------------------------
-/// <summary>	Driver entry routine. </summary>
-///
-/// <remarks>
-/// DriverEntry is the first routine called after a driver is loaded, and is responsible for
-/// initializing the driver.
-/// </remarks>
-///
-/// <param name="DriverObject">	The driver object. </param>
-/// <param name="RegistryPath">	Full pathname of the registry file. </param>
-///
-/// <returns>
-/// If the routine succeeds, it must return STATUS_SUCCESS. Otherwise, it must return one of the
-/// error status values defined in Ntstatus.h.
-/// </returns>
-///-------------------------------------------------------------------------------------------------
+//
+// Driver entry routine.
+// 
 NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING RegistryPath)
 {
     WDF_DRIVER_CONFIG config;
@@ -52,6 +39,9 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING Registry
     return status;
 }
 
+//
+// Bus-device creation routine.
+// 
 NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 {
     WDF_CHILD_LIST_CONFIG config;
@@ -88,7 +78,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
         WdfDeviceInitSetFileObjectConfig(DeviceInit, &foConfig, WDF_NO_OBJECT_ATTRIBUTES);
     }
 
-    // Create FDO, assign context
+    // Create FDO
     {
         status = WdfDeviceCreate(&DeviceInit, WDF_NO_OBJECT_ATTRIBUTES, &device);
 
@@ -123,11 +113,11 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 
         if (!NT_SUCCESS(status))
         {
+            KdPrint(("WdfDeviceCreateDeviceInterface failed status 0x%x\n", status));
             return status;
         }
     }
 
-    // TODO: required?
     busInfo.BusTypeGuid = GUID_BUS_TYPE_USB;
     busInfo.LegacyBusType = PNPBus;
     busInfo.BusNumber = 0;
@@ -602,6 +592,9 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
     return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
 }
 
+//
+// Simulates a device ejection event.
+// 
 NTSTATUS Bus_EjectDevice(WDFDEVICE Device, ULONG SerialNo)
 {
     WDFDEVICE hChild;

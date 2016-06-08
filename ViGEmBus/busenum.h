@@ -47,6 +47,9 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 // Helpers
 // 
 
+//
+// Returns the current caller process id.
+// 
 #define CURRENT_PROCESS_ID() ((DWORD)((DWORD_PTR)PsGetCurrentProcessId() & 0xFFFFFFFF))
 
 

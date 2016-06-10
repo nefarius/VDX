@@ -398,44 +398,54 @@ NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ ULONG SerialNo, _In_ VIGEM
 NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
 {
     NTSTATUS status;
+    WDFDEVICE hChild;
     WDFCHILDLIST list;
+    WDF_CHILD_LIST_ITERATOR iterator;
+    WDF_CHILD_RETRIEVE_INFO childInfo;
+    PDO_IDENTIFICATION_DESCRIPTION description;
+    BOOLEAN unplugAll = (SerialNo == 0);
 
     PAGED_CODE();
 
     list = WdfFdoGetDefaultChildList(Device);
 
-    if (0 == SerialNo)
+    WDF_CHILD_LIST_ITERATOR_INIT(&iterator, WdfRetrievePresentChildren);
+
+    WdfChildListBeginIteration(list, &iterator);
+
+    for (;;)
     {
-        //
-        // Unplug everybody.  We do this by starting a scan and then not reporting
-        // any children upon its completion
-        //
-        status = STATUS_SUCCESS;
-
-        WdfChildListBeginScan(list);
-
-        WdfChildListEndScan(list);
-    }
-    else
-    {
-        PDO_IDENTIFICATION_DESCRIPTION description;
-
+        WDF_CHILD_RETRIEVE_INFO_INIT(&childInfo, &description.Header);
         WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
 
-        description.SerialNo = SerialNo;
+        status = WdfChildListRetrieveNextDevice(list, &iterator, &hChild, &childInfo);
 
-        status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);
-
-        if (status == STATUS_NO_SUCH_DEVICE)
+        // Error or no more children, end loop
+        if (!NT_SUCCESS(status) || status == STATUS_NO_MORE_ENTRIES)
         {
-            //
-            // serial number didn't exist. Remap it to a status that user
-            // application can understand when it gets translated to win32
-            // error code.
-            //
-            status = STATUS_INVALID_PARAMETER;
+            break;
+        }
+
+        // Child isn't the one we looked for, skip
+        if (!unplugAll && description.SerialNo != SerialNo)
+        {
+            continue;
+        }
+
+        // Only unplug owned children
+        if (childInfo.Status == WdfChildListRetrieveDeviceSuccess
+            && description.OwnerProcessId == CURRENT_PROCESS_ID())
+        {
+            // Unplug child
+            status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);
+            if (!NT_SUCCESS(status))
+            {
+                KdPrint(("WdfChildListUpdateChildDescriptionAsMissing failed with status 0x%X\n", status));
+            }
         }
     }
+
+    WdfChildListEndIteration(list, &iterator);
 
     return status;
 }

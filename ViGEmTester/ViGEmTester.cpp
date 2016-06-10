@@ -107,6 +107,7 @@ int main()
                 printf("IOCTL_XUSB_SUBMIT_REPORT retval: %d, trans: %d, report.Report.bLeftTrigger = %d\n", retval, transfered, report.Report.bLeftTrigger);
             }
 
+            getchar();
             printf("Enter unplug serial:\n");
 
             BUSENUM_UNPLUG_HARDWARE unplug = { 0 };
@@ -116,6 +117,9 @@ int main()
             retval = DeviceIoControl(bus, IOCTL_BUSENUM_UNPLUG_HARDWARE, &unplug, unplug.Size, nullptr, 0, &transfered, nullptr);
 
             printf("IOCTL_BUSENUM_UNPLUG_HARDWARE retval: %d, trans: %d\n", retval, transfered);
+
+            getchar();
+            getchar();
 
             CloseHandle(bus);
         }
@@ -130,6 +134,7 @@ int main()
 
     SetupDiDestroyDeviceInfoList(deviceInfoSet);
 
+    getchar();
     getchar();
 
     return 0;

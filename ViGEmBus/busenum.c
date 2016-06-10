@@ -407,6 +407,8 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
 
     PAGED_CODE();
 
+    KdPrint(("Entered Bus_UnPlugDevice\n"));
+
     list = WdfFdoGetDefaultChildList(Device);
 
     WDF_CHILD_LIST_ITERATOR_INIT(&iterator, WdfRetrievePresentChildren);

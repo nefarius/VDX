@@ -12,8 +12,6 @@
 #pragma alloc_text (PAGE, Bus_PlugInDevice)
 #pragma alloc_text (PAGE, Bus_UnPlugDevice)
 #pragma alloc_text (PAGE, Bus_EjectDevice)
-#pragma alloc_text (PAGE, Bus_XusbSubmitReport)
-#pragma alloc_text (PAGE, Bus_XusbQueueNotification)
 #endif
 
 //
@@ -345,6 +343,9 @@ VOID Bus_EvtIoDeviceControl(
     }
 }
 
+//
+// Catches unsupported requests.
+// 
 VOID Bus_EvtIoDefault(
     _In_ WDFQUEUE Queue,
     _In_ WDFREQUEST Request
@@ -354,6 +355,8 @@ VOID Bus_EvtIoDefault(
     UNREFERENCED_PARAMETER(Request);
 
     KdPrint(("Bus_EvtIoDefault called\n"));
+
+    WdfRequestComplete(Request, STATUS_INVALID_DEVICE_REQUEST);
 }
 
 //
@@ -453,176 +456,6 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
 }
 
 //
-// Sends a report update to an XUSB PDO.
-// 
-NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REPORT Report)
-{
-    NTSTATUS status = STATUS_SUCCESS;
-    WDFCHILDLIST list;
-    WDF_CHILD_RETRIEVE_INFO info;
-    WDFDEVICE hChild;
-    PPDO_DEVICE_DATA pdoData;
-    PXUSB_DEVICE_DATA xusbData;
-    WDFREQUEST usbRequest;
-    PIRP pendingIrp;
-    PIO_STACK_LOCATION irpStack;
-    BOOLEAN changed;
-
-
-    PAGED_CODE();
-
-    KdPrint(("Entered Bus_XusbSubmitReport\n"));
-
-    // Get child
-    {
-        list = WdfFdoGetDefaultChildList(Device);
-
-        PDO_IDENTIFICATION_DESCRIPTION description;
-
-        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
-
-        description.SerialNo = SerialNo;
-
-        WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
-
-        hChild = WdfChildListRetrievePdo(list, &info);
-    }
-
-    // Validate child
-    if (hChild == NULL)
-    {
-        KdPrint(("Bus_XusbSubmitReport: PDO with serial %d not found\n", SerialNo));
-        return STATUS_NO_SUCH_DEVICE;
-    }
-
-    // Check common context
-    pdoData = PdoGetData(hChild);
-    if (pdoData == NULL)
-    {
-        KdPrint(("Bus_XusbSubmitReport: PDO context not found\n"));
-        return STATUS_INVALID_PARAMETER;
-    }
-
-    // Check XUSB context
-    xusbData = XusbGetData(hChild);
-    if (xusbData == NULL)
-    {
-        KdPrint(("Bus_XusbSubmitReport: XUSB context not found\n"));
-        return STATUS_INVALID_PARAMETER;
-    }
-
-    // Check if caller owns this PDO
-    if (pdoData->OwnerProcessId != CURRENT_PROCESS_ID())
-    {
-        KdPrint(("Bus_XusbSubmitReport: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
-        return STATUS_ACCESS_DENIED;
-    }
-
-    // Check if input is different from previous value
-    changed = (RtlCompareMemory(xusbData->Report, &Report->Report, sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
-
-    if (changed)
-    {
-        KdPrint(("Bus_XusbSubmitReport: received new report\n"));
-
-        // Get pending USB request
-        status = WdfIoQueueRetrieveNextRequest(xusbData->PendingUsbRequests, &usbRequest);
-
-        if (NT_SUCCESS(status))
-        {
-            KdPrint(("Bus_XusbSubmitReport: pending IRP found\n"));
-
-            // Get pending IRP
-            pendingIrp = WdfRequestWdmGetIrp(usbRequest);
-            irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
-
-            // Get USB request block
-            PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
-
-            // Get transfer buffer
-            PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
-            // Set buffer length to report size
-            urb->UrbBulkOrInterruptTransfer.TransferBufferLength = XUSB_REPORT_SIZE;
-
-            // Copy report to cache and transfer buffer
-            RtlCopyBytes(xusbData->Report + 2, &Report->Report, sizeof(XUSB_REPORT));
-            RtlCopyBytes(Buffer, xusbData->Report, XUSB_REPORT_SIZE);
-
-            // Complete pending request
-            WdfRequestComplete(usbRequest, status);
-        }
-    }
-
-    return status;
-}
-
-//
-// Queues an inverted call to receive XUSB-specific updates.
-// 
-NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Request)
-{
-    NTSTATUS status = STATUS_INVALID_PARAMETER;
-    WDFCHILDLIST list;
-    WDF_CHILD_RETRIEVE_INFO info;
-    WDFDEVICE hChild;
-    PPDO_DEVICE_DATA pdoData;
-    PXUSB_DEVICE_DATA xusbData;
-
-    PAGED_CODE();
-
-    // Get child
-    {
-        list = WdfFdoGetDefaultChildList(Device);
-
-        PDO_IDENTIFICATION_DESCRIPTION description;
-
-        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
-
-        description.SerialNo = SerialNo;
-
-        WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
-
-        hChild = WdfChildListRetrievePdo(list, &info);
-    }
-
-    // Validate child
-    if (hChild == NULL)
-    {
-        KdPrint(("Bus_XusbQueueNotification: PDO with serial %d not found\n", SerialNo));
-        return STATUS_NO_SUCH_DEVICE;
-    }
-
-    // Check common context
-    pdoData = PdoGetData(hChild);
-    if (pdoData == NULL)
-    {
-        KdPrint(("Bus_XusbQueueNotification: PDO context not found\n"));
-        return STATUS_INVALID_PARAMETER;
-    }
-
-    // Check if caller owns this PDO
-    if (pdoData->OwnerProcessId != CURRENT_PROCESS_ID())
-    {
-        KdPrint(("Bus_XusbQueueNotification: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
-        return STATUS_ACCESS_DENIED;
-    }
-
-    xusbData = XusbGetData(hChild);
-
-    if (xusbData != NULL)
-    {
-        // Queue the request for later completion by the PDO and return STATUS_PENDING
-        status = WdfRequestForwardToIoQueue(Request, xusbData->PendingNotificationRequests);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfRequestForwardToIoQueue failed with status 0x%X\n", status));
-        }
-    }
-
-    return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
-}
-
-//
 // Simulates a device ejection event.
 // 
 NTSTATUS Bus_EjectDevice(WDFDEVICE Device, ULONG SerialNo)
@@ -706,4 +539,176 @@ NTSTATUS Bus_EjectDevice(WDFDEVICE Device, ULONG SerialNo)
 
     return status;
 }
+
+//
+// Sends a report update to an XUSB PDO.
+// 
+NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REPORT Report)
+{
+    NTSTATUS status = STATUS_SUCCESS;
+    WDFCHILDLIST list;
+    WDF_CHILD_RETRIEVE_INFO info;
+    WDFDEVICE hChild;
+    PPDO_DEVICE_DATA pdoData;
+    PXUSB_DEVICE_DATA xusbData;
+    WDFREQUEST usbRequest;
+    PIRP pendingIrp;
+    PIO_STACK_LOCATION irpStack;
+    BOOLEAN changed;
+
+
+    KdPrint(("Entered Bus_XusbSubmitReport\n"));
+
+    // Get child
+    {
+        list = WdfFdoGetDefaultChildList(Device);
+
+        PDO_IDENTIFICATION_DESCRIPTION description;
+
+        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
+
+        description.SerialNo = SerialNo;
+
+        WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
+
+        hChild = WdfChildListRetrievePdo(list, &info);
+    }
+
+    // Validate child
+    if (hChild == NULL)
+    {
+        KdPrint(("Bus_XusbSubmitReport: PDO with serial %d not found\n", SerialNo));
+        return STATUS_NO_SUCH_DEVICE;
+    }
+
+    // Check common context
+    pdoData = PdoGetData(hChild);
+    if (pdoData == NULL)
+    {
+        KdPrint(("Bus_XusbSubmitReport: PDO context not found\n"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    // Check XUSB context
+    xusbData = XusbGetData(hChild);
+    if (xusbData == NULL)
+    {
+        KdPrint(("Bus_XusbSubmitReport: XUSB context not found\n"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    // Check if caller owns this PDO
+    if (pdoData->OwnerProcessId != CURRENT_PROCESS_ID())
+    {
+        KdPrint(("Bus_XusbSubmitReport: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
+        return STATUS_ACCESS_DENIED;
+    }
+
+    // Check if input is different from previous value
+    changed = (RtlCompareMemory(xusbData->Report, &Report->Report, sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
+
+    // Don't waste pending IRP if input hasn't changed
+    if (changed)
+    {
+        KdPrint(("Bus_XusbSubmitReport: received new report\n"));
+
+        // Get pending USB request
+        status = WdfIoQueueRetrieveNextRequest(xusbData->PendingUsbRequests, &usbRequest);
+
+        if (NT_SUCCESS(status))
+        {
+            KdPrint(("Bus_XusbSubmitReport: pending IRP found\n"));
+
+            // Get pending IRP
+            pendingIrp = WdfRequestWdmGetIrp(usbRequest);
+            irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
+
+            // Get USB request block
+            PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
+
+            // Get transfer buffer
+            PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
+            // Set buffer length to report size
+            urb->UrbBulkOrInterruptTransfer.TransferBufferLength = XUSB_REPORT_SIZE;
+
+            /* Copy report to cache and transfer buffer
+             * The first two bytes are always the same, so we skip them */
+            RtlCopyBytes(xusbData->Report + 2, &Report->Report, sizeof(XUSB_REPORT));
+            RtlCopyBytes(Buffer, xusbData->Report, XUSB_REPORT_SIZE);
+
+            // Complete pending request
+            WdfRequestComplete(usbRequest, status);
+        }
+    }
+
+    return status;
+}
+
+//
+// Queues an inverted call to receive XUSB-specific updates.
+// 
+NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Request)
+{
+    NTSTATUS status = STATUS_INVALID_PARAMETER;
+    WDFCHILDLIST list;
+    WDF_CHILD_RETRIEVE_INFO info;
+    WDFDEVICE hChild;
+    PPDO_DEVICE_DATA pdoData;
+    PXUSB_DEVICE_DATA xusbData;
+
+
+    KdPrint(("Entered Bus_XusbQueueNotification\n"));
+
+    // Get child
+    {
+        list = WdfFdoGetDefaultChildList(Device);
+
+        PDO_IDENTIFICATION_DESCRIPTION description;
+
+        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
+
+        description.SerialNo = SerialNo;
+
+        WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
+
+        hChild = WdfChildListRetrievePdo(list, &info);
+    }
+
+    // Validate child
+    if (hChild == NULL)
+    {
+        KdPrint(("Bus_XusbQueueNotification: PDO with serial %d not found\n", SerialNo));
+        return STATUS_NO_SUCH_DEVICE;
+    }
+
+    // Check common context
+    pdoData = PdoGetData(hChild);
+    if (pdoData == NULL)
+    {
+        KdPrint(("Bus_XusbQueueNotification: PDO context not found\n"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    // Check if caller owns this PDO
+    if (pdoData->OwnerProcessId != CURRENT_PROCESS_ID())
+    {
+        KdPrint(("Bus_XusbQueueNotification: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
+        return STATUS_ACCESS_DENIED;
+    }
+
+    xusbData = XusbGetData(hChild);
+
+    if (xusbData != NULL)
+    {
+        // Queue the request for later completion by the PDO and return STATUS_PENDING
+        status = WdfRequestForwardToIoQueue(Request, xusbData->PendingNotificationRequests);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfRequestForwardToIoQueue failed with status 0x%X\n", status));
+        }
+    }
+
+    return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
+}
+
 

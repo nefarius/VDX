@@ -128,7 +128,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 }
 
 //
-// Gets called when the user-land process exits.
+// Gets called when the user-land process exits or closes the handle.
 // 
 _Use_decl_annotations_
 VOID

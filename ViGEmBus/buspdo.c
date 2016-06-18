@@ -682,7 +682,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
                 KdPrint((">> >> >> USB_DEVICE_DESCRIPTOR_TYPE\n"));
 
-                status = UsbPdo_GetDeviceDescriptorType(urb);
+                status = UsbPdo_GetDeviceDescriptorType(urb, pdoData);
 
                 break;
 
@@ -690,7 +690,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
                 KdPrint((">> >> >> USB_CONFIGURATION_DESCRIPTOR_TYPE\n"));
 
-                status = UsbPdo_GetConfigurationDescriptorType(urb);
+                status = UsbPdo_GetConfigurationDescriptorType(urb, pdoData);
 
                 break;
 

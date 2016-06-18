@@ -85,24 +85,49 @@ VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(
 //
 // Set device descriptor to identify as wired Microsoft Xbox 360 Controller.
 // 
-NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb)
+NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
 {
     PUSB_DEVICE_DESCRIPTOR pDescriptor = (PUSB_DEVICE_DESCRIPTOR)urb->UrbControlDescriptorRequest.TransferBuffer;
 
-    pDescriptor->bLength = 0x12;
-    pDescriptor->bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE;
-    pDescriptor->bcdUSB = 0x0200; // USB v2.0
-    pDescriptor->bDeviceClass = 0xFF;
-    pDescriptor->bDeviceSubClass = 0xFF;
-    pDescriptor->bDeviceProtocol = 0xFF;
-    pDescriptor->bMaxPacketSize0 = 0x08;
-    pDescriptor->idVendor = 0x045E; // Microsoft Corp.
-    pDescriptor->idProduct = 0x028E; // Xbox360 Controller
-    pDescriptor->bcdDevice = 0x0114;
-    pDescriptor->iManufacturer = 0x01;
-    pDescriptor->iProduct = 0x02;
-    pDescriptor->iSerialNumber = 0x03;
-    pDescriptor->bNumConfigurations = 0x01;
+    switch (pCommon->TargetType)
+    {
+    case Xbox360Wired:
+    {
+        pDescriptor->bLength = 0x12;
+        pDescriptor->bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE;
+        pDescriptor->bcdUSB = 0x0200; // USB v2.0
+        pDescriptor->bDeviceClass = 0xFF;
+        pDescriptor->bDeviceSubClass = 0xFF;
+        pDescriptor->bDeviceProtocol = 0xFF;
+        pDescriptor->bMaxPacketSize0 = 0x08;
+        pDescriptor->idVendor = 0x045E; // Microsoft Corp.
+        pDescriptor->idProduct = 0x028E; // Xbox360 Controller
+        pDescriptor->bcdDevice = 0x0114;
+        pDescriptor->iManufacturer = 0x01;
+        pDescriptor->iProduct = 0x02;
+        pDescriptor->iSerialNumber = 0x03;
+        pDescriptor->bNumConfigurations = 0x01;
+    }
+    case DualShock4Wired:
+    {
+        pDescriptor->bLength = 0x12;
+        pDescriptor->bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE;
+        pDescriptor->bcdUSB = 0x0200; // USB v2.0
+        pDescriptor->bDeviceClass = 0x00;
+        pDescriptor->bDeviceSubClass = 0x00;
+        pDescriptor->bDeviceProtocol = 0x00;
+        pDescriptor->bMaxPacketSize0 = 0x40;
+        pDescriptor->idVendor = 0x054C; // Sony Corp.
+        pDescriptor->idProduct = 0x05C4; // Wireless Controller
+        pDescriptor->bcdDevice = 0x0001;
+        pDescriptor->iManufacturer = 0x01;
+        pDescriptor->iProduct = 0x02;
+        pDescriptor->iSerialNumber = 0x00;
+        pDescriptor->bNumConfigurations = 0x01;
+    }
+    default:
+        break;
+    }
 
     return STATUS_SUCCESS;
 }
@@ -110,7 +135,7 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb)
 //
 // Set configuration descriptor to identify as HID and exposed endpoints.
 // 
-NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb)
+NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
 {
     /*
     0x09,        //   bLength
@@ -247,7 +272,7 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb)
 
     // best guess: USB Standard Descriptor
     */
-    UCHAR DescriptorData[DESCRIPTOR_SIZE] =
+    UCHAR XusbDescriptorData[XUSB_DESCRIPTOR_SIZE] =
     {
         0x09, 0x02, 0x99, 0x00, 0x04, 0x01, 0x00, 0xA0, 0xFA, 0x09,
         0x04, 0x00, 0x00, 0x02, 0xFF, 0x5D, 0x01, 0x00, 0x11, 0x21,
@@ -267,25 +292,103 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb)
         0x01, 0x01, 0x03
     };
 
+    UCHAR Ds4DescriptorData[DS4_DESCRIPTOR_SIZE] =
+    {
+        0x09,        // bLength
+        0x02,        // bDescriptorType (Configuration)
+        0x29, 0x00,  // wTotalLength 41
+        0x01,        // bNumInterfaces 1
+        0x01,        // bConfigurationValue
+        0x00,        // iConfiguration (String Index)
+        0xC0,        // bmAttributes Self Powered
+        0xFA,        // bMaxPower 500mA
+
+        0x09,        // bLength
+        0x04,        // bDescriptorType (Interface)
+        0x00,        // bInterfaceNumber 0
+        0x00,        // bAlternateSetting
+        0x02,        // bNumEndpoints 2
+        0x03,        // bInterfaceClass
+        0x00,        // bInterfaceSubClass
+        0x00,        // bInterfaceProtocol
+        0x00,        // iInterface (String Index)
+
+        0x09,        // bLength
+        0x21,        // bDescriptorType (HID)
+        0x11, 0x01,  // bcdHID 1.17
+        0x00,        // bCountryCode
+        0x01,        // bNumDescriptors
+        0x22,        // bDescriptorType[0] (HID)
+        0xD3, 0x01,  // wDescriptorLength[0] 467
+
+        0x07,        // bLength
+        0x05,        // bDescriptorType (Endpoint)
+        0x84,        // bEndpointAddress (IN/D2H)
+        0x03,        // bmAttributes (Interrupt)
+        0x40, 0x00,  // wMaxPacketSize 64
+        0x05,        // bInterval 5 (unit depends on device speed)
+
+        0x07,        // bLength
+        0x05,        // bDescriptorType (Endpoint)
+        0x03,        // bEndpointAddress (OUT/H2D)
+        0x03,        // bmAttributes (Interrupt)
+        0x40, 0x00,  // wMaxPacketSize 64
+        0x05,        // bInterval 5 (unit depends on device speed)
+    };
+
     // First request just gets required buffer size back
     if (urb->UrbControlDescriptorRequest.TransferBufferLength == sizeof(USB_CONFIGURATION_DESCRIPTOR))
     {
         PUSB_CONFIGURATION_DESCRIPTOR pDescriptor = (PUSB_CONFIGURATION_DESCRIPTOR)urb->UrbControlDescriptorRequest.TransferBuffer;
 
-        pDescriptor->bLength = 0x09;
-        pDescriptor->bDescriptorType = USB_CONFIGURATION_DESCRIPTOR_TYPE;
-        pDescriptor->wTotalLength = DESCRIPTOR_SIZE;
-        pDescriptor->bNumInterfaces = 0x04;
-        pDescriptor->bConfigurationValue = 0x01;
-        pDescriptor->iConfiguration = 0x00;
-        pDescriptor->bmAttributes = 0xA0;
-        pDescriptor->MaxPower = 0xFA;
+        switch (pCommon->TargetType)
+        {
+        case Xbox360Wired:
+        {
+            pDescriptor->bLength = 0x09;
+            pDescriptor->bDescriptorType = USB_CONFIGURATION_DESCRIPTOR_TYPE;
+            pDescriptor->wTotalLength = XUSB_DESCRIPTOR_SIZE;
+            pDescriptor->bNumInterfaces = 0x04;
+            pDescriptor->bConfigurationValue = 0x01;
+            pDescriptor->iConfiguration = 0x00;
+            pDescriptor->bmAttributes = 0xA0;
+            pDescriptor->MaxPower = 0xFA;
+        }
+        case DualShock4Wired:
+        {
+            pDescriptor->bLength = 0x09;
+            pDescriptor->bDescriptorType = USB_CONFIGURATION_DESCRIPTOR_TYPE;
+            pDescriptor->wTotalLength = DS4_DESCRIPTOR_SIZE;
+            pDescriptor->bNumInterfaces = 0x01;
+            pDescriptor->bConfigurationValue = 0x01;
+            pDescriptor->iConfiguration = 0x00;
+            pDescriptor->bmAttributes = 0xC0;
+            pDescriptor->MaxPower = 0xFA;
+        }
+        default:
+            break;
+        }
     }
 
     // Second request can store the whole descriptor
-    if (urb->UrbControlDescriptorRequest.TransferBufferLength >= DESCRIPTOR_SIZE)
+    switch (pCommon->TargetType)
     {
-        RtlCopyMemory(urb->UrbControlDescriptorRequest.TransferBuffer, DescriptorData, DESCRIPTOR_SIZE);
+    case Xbox360Wired:
+    {
+        if (urb->UrbControlDescriptorRequest.TransferBufferLength >= XUSB_DESCRIPTOR_SIZE)
+        {
+            RtlCopyMemory(urb->UrbControlDescriptorRequest.TransferBuffer, XusbDescriptorData, XUSB_DESCRIPTOR_SIZE);
+        }
+    }
+    case DualShock4Wired:
+    {
+        if (urb->UrbControlDescriptorRequest.TransferBufferLength >= DS4_DESCRIPTOR_SIZE)
+        {
+            RtlCopyMemory(urb->UrbControlDescriptorRequest.TransferBuffer, Ds4DescriptorData, DS4_DESCRIPTOR_SIZE);
+        }
+    }
+    default:
+        break;
     }
 
     return STATUS_SUCCESS;

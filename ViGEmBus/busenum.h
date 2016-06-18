@@ -30,7 +30,8 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 
 #define MAX_INSTANCE_ID_LEN             80
 #define MAX_DEVICE_DESCRIPTION_LEN      128
-#define DESCRIPTOR_SIZE	                0x0099
+#define XUSB_DESCRIPTOR_SIZE	        0x0099
+#define DS4_DESCRIPTOR_SIZE	            0x0029
 
 #if defined(_X86_)
 #define CONFIGURATION_SIZE              0x00E4
@@ -187,8 +188,8 @@ NTSTATUS USB_BUSIFFN UsbPdo_QueryBusInformation(IN PVOID BusContext, IN ULONG Le
 NTSTATUS USB_BUSIFFN UsbPdo_SubmitIsoOutUrb(IN PVOID BusContext, IN PURB Urb);
 NTSTATUS USB_BUSIFFN UsbPdo_QueryBusTime(IN PVOID BusContext, IN OUT PULONG CurrentUsbFrame);
 VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(IN PVOID BusContext, IN OUT PUSBD_VERSION_INFORMATION VersionInformation, IN OUT PULONG HcdCapabilities);
-NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb);
-NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb);
+NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
+NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_SelectConfiguration(PURB urb);
 NTSTATUS UsbPdo_SelectInterface(PURB urb);
 NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST Request);

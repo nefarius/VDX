@@ -787,8 +787,6 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     {
         PDS4_DEVICE_DATA ds4Data = Ds4GetData(Device);
 
-        KdPrint(("PIPE HANDLE: 0x%X\n", pTransfer->PipeHandle));
-
         // Data coming FROM us TO higher driver
         if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
         {
@@ -801,6 +799,8 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 
             return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
         }
+
+        // TODO: implement force-feedback requests
     }
     default:
         break;

@@ -7,6 +7,7 @@
 #include <public.h>
 #include <SetupAPI.h>
 #include <Xinput.h>
+#include <time.h>
 
 HANDLE bus;
 int serial = 0;
@@ -106,7 +107,7 @@ int main()
             //    retval = DeviceIoControl(bus, IOCTL_XUSB_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);
             //    printf("IOCTL_XUSB_SUBMIT_REPORT retval: %d, trans: %d, report.Report.bLeftTrigger = %d\n", retval, transfered, report.Report.bLeftTrigger);
             //}
-            
+
             DS4_SUBMIT_REPORT report = { 0 };
             report.Size = sizeof(DS4_SUBMIT_REPORT);
             report.SerialNo = serial;
@@ -123,13 +124,40 @@ int main()
                 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00
             };
 
-            while (getchar() != 'a')
+            int skip = 0;
+            srand(time(NULL));
+
+            while (TRUE /*getchar() != 'a'*/)
             {
                 Ds4HidReport[1]++;
+                Ds4HidReport[2]--;
+                Ds4HidReport[3]++;
+                Ds4HidReport[4]--;
+                Ds4HidReport[8]++;
+                Ds4HidReport[9]--;
                 memcpy(report.Report, Ds4HidReport, 64);
+
+                printf("Axis values: %003d %003d %003d %003d %003d %003d\n",
+                    Ds4HidReport[1],
+                    Ds4HidReport[2],
+                    Ds4HidReport[3],
+                    Ds4HidReport[4],
+                    Ds4HidReport[8],
+                    Ds4HidReport[9]);
+
+                if (skip == 50)
+                {
+                    Ds4HidReport[5] = rand() % 0xF0;
+                    skip = 0;
+                }
+                else
+                {
+                    skip++;
+                }
 
                 retval = DeviceIoControl(bus, IOCTL_DS4_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);
                 printf("IOCTL_DS4_SUBMIT_REPORT retval: %d, trans: %d\n", retval, transfered);
+                Sleep(25);
             }
 
             getchar();

@@ -194,8 +194,6 @@ NTSTATUS Bus_CreatePdo(
         {
             RtlUnicodeStringPrintf(&buffer, L"USB\\VID_054C&PID_05C4&REV_0100");
 
-            RtlUnicodeStringCopy(&deviceId, &buffer);
-
             status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
             if (!NT_SUCCESS(status))
             {
@@ -203,6 +201,7 @@ NTSTATUS Bus_CreatePdo(
             }
 
             RtlUnicodeStringPrintf(&buffer, L"USB\\VID_054C&PID_05C4");
+            RtlUnicodeStringCopy(&deviceId, &buffer);
 
             status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
             if (!NT_SUCCESS(status))

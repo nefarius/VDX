@@ -755,99 +755,129 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
     WDFREQUEST notifyRequest;
 
-    // Check context
-    if (xusb == NULL)
+    if (pdoData == NULL)
     {
-        KdPrint(("No XUSB context found on device %p\n", Device));
-
-        return STATUS_UNSUCCESSFUL;
-    }
-
-    // Data coming FROM us TO higher driver
-    if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
-    {
-        KdPrint((">> >> >> Incoming request, queuing...\n"));
-
-        /* This request is sent periodically and relies on data the "feeder"
-         * has to supply, so we queue this request and return with STATUS_PENDING.
-         * The request gets completed as soon as the "feeder" sent an update. */
-        status = WdfRequestForwardToIoQueue(Request, xusb->PendingUsbRequests);
-
-        return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
-    }
-
-    // Data coming FROM the higher driver TO us
-    KdPrint((">> >> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER: Handle %p, Flags %X, Length %d\n",
-        pTransfer->PipeHandle,
-        pTransfer->TransferFlags,
-        pTransfer->TransferBufferLength));
-
-    if (pTransfer->TransferBufferLength == XUSB_LEDSET_SIZE) // Led
-    {
-        PUCHAR Buffer = pTransfer->TransferBuffer;
-
-        KdPrint(("-- LED Buffer: %02X %02X %02X", Buffer[0], Buffer[1], Buffer[2]));
-
-        // extract LED byte to get controller slot
-        if (Buffer[0] == 0x01 && Buffer[1] == 0x03 && Buffer[2] >= 0x02)
-        {
-            if (Buffer[2] == 0x02) xusb->LedNumber = 0;
-            if (Buffer[2] == 0x03) xusb->LedNumber = 1;
-            if (Buffer[2] == 0x04) xusb->LedNumber = 2;
-            if (Buffer[2] == 0x05) xusb->LedNumber = 3;
-
-            KdPrint(("-- LED Number: %d", xusb->LedNumber));
-        }
-    }
-
-    // Extract rumble (vibration) information
-    if (pTransfer->TransferBufferLength == XUSB_RUMBLE_SIZE)
-    {
-        PUCHAR Buffer = pTransfer->TransferBuffer;
-
-        KdPrint(("-- Rumble Buffer: %02X %02X %02X %02X %02X %02X %02X %02X",
-            Buffer[0],
-            Buffer[1],
-            Buffer[2],
-            Buffer[3],
-            Buffer[4],
-            Buffer[5],
-            Buffer[6],
-            Buffer[7]));
-
-        RtlCopyBytes(xusb->Rumble, Buffer, pTransfer->TransferBufferLength);
-    }
-
-    if (pdoData == NULL || xusb == NULL)
-    {
-        KdPrint((">> >> >> Invalid context!\n"));
+        KdPrint((">> >> >> Invalid common context\n"));
         return STATUS_INVALID_PARAMETER;
     }
 
-    // Notify user-mode process that new data is available
-    status = WdfIoQueueRetrieveNextRequest(xusb->PendingNotificationRequests, &notifyRequest);
-
-    if (NT_SUCCESS(status))
+    switch (pdoData->TargetType)
     {
-        PXUSB_REQUEST_NOTIFICATION notify = NULL;
+    case Xbox360Wired:
+    {
+        // Check context
+        if (xusb == NULL)
+        {
+            KdPrint(("No XUSB context found on device %p\n", Device));
 
-        status = WdfRequestRetrieveOutputBuffer(notifyRequest, sizeof(XUSB_REQUEST_NOTIFICATION), (PVOID)&notify, NULL);
+            return STATUS_UNSUCCESSFUL;
+        }
+
+        // Data coming FROM us TO higher driver
+        if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
+        {
+            KdPrint((">> >> >> Incoming request, queuing...\n"));
+
+            /* This request is sent periodically and relies on data the "feeder"
+            * has to supply, so we queue this request and return with STATUS_PENDING.
+            * The request gets completed as soon as the "feeder" sent an update. */
+            status = WdfRequestForwardToIoQueue(Request, xusb->PendingUsbRequests);
+
+            return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
+        }
+
+        // Data coming FROM the higher driver TO us
+        KdPrint((">> >> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER: Handle %p, Flags %X, Length %d\n",
+            pTransfer->PipeHandle,
+            pTransfer->TransferFlags,
+            pTransfer->TransferBufferLength));
+
+        if (pTransfer->TransferBufferLength == XUSB_LEDSET_SIZE) // Led
+        {
+            PUCHAR Buffer = pTransfer->TransferBuffer;
+
+            KdPrint(("-- LED Buffer: %02X %02X %02X", Buffer[0], Buffer[1], Buffer[2]));
+
+            // extract LED byte to get controller slot
+            if (Buffer[0] == 0x01 && Buffer[1] == 0x03 && Buffer[2] >= 0x02)
+            {
+                if (Buffer[2] == 0x02) xusb->LedNumber = 0;
+                if (Buffer[2] == 0x03) xusb->LedNumber = 1;
+                if (Buffer[2] == 0x04) xusb->LedNumber = 2;
+                if (Buffer[2] == 0x05) xusb->LedNumber = 3;
+
+                KdPrint(("-- LED Number: %d", xusb->LedNumber));
+            }
+        }
+
+        // Extract rumble (vibration) information
+        if (pTransfer->TransferBufferLength == XUSB_RUMBLE_SIZE)
+        {
+            PUCHAR Buffer = pTransfer->TransferBuffer;
+
+            KdPrint(("-- Rumble Buffer: %02X %02X %02X %02X %02X %02X %02X %02X",
+                Buffer[0],
+                Buffer[1],
+                Buffer[2],
+                Buffer[3],
+                Buffer[4],
+                Buffer[5],
+                Buffer[6],
+                Buffer[7]));
+
+            RtlCopyBytes(xusb->Rumble, Buffer, pTransfer->TransferBufferLength);
+        }
+
+        // Notify user-mode process that new data is available
+        status = WdfIoQueueRetrieveNextRequest(xusb->PendingNotificationRequests, &notifyRequest);
 
         if (NT_SUCCESS(status))
         {
-            // Assign values to output buffer
-            notify->Size = sizeof(XUSB_REQUEST_NOTIFICATION);
-            notify->SerialNo = pdoData->SerialNo;
-            notify->LedNumber = xusb->LedNumber;
-            notify->LargeMotor = xusb->Rumble[3];
-            notify->SmallMotor = xusb->Rumble[4];
+            PXUSB_REQUEST_NOTIFICATION notify = NULL;
 
-            WdfRequestCompleteWithInformation(notifyRequest, status, notify->Size);
+            status = WdfRequestRetrieveOutputBuffer(notifyRequest, sizeof(XUSB_REQUEST_NOTIFICATION), (PVOID)&notify, NULL);
+
+            if (NT_SUCCESS(status))
+            {
+                // Assign values to output buffer
+                notify->Size = sizeof(XUSB_REQUEST_NOTIFICATION);
+                notify->SerialNo = pdoData->SerialNo;
+                notify->LedNumber = xusb->LedNumber;
+                notify->LargeMotor = xusb->Rumble[3];
+                notify->SmallMotor = xusb->Rumble[4];
+
+                WdfRequestCompleteWithInformation(notifyRequest, status, notify->Size);
+            }
+            else
+            {
+                KdPrint(("WdfRequestRetrieveOutputBuffer failed with status 0x%X\n", status));
+            }
         }
-        else
+    }
+    case DualShock4Wired:
+    {
+        UCHAR SampleReport[64] =
         {
-            KdPrint(("WdfRequestRetrieveOutputBuffer failed with status 0x%X\n", status));
+            0x01, 0x82, 0x7F, 0x7E, 0x80, 0x08, 0x00, 0x58,
+            0x00, 0x00, 0xFD, 0x63, 0x06, 0x03, 0x00, 0xFE,
+            0xFF, 0xFC, 0xFF, 0x79, 0xFD, 0x1B, 0x14, 0xD1,
+            0xE9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1B, 0x00,
+            0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80,
+            0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00,
+            0x80, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00,
+            0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00
+        };
+
+        if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
+        {
+            pTransfer->TransferBufferLength = 64;
+            RtlCopyBytes(pTransfer->TransferBuffer, SampleReport, 64);
         }
+
+        return STATUS_INVALID_PARAMETER;
+    }
+    default:
+        break;
     }
 
     return STATUS_SUCCESS;

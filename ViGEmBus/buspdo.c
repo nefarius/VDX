@@ -296,8 +296,10 @@ NTSTATUS Bus_CreatePdo(
             return status;
         }
 
-        // Add XUSB-specific device data context
-        if (TargetType == Xbox360Wired)
+        switch (TargetType)
+        {
+            // Add XUSB-specific device data context
+        case Xbox360Wired:
         {
             PXUSB_DEVICE_DATA xusbData = NULL;
             WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&pdoAttributes, XUSB_DEVICE_DATA);
@@ -308,6 +310,21 @@ NTSTATUS Bus_CreatePdo(
                 KdPrint(("WdfObjectAllocateContext failed status 0x%x\n", status));
                 return status;
             }
+        }
+        case DualShock4Wired:
+        {
+            PDS4_DEVICE_DATA ds4Data = NULL;
+            WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&pdoAttributes, DS4_DEVICE_DATA);
+
+            status = WdfObjectAllocateContext(hChild, &pdoAttributes, (PVOID)&ds4Data);
+            if (!NT_SUCCESS(status))
+            {
+                KdPrint(("WdfObjectAllocateContext failed status 0x%x\n", status));
+                return status;
+            }
+        }
+        default:
+            break;
         }
     }
 
@@ -331,6 +348,7 @@ NTSTATUS Bus_CreatePdo(
 
         // Initialize additional contexts (if available)
         PXUSB_DEVICE_DATA xusb = XusbGetData(hChild);
+        PDS4_DEVICE_DATA ds4 = Ds4GetData(hChild);
 
         if (xusb != NULL)
         {
@@ -375,6 +393,27 @@ NTSTATUS Bus_CreatePdo(
 
             // This value never changes
             xusb->Report[1] = 0x14;
+        }
+
+        if (ds4 != NULL)
+        {
+            // I/O Queue for pending IRPs
+            WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig;
+            WDFQUEUE pendingUsbQueue;
+
+            // Create and assign queue for incoming bulk transfer
+            {
+                WDF_IO_QUEUE_CONFIG_INIT(&pendingUsbQueueConfig, WdfIoQueueDispatchManual);
+
+                status = WdfIoQueueCreate(hChild, &pendingUsbQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &pendingUsbQueue);
+                if (!NT_SUCCESS(status))
+                {
+                    KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+                    return status;
+                }
+
+                ds4->PendingUsbRequests = pendingUsbQueue;
+            }
         }
     }
 
@@ -587,7 +626,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
             return status;
         }
     }
-        break;
+    break;
     default:
         break;
     }
@@ -697,6 +736,12 @@ VOID Pdo_EvtIoInternalDeviceControl(
             case USB_STRING_DESCRIPTOR_TYPE:
 
                 KdPrint((">> >> >> USB_STRING_DESCRIPTOR_TYPE\n"));
+
+                status = STATUS_SUCCESS;
+
+                PUSB_STRING_DESCRIPTOR desc = (PUSB_STRING_DESCRIPTOR)&urb->UrbControlDescriptorRequest.TransferBuffer;
+
+                KdPrint(("String descriptor; bDescriptorType = 0x%X, bLength = %d\n", desc->bDescriptorType, desc->bLength));
 
                 break;
 

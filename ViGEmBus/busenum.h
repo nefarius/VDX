@@ -46,6 +46,8 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 #define XUSB_LEDSET_SIZE                3
 #define XUSB_LEDNUM_SIZE                1
 
+#define DS4_HID_REPORT_SIZE             64
+
 //
 // Helpers
 // 
@@ -110,6 +112,17 @@ typedef struct _XUSB_DEVICE_DATA
 } XUSB_DEVICE_DATA, *PXUSB_DEVICE_DATA;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XUSB_DEVICE_DATA, XusbGetData)
+
+//
+// DS4-specific device context data.
+// 
+typedef struct _DS4_DEVICE_DATA
+{
+    UCHAR HidReport[DS4_HID_REPORT_SIZE];
+    WDFQUEUE PendingUsbRequests;
+} DS4_DEVICE_DATA, *PDS4_DEVICE_DATA;
+
+WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DS4_DEVICE_DATA, Ds4GetData)
 
 
 //

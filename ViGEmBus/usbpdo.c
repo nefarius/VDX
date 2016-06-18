@@ -856,25 +856,20 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     }
     case DualShock4Wired:
     {
-        UCHAR SampleReport[64] =
-        {
-            0x01, 0x82, 0x7F, 0x7E, 0x80, 0x08, 0x00, 0x58,
-            0x00, 0x00, 0xFD, 0x63, 0x06, 0x03, 0x00, 0xFE,
-            0xFF, 0xFC, 0xFF, 0x79, 0xFD, 0x1B, 0x14, 0xD1,
-            0xE9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1B, 0x00,
-            0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80,
-            0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00,
-            0x80, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00,
-            0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00
-        };
+        PDS4_DEVICE_DATA ds4Data = Ds4GetData(Device);
 
+        // Data coming FROM us TO higher driver
         if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
         {
-            pTransfer->TransferBufferLength = 64;
-            RtlCopyBytes(pTransfer->TransferBuffer, SampleReport, 64);
-        }
+            KdPrint((">> >> >> Incoming request, queuing...\n"));
 
-        return STATUS_INVALID_PARAMETER;
+            /* This request is sent periodically and relies on data the "feeder"
+            * has to supply, so we queue this request and return with STATUS_PENDING.
+            * The request gets completed as soon as the "feeder" sent an update. */
+            status = WdfRequestForwardToIoQueue(Request, ds4Data->PendingUsbRequests);
+
+            return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
+        }
     }
     default:
         break;

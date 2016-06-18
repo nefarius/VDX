@@ -84,14 +84,14 @@ int main()
             BUSENUM_PLUGIN_HARDWARE plugin = { 0 };
             plugin.Size = sizeof(BUSENUM_PLUGIN_HARDWARE);
             plugin.SerialNo = serial;
-            plugin.TargetType = Xbox360Wired;
+            plugin.TargetType = DualShock4Wired;
 
             auto retval = DeviceIoControl(bus, IOCTL_BUSENUM_PLUGIN_HARDWARE, &plugin, plugin.Size, nullptr, 0, &transfered, nullptr);
 
             printf("IOCTL_BUSENUM_PLUGIN_HARDWARE retval: %d, trans: %d\n", retval, transfered);
 
             DWORD myThreadID;
-            HANDLE myHandle = CreateThread(0, 0, notify, NULL, 0, &myThreadID);
+            //HANDLE myHandle = CreateThread(0, 0, notify, NULL, 0, &myThreadID);
 
             getchar();
 

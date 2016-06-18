@@ -1,6 +1,7 @@
 #include "busenum.h"
 #include <wdmsec.h>
 #include <usbioctl.h>
+#include <hidclass.h>
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text(PAGE, Bus_CreatePdo)
@@ -204,6 +205,33 @@ NTSTATUS Bus_CreatePdo(
             RtlUnicodeStringPrintf(&buffer, L"USB\\VID_054C&PID_05C4");
 
             status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
+            if (!NT_SUCCESS(status))
+            {
+                return status;
+            }
+        }
+
+        // set compatible ids
+        {
+            RtlUnicodeStringPrintf(&buffer, L"USB\\Class_03&SubClass_00&Prot_00");
+
+            status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
+            if (!NT_SUCCESS(status))
+            {
+                return status;
+            }
+
+            RtlUnicodeStringPrintf(&buffer, L"USB\\Class_03&SubClass_00");
+
+            status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
+            if (!NT_SUCCESS(status))
+            {
+                return status;
+            }
+
+            RtlUnicodeStringPrintf(&buffer, L"USB\\Class_03");
+
+            status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
             if (!NT_SUCCESS(status))
             {
                 return status;
@@ -421,8 +449,10 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 
     pdoData = PdoGetData(Device);
 
-    // Expose XUSB interfaces
-    if (pdoData->TargetType == Xbox360Wired)
+    switch (pdoData->TargetType)
+    {
+        // Expose XUSB interfaces
+    case Xbox360Wired:
     {
         INTERFACE dummyIface;
 
@@ -434,11 +464,11 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
         dummyIface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
 
         /* XUSB.sys will query for the following three (unknown) interfaces
-         * BUT WONT USE IT so we just expose them to satisfy initialization. */
+        * BUT WONT USE IT so we just expose them to satisfy initialization. */
 
-         //
-         // Dummy 0
-         // 
+        //
+        // Dummy 0
+        // 
         WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_0, NULL);
 
         status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
@@ -535,6 +565,31 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
             KdPrint(("WdfDeviceAddQueryInterface failed status 0x%x\n", status));
             return status;
         }
+    }
+    break;
+    case DualShock4Wired:
+    {
+        INTERFACE dummyIface;
+
+        dummyIface.Size = sizeof(INTERFACE);
+        dummyIface.Version = 1;
+        dummyIface.Context = (PVOID)Device;
+
+        dummyIface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
+        dummyIface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
+
+        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_HID, NULL);
+
+        status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfDeviceAddQueryInterface failed status 0x%x\n", status));
+            return status;
+        }
+    }
+        break;
+    default:
+        break;
     }
 
     return status;

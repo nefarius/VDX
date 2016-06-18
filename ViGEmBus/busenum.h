@@ -193,6 +193,13 @@ Bus_XusbQueueNotification(
     WDFREQUEST Request
 );
 
+NTSTATUS
+Bus_Ds4SubmitReport(
+    WDFDEVICE Device,
+    ULONG SerialNo,
+    PDS4_SUBMIT_REPORT Report
+);
+
 
 //
 // USB-specific functions
@@ -206,7 +213,7 @@ VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(IN PVOID BusContext, IN OUT PUSBD_VERSIO
 NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon);
-NTSTATUS UsbPdo_SelectInterface(PURB urb);
+NTSTATUS UsbPdo_SelectInterface(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST Request);
 NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device);
 NTSTATUS UsbPdo_ClassInterface(PURB urb);

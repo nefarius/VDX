@@ -200,6 +200,7 @@ VOID Bus_EvtIoDeviceControl(
     PBUSENUM_EJECT_HARDWARE eject = NULL;
     PXUSB_SUBMIT_REPORT xusbSubmit = NULL;
     PXUSB_REQUEST_NOTIFICATION xusbNotify = NULL;
+    PDS4_SUBMIT_REPORT ds4Submit = NULL;
 
 
     PAGED_CODE();
@@ -328,6 +329,32 @@ VOID Bus_EvtIoDeviceControl(
             }
 
             status = Bus_XusbQueueNotification(hDevice, xusbNotify->SerialNo, Request);
+        }
+
+        break;
+
+    case IOCTL_DS4_SUBMIT_REPORT:
+
+        KdPrint(("IOCTL_DS4_SUBMIT_REPORT\n"));
+
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(DS4_SUBMIT_REPORT), (PVOID)&ds4Submit, &length);
+
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            break;
+        }
+
+        if ((sizeof(DS4_SUBMIT_REPORT) == ds4Submit->Size) && (length == InputBufferLength))
+        {
+            // This request only supports a single PDO at a time
+            if (ds4Submit->SerialNo == 0)
+            {
+                status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            status = Bus_Ds4SubmitReport(hDevice, ds4Submit->SerialNo, ds4Submit);
         }
 
         break;
@@ -709,6 +736,106 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
     }
 
     return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
+}
+
+NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPORT Report)
+{
+    NTSTATUS status = STATUS_SUCCESS;
+    WDFCHILDLIST list;
+    WDF_CHILD_RETRIEVE_INFO info;
+    WDFDEVICE hChild;
+    PPDO_DEVICE_DATA pdoData;
+    PDS4_DEVICE_DATA ds4Data;
+    WDFREQUEST usbRequest;
+    PIRP pendingIrp;
+    PIO_STACK_LOCATION irpStack;
+    BOOLEAN changed;
+
+
+    KdPrint(("Entered Bus_Ds4SubmitReport\n"));
+
+    // Get child
+    {
+        list = WdfFdoGetDefaultChildList(Device);
+
+        PDO_IDENTIFICATION_DESCRIPTION description;
+
+        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
+
+        description.SerialNo = SerialNo;
+
+        WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
+
+        hChild = WdfChildListRetrievePdo(list, &info);
+    }
+
+    // Validate child
+    if (hChild == NULL)
+    {
+        KdPrint(("Bus_Ds4SubmitReport: PDO with serial %d not found\n", SerialNo));
+        return STATUS_NO_SUCH_DEVICE;
+    }
+
+    // Check common context
+    pdoData = PdoGetData(hChild);
+    if (pdoData == NULL)
+    {
+        KdPrint(("Bus_Ds4SubmitReport: PDO context not found\n"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    // Check XUSB context
+    ds4Data = Ds4GetData(hChild);
+    if (ds4Data == NULL)
+    {
+        KdPrint(("Bus_Ds4SubmitReport: DS4 context not found\n"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    // Check if caller owns this PDO
+    if (pdoData->OwnerProcessId != CURRENT_PROCESS_ID())
+    {
+        KdPrint(("Bus_Ds4SubmitReport: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
+        return STATUS_ACCESS_DENIED;
+    }
+
+    // Check if input is different from previous value
+    changed = TRUE;// (RtlCompareMemory(ds4Data->HidReport, &Report->Report, sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
+
+    // Don't waste pending IRP if input hasn't changed
+    if (changed)
+    {
+        KdPrint(("Bus_Ds4SubmitReport: received new report\n"));
+
+        // Get pending USB request
+        status = WdfIoQueueRetrieveNextRequest(ds4Data->PendingUsbRequests, &usbRequest);
+
+        if (NT_SUCCESS(status))
+        {
+            KdPrint(("Bus_Ds4SubmitReport: pending IRP found\n"));
+
+            // Get pending IRP
+            pendingIrp = WdfRequestWdmGetIrp(usbRequest);
+            irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
+
+            // Get USB request block
+            PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
+
+            // Get transfer buffer
+            PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
+            // Set buffer length to report size
+            urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_HID_REPORT_SIZE;
+
+            // Copy report to cache and transfer buffer 
+            RtlCopyBytes(ds4Data->HidReport, &Report->Report, DS4_HID_REPORT_SIZE);
+            RtlCopyBytes(Buffer, ds4Data->HidReport, DS4_HID_REPORT_SIZE);
+
+            // Complete pending request
+            WdfRequestComplete(usbRequest, status);
+        }
+    }
+
+    return status;
 }
 
 

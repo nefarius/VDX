@@ -608,16 +608,16 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
     break;
     case DualShock4Wired:
     {
-        INTERFACE dummyIface;
+        INTERFACE devinterfaceHid;
 
-        dummyIface.Size = sizeof(INTERFACE);
-        dummyIface.Version = 1;
-        dummyIface.Context = (PVOID)Device;
+        devinterfaceHid.Size = sizeof(INTERFACE);
+        devinterfaceHid.Version = 1;
+        devinterfaceHid.Context = (PVOID)Device;
 
-        dummyIface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
-        dummyIface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
+        devinterfaceHid.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
+        devinterfaceHid.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
 
-        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_HID, NULL);
+        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&devinterfaceHid, &GUID_DEVINTERFACE_HID, NULL);
 
         status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
         if (!NT_SUCCESS(status))
@@ -707,7 +707,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             KdPrint((">> >> URB_FUNCTION_SELECT_INTERFACE\n"));
 
-            status = UsbPdo_SelectInterface(urb);
+            status = UsbPdo_SelectInterface(urb, pdoData);
 
             break;
 
@@ -739,6 +739,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
                 status = STATUS_SUCCESS;
 
+                // NOTE: test code
                 PUSB_STRING_DESCRIPTOR desc = (PUSB_STRING_DESCRIPTOR)&urb->UrbControlDescriptorRequest.TransferBuffer;
 
                 KdPrint(("String descriptor; bDescriptorType = 0x%X, bLength = %d\n", desc->bDescriptorType, desc->bLength));

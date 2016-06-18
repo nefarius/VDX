@@ -660,7 +660,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             KdPrint((">> >> URB_FUNCTION_SELECT_CONFIGURATION\n"));
 
-            status = UsbPdo_SelectConfiguration(urb);
+            status = UsbPdo_SelectConfiguration(urb, pdoData);
 
             break;
 
@@ -735,6 +735,22 @@ VOID Pdo_EvtIoInternalDeviceControl(
             KdPrint((">> >> URB_FUNCTION_ABORT_PIPE\n"));
 
             status = UsbPdo_AbortPipe(hDevice);
+
+            break;
+
+        case URB_FUNCTION_CLASS_INTERFACE:
+
+            KdPrint((">> >> URB_FUNCTION_CLASS_INTERFACE\n"));
+
+            status = UsbPdo_ClassInterface(urb);
+
+            break;
+
+        case URB_FUNCTION_GET_DESCRIPTOR_FROM_INTERFACE:
+
+            KdPrint((">> >> URB_FUNCTION_GET_DESCRIPTOR_FROM_INTERFACE\n"));
+
+            status = UsbPdo_GetDescriptorFromInterface(urb, pdoData);
 
             break;
 

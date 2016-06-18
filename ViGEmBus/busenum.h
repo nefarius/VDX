@@ -32,11 +32,13 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 #define MAX_DEVICE_DESCRIPTION_LEN      128
 #define XUSB_DESCRIPTOR_SIZE	        0x0099
 #define DS4_DESCRIPTOR_SIZE	            0x0029
+#define DS4_CONFIGURATION_SIZE          0x0070
+#define DS4_HID_REPORT_DESCRIPTOR_SIZE  0x01D3
 
 #if defined(_X86_)
-#define CONFIGURATION_SIZE              0x00E4
+#define XUSB_CONFIGURATION_SIZE              0x00E4
 #else
-#define CONFIGURATION_SIZE              0x0130
+#define XUSB_CONFIGURATION_SIZE              0x0130
 #endif
 
 #define XUSB_REPORT_SIZE                20
@@ -190,8 +192,10 @@ NTSTATUS USB_BUSIFFN UsbPdo_QueryBusTime(IN PVOID BusContext, IN OUT PULONG Curr
 VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(IN PVOID BusContext, IN OUT PUSBD_VERSION_INFORMATION VersionInformation, IN OUT PULONG HcdCapabilities);
 NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
-NTSTATUS UsbPdo_SelectConfiguration(PURB urb);
+NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_SelectInterface(PURB urb);
 NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST Request);
 NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device);
+NTSTATUS UsbPdo_ClassInterface(PURB urb);
+NTSTATUS UsbPdo_GetDescriptorFromInterface(PURB urb, PPDO_DEVICE_DATA pCommon);
 

@@ -113,7 +113,7 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
         pDescriptor->bLength = 0x12;
         pDescriptor->bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE;
         pDescriptor->bcdUSB = 0x0200; // USB v2.0
-        pDescriptor->bDeviceClass = 0x00;
+        pDescriptor->bDeviceClass = 0x00; // per Interface
         pDescriptor->bDeviceSubClass = 0x00;
         pDescriptor->bDeviceProtocol = 0x00;
         pDescriptor->bMaxPacketSize0 = 0x40;

@@ -814,19 +814,44 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 // 
 NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device)
 {
-    PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
+    PPDO_DEVICE_DATA pdoData = PdoGetData(Device);
 
-    // Check context
-    if (xusb == NULL)
+    switch (pdoData->TargetType)
     {
-        KdPrint(("No XUSB context found on device %p\n", Device));
+    case Xbox360Wired:
+    {
+        PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
 
-        return STATUS_UNSUCCESSFUL;
+        // Check context
+        if (xusb == NULL)
+        {
+            KdPrint(("No XUSB context found on device %p\n", Device));
+
+            return STATUS_UNSUCCESSFUL;
+        }
+
+        // Higher driver shutting down, emptying PDOs queues
+        WdfIoQueuePurge(xusb->PendingUsbRequests, NULL, NULL);
+        WdfIoQueuePurge(xusb->PendingNotificationRequests, NULL, NULL);
     }
+    case DualShock4Wired:
+    {
+        PXUSB_DEVICE_DATA ds4 = XusbGetData(Device);
 
-    // Higher driver shutting down, emptying PDOs queues
-    WdfIoQueuePurge(xusb->PendingUsbRequests, NULL, NULL);
-    WdfIoQueuePurge(xusb->PendingNotificationRequests, NULL, NULL);
+        // Check context
+        if (ds4 == NULL)
+        {
+            KdPrint(("No DS4 context found on device %p\n", Device));
+
+            return STATUS_UNSUCCESSFUL;
+        }
+
+        // Higher driver shutting down, emptying PDOs queues
+        WdfIoQueuePurge(ds4->PendingUsbRequests, NULL, NULL);
+    }
+    default:
+        break;
+    }
 
     return STATUS_SUCCESS;
 }

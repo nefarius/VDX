@@ -749,44 +749,12 @@ VOID Pdo_EvtIoInternalDeviceControl(
                 break;
 
             case USB_STRING_DESCRIPTOR_TYPE:
-            {
 
                 KdPrint((">> >> >> USB_STRING_DESCRIPTOR_TYPE\n"));
 
-                status = STATUS_SUCCESS;
-
-                KdPrint(("Index = %d\n", urb->UrbControlDescriptorRequest.Index));
-
-                if (urb->UrbControlDescriptorRequest.Index == 0x00)
-                {
-                    UCHAR LangId[4] =
-                    {
-                        0x04, 0x03, 0x09, 0x04
-                    };
-
-                    urb->UrbControlDescriptorRequest.TransferBufferLength = 0x04;
-                    RtlCopyBytes(urb->UrbControlDescriptorRequest.TransferBuffer, LangId, 0x04);
-                }
-
-                if (urb->UrbControlDescriptorRequest.Index == 0x01
-                    || urb->UrbControlDescriptorRequest.Index == 0x02)
-                {
-                    PUSB_STRING_DESCRIPTOR desc = (PUSB_STRING_DESCRIPTOR)&urb->UrbControlDescriptorRequest.TransferBuffer;
-                    DECLARE_CONST_UNICODE_STRING(Manufacturer, L"Nefarius Software Solutions");
-
-                    desc->bDescriptorType = USB_STRING_DESCRIPTOR_TYPE;
-                    desc->bLength = (UCHAR)(sizeof(USB_STRING_DESCRIPTOR) + (Manufacturer.Length * sizeof(WCHAR)));
-
-                    urb->UrbControlDescriptorRequest.TransferBufferLength = desc->bLength;
-                    RtlCopyMemory(desc->bString, Manufacturer.Buffer, Manufacturer.Length);
-
-                    KdPrint(("String descriptor; bDescriptorType = 0x%X, bLength = %d, TransferBufferLength = %d\n",
-                        desc->bDescriptorType, desc->bLength,
-                        urb->UrbControlDescriptorRequest.TransferBufferLength));
-                }
+                status = UsbPdo_GetStringDescriptorType(urb, pdoData);
 
                 break;
-            }
             case USB_INTERFACE_DESCRIPTOR_TYPE:
 
                 KdPrint((">> >> >> USB_INTERFACE_DESCRIPTOR_TYPE\n"));

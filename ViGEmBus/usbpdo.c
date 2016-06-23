@@ -395,6 +395,95 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommo
 }
 
 //
+// Set device string descriptors (currently only used in DS4 emulation).
+// 
+NTSTATUS UsbPdo_GetStringDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
+{
+    KdPrint(("Index = %d\n", urb->UrbControlDescriptorRequest.Index));
+
+    switch (pCommon->TargetType)
+    {
+    case DualShock4Wired:
+    {
+        switch (urb->UrbControlDescriptorRequest.Index)
+        {
+        case 0:
+        {
+            // "American English"
+            UCHAR LangId[HID_LANGUAGE_ID_LENGTH] =
+            {
+                0x04, 0x03, 0x09, 0x04
+            };
+
+            urb->UrbControlDescriptorRequest.TransferBufferLength = HID_LANGUAGE_ID_LENGTH;
+            RtlCopyBytes(urb->UrbControlDescriptorRequest.TransferBuffer, LangId, HID_LANGUAGE_ID_LENGTH);
+
+            break;
+        }
+        case 1:
+        {
+            KdPrint(("LanguageId = 0x%X\n", urb->UrbControlDescriptorRequest.LanguageId));
+
+            if (urb->UrbControlDescriptorRequest.TransferBufferLength < DS4_MANUFACTURER_NAME_LENGTH)
+            {
+                PUSB_STRING_DESCRIPTOR pDesc = (PUSB_STRING_DESCRIPTOR)urb->UrbControlDescriptorRequest.TransferBuffer;
+                pDesc->bLength = DS4_MANUFACTURER_NAME_LENGTH;
+                break;
+            }
+
+            // "Sony Computer Entertainment"
+            UCHAR ManufacturerString[DS4_MANUFACTURER_NAME_LENGTH] =
+            {
+                0x38, 0x03, 0x53, 0x00, 0x6F, 0x00, 0x6E, 0x00,
+                0x79, 0x00, 0x20, 0x00, 0x43, 0x00, 0x6F, 0x00,
+                0x6D, 0x00, 0x70, 0x00, 0x75, 0x00, 0x74, 0x00,
+                0x65, 0x00, 0x72, 0x00, 0x20, 0x00, 0x45, 0x00,
+                0x6E, 0x00, 0x74, 0x00, 0x65, 0x00, 0x72, 0x00,
+                0x74, 0x00, 0x61, 0x00, 0x69, 0x00, 0x6E, 0x00,
+                0x6D, 0x00, 0x65, 0x00, 0x6E, 0x00, 0x74, 0x00
+            };
+
+            urb->UrbControlDescriptorRequest.TransferBufferLength = DS4_MANUFACTURER_NAME_LENGTH;
+            RtlCopyBytes(urb->UrbControlDescriptorRequest.TransferBuffer, ManufacturerString, DS4_MANUFACTURER_NAME_LENGTH);
+
+            break;
+        }
+        case 2:
+        {
+            KdPrint(("LanguageId = 0x%X\n", urb->UrbControlDescriptorRequest.LanguageId));
+
+            if (urb->UrbControlDescriptorRequest.TransferBufferLength < DS4_PRODUCT_NAME_LENGTH)
+            {
+                PUSB_STRING_DESCRIPTOR pDesc = (PUSB_STRING_DESCRIPTOR)urb->UrbControlDescriptorRequest.TransferBuffer;
+                pDesc->bLength = DS4_PRODUCT_NAME_LENGTH;
+                break;
+            }
+
+            // "Wireless Controller"
+            UCHAR ProductString[DS4_PRODUCT_NAME_LENGTH] =
+            {
+                0x28, 0x03, 0x57, 0x00, 0x69, 0x00, 0x72, 0x00,
+                0x65, 0x00, 0x6C, 0x00, 0x65, 0x00, 0x73, 0x00,
+                0x73, 0x00, 0x20, 0x00, 0x43, 0x00, 0x6F, 0x00,
+                0x6E, 0x00, 0x74, 0x00, 0x72, 0x00, 0x6F, 0x00,
+                0x6C, 0x00, 0x6C, 0x00, 0x65, 0x00, 0x72, 0x00
+            };
+
+            urb->UrbControlDescriptorRequest.TransferBufferLength = DS4_PRODUCT_NAME_LENGTH;
+            RtlCopyBytes(urb->UrbControlDescriptorRequest.TransferBuffer, ProductString, DS4_PRODUCT_NAME_LENGTH);
+        }
+        default:
+            break;
+        }
+    }
+    default:
+        break;
+    }
+
+    return STATUS_SUCCESS;
+}
+
+//
 // Fakes a successfully selected configuration.
 // 
 NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon)
@@ -864,7 +953,7 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
     UNREFERENCED_PARAMETER(urb);
 
     KdPrint((">> >> >> URB_FUNCTION_CLASS_INTERFACE\n"));
-    KdPrint((">> >> >> TransferFlags = 0x%X, Request = 0x%X, Value = 0x%X, Index = 0x%X, BufLen = %d\n", 
+    KdPrint((">> >> >> TransferFlags = 0x%X, Request = 0x%X, Value = 0x%X, Index = 0x%X, BufLen = %d\n",
         urb->UrbControlVendorClassRequest.TransferFlags,
         urb->UrbControlVendorClassRequest.Request,
         urb->UrbControlVendorClassRequest.Value,

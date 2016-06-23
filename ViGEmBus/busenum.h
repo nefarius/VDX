@@ -34,6 +34,9 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 #define DS4_DESCRIPTOR_SIZE	            0x0029
 #define DS4_CONFIGURATION_SIZE          0x0070
 #define DS4_HID_REPORT_DESCRIPTOR_SIZE  0x01D3
+#define HID_LANGUAGE_ID_LENGTH          0x04
+#define DS4_MANUFACTURER_NAME_LENGTH    0x38
+#define DS4_PRODUCT_NAME_LENGTH         0x28
 
 #if defined(_X86_)
 #define XUSB_CONFIGURATION_SIZE              0x00E4
@@ -212,6 +215,7 @@ NTSTATUS USB_BUSIFFN UsbPdo_QueryBusTime(IN PVOID BusContext, IN OUT PULONG Curr
 VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(IN PVOID BusContext, IN OUT PUSBD_VERSION_INFORMATION VersionInformation, IN OUT PULONG HcdCapabilities);
 NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
+NTSTATUS UsbPdo_GetStringDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_SelectInterface(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST Request);

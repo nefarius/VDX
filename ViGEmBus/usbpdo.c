@@ -954,20 +954,22 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
 {
     UNREFERENCED_PARAMETER(urb);
 
+    struct _URB_CONTROL_VENDOR_OR_CLASS_REQUEST* pRequest = &urb->UrbControlVendorClassRequest;
+
     KdPrint((">> >> >> URB_FUNCTION_CLASS_INTERFACE\n"));
     KdPrint((">> >> >> TransferFlags = 0x%X, Request = 0x%X, Value = 0x%X, Index = 0x%X, BufLen = %d\n",
-        urb->UrbControlVendorClassRequest.TransferFlags,
-        urb->UrbControlVendorClassRequest.Request,
-        urb->UrbControlVendorClassRequest.Value,
-        urb->UrbControlVendorClassRequest.Index,
-        urb->UrbControlVendorClassRequest.TransferBufferLength));
+        pRequest->TransferFlags,
+        pRequest->Request,
+        pRequest->Value,
+        pRequest->Index,
+        pRequest->TransferBufferLength));
 
-    switch (urb->UrbControlVendorClassRequest.Request)
+    switch (pRequest->Request)
     {
     case HID_REQUEST_GET_REPORT:
     {
-        UCHAR reportId = (urb->UrbControlVendorClassRequest.Value) & 0xFF;
-        UCHAR reportType = (urb->UrbControlVendorClassRequest.Value >> 8) & 0xFF; 
+        UCHAR reportId = (pRequest->Value) & 0xFF;
+        UCHAR reportType = (pRequest->Value >> 8) & 0xFF;
 
         KdPrint((">> >> >> >> GET_REPORT(%d): %d\n", reportType, reportId));
 
@@ -991,8 +993,8 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
                     0x00
                 };
 
-                urb->UrbControlVendorClassRequest.TransferBufferLength = HID_GET_FEATURE_REPORT_SIZE_0;
-                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, HID_GET_FEATURE_REPORT_SIZE_0);
+                pRequest->TransferBufferLength = HID_GET_FEATURE_REPORT_SIZE_0;
+                RtlCopyBytes(pRequest->TransferBuffer, Response, HID_GET_FEATURE_REPORT_SIZE_0);
 
                 break;
             }
@@ -1008,8 +1010,8 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
                     0x1D, 0xC6, 0xDE, 0x08, 0x00
                 };
 
-                urb->UrbControlVendorClassRequest.TransferBufferLength = HID_GET_FEATURE_REPORT_SIZE_1;
-                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, HID_GET_FEATURE_REPORT_SIZE_1);
+                pRequest->TransferBufferLength = HID_GET_FEATURE_REPORT_SIZE_1;
+                RtlCopyBytes(pRequest->TransferBuffer, Response, HID_GET_FEATURE_REPORT_SIZE_1);
 
                 break;
             }
@@ -1022,8 +1024,8 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
                     0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
                 };
 
-                urb->UrbControlVendorClassRequest.TransferBufferLength = HID_GET_FEATURE_REPORT_SIZE_2;
-                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, HID_GET_FEATURE_REPORT_SIZE_2);
+                pRequest->TransferBufferLength = HID_GET_FEATURE_REPORT_SIZE_2;
+                RtlCopyBytes(pRequest->TransferBuffer, Response, HID_GET_FEATURE_REPORT_SIZE_2);
 
                 break;
             }
@@ -1040,8 +1042,8 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
     }
     case HID_REQUEST_SET_REPORT:
     {
-        UCHAR reportId = (urb->UrbControlVendorClassRequest.Value) & 0xFF;
-        UCHAR reportType = (urb->UrbControlVendorClassRequest.Value >> 8) & 0xFF; 
+        UCHAR reportId = (pRequest->Value) & 0xFF;
+        UCHAR reportType = (pRequest->Value >> 8) & 0xFF;
 
         KdPrint((">> >> >> >> SET_REPORT(%d): %d\n", reportType, reportId));
 
@@ -1061,8 +1063,8 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
                     0x7F, 0x12, 0xAA, 0xD9, 0x66, 0x3C, 0xCE
                 };
 
-                urb->UrbControlVendorClassRequest.TransferBufferLength = HID_SET_FEATURE_REPORT_SIZE_0;
-                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, HID_SET_FEATURE_REPORT_SIZE_0);
+                pRequest->TransferBufferLength = HID_SET_FEATURE_REPORT_SIZE_0;
+                RtlCopyBytes(pRequest->TransferBuffer, Response, HID_SET_FEATURE_REPORT_SIZE_0);
 
                 break;
             }
@@ -1076,8 +1078,8 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
                     0x00
                 };
 
-                urb->UrbControlVendorClassRequest.TransferBufferLength = HID_SET_FEATURE_REPORT_SIZE_1;
-                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, HID_SET_FEATURE_REPORT_SIZE_1);
+                pRequest->TransferBufferLength = HID_SET_FEATURE_REPORT_SIZE_1;
+                RtlCopyBytes(pRequest->TransferBuffer, Response, HID_SET_FEATURE_REPORT_SIZE_1);
 
                 break;
             }

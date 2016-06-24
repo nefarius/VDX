@@ -1,5 +1,6 @@
 #include "busenum.h"
 
+
 //
 // Dummy function to satisfy USB interface
 // 
@@ -946,7 +947,7 @@ NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device)
 }
 
 //
-// Dummy placeholder for URB_FUNCTION_CLASS_INTERFACE URBs.
+// Processes URBs containing HID-related requests.
 // 
 NTSTATUS UsbPdo_ClassInterface(PURB urb)
 {
@@ -959,6 +960,140 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
         urb->UrbControlVendorClassRequest.Value,
         urb->UrbControlVendorClassRequest.Index,
         urb->UrbControlVendorClassRequest.TransferBufferLength));
+
+    switch (urb->UrbControlVendorClassRequest.Request)
+    {
+    case 0x01: // GET_REPORT
+    {
+        UCHAR reportId = (urb->UrbControlVendorClassRequest.Value) & 0xFF;
+        UCHAR reportType = (urb->UrbControlVendorClassRequest.Value >> 8) & 0xFF; 
+
+        KdPrint((">> >> >> >> GET_REPORT(%d): %d\n", reportType, reportId));
+
+        switch (reportType)
+        {
+        case 0x03: // FEATURE
+        {
+            switch (reportId)
+            {
+            case 0xA3:
+            {
+                // Source: http://eleccelerator.com/wiki/index.php?title=DualShock_4#Class_Requests
+                UCHAR Response[49] =
+                {
+                    0xA3, 0x41, 0x75, 0x67, 0x20, 0x20, 0x33, 0x20,
+                    0x32, 0x30, 0x31, 0x33, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x30, 0x37, 0x3A, 0x30, 0x31, 0x3A, 0x31,
+                    0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x01, 0x00, 0x31, 0x03, 0x00, 0x00,
+                    0x00, 0x49, 0x00, 0x05, 0x00, 0x00, 0x80, 0x03,
+                    0x00
+                };
+
+                urb->UrbControlVendorClassRequest.TransferBufferLength = 49;
+                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, 49);
+
+                break;
+            }
+            case 0x02:
+            {
+                // Source: http://eleccelerator.com/wiki/index.php?title=DualShock_4#Class_Requests
+                UCHAR Response[37] =
+                {
+                    0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x87,
+                    0x22, 0x7B, 0xDD, 0xB2, 0x22, 0x47, 0xDD, 0xBD,
+                    0x22, 0x43, 0xDD, 0x1C, 0x02, 0x1C, 0x02, 0x7F,
+                    0x1E, 0x2E, 0xDF, 0x60, 0x1F, 0x4C, 0xE0, 0x3A,
+                    0x1D, 0xC6, 0xDE, 0x08, 0x00
+                };
+
+                urb->UrbControlVendorClassRequest.TransferBufferLength = 37;
+                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, 37);
+
+                break;
+            }
+            case 0x12:
+            {
+                // Source: http://eleccelerator.com/wiki/index.php?title=DualShock_4#Class_Requests
+                UCHAR Response[16] =
+                {
+                    0x12, 0x8B, 0x09, 0x07, 0x6D, 0x66, 0x1C, 0x08,
+                    0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+                };
+
+                urb->UrbControlVendorClassRequest.TransferBufferLength = 16;
+                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, 16);
+
+                break;
+            }
+            default:
+                break;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+
+        break;
+    }
+    case 0x09: // SET_REPORT
+    {
+        UCHAR reportId = (urb->UrbControlVendorClassRequest.Value) & 0xFF;
+        UCHAR reportType = (urb->UrbControlVendorClassRequest.Value >> 8) & 0xFF; 
+
+        KdPrint((">> >> >> >> SET_REPORT(%d): %d\n", reportType, reportId));
+
+        switch (reportType)
+        {
+        case 0x03: // FEATURE
+        {
+            switch (reportId)
+            {
+            case 0x13:
+            {
+                // Source: http://eleccelerator.com/wiki/index.php?title=DualShock_4#Class_Requests
+                UCHAR Response[23] =
+                {
+                    0x13, 0xAC, 0x9E, 0x17, 0x94, 0x05, 0xB0, 0x56,
+                    0xE8, 0x81, 0x38, 0x08, 0x06, 0x51, 0x41, 0xC0,
+                    0x7F, 0x12, 0xAA, 0xD9, 0x66, 0x3C, 0xCE
+                };
+
+                urb->UrbControlVendorClassRequest.TransferBufferLength = 23;
+                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, 23);
+
+                break;
+            }
+            case 0x14:
+            {
+                // Source: http://eleccelerator.com/wiki/index.php?title=DualShock_4#Class_Requests
+                UCHAR Response[17] =
+                {
+                    0x14, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00
+                };
+
+                urb->UrbControlVendorClassRequest.TransferBufferLength = 17;
+                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, 17);
+
+                break;
+            }
+            default:
+                break;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+
+        break;
+    }
+    default:
+        break;
+    }
 
     return STATUS_SUCCESS;
 }

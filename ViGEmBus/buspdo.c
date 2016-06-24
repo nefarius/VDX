@@ -838,8 +838,16 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
         break;
 
+    case IOCTL_INTERNAL_USB_SUBMIT_IDLE_NOTIFICATION:
+
+        // TODO: implement
+        // This happens if the I/O latency is too high so HIDUSB aborts communication.
+        status = STATUS_SUCCESS;
+
+        break;
+
     default:
-        KdPrint((">> Unknown I/O control code\n"));
+        KdPrint((">> Unknown I/O control code 0x%X\n", IoControlCode));
         break;
     }
 

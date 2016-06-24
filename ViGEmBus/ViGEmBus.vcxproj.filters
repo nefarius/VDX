@@ -39,6 +39,9 @@
     <ClInclude Include="..\Common\driver.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
+    <ClInclude Include="ds4defs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ViGEmBus.rc">

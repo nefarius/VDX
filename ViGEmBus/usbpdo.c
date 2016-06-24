@@ -1,4 +1,5 @@
 #include "busenum.h"
+#include "ds4defs.h"
 
 
 //
@@ -963,7 +964,7 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
 
     switch (urb->UrbControlVendorClassRequest.Request)
     {
-    case 0x01: // GET_REPORT
+    case HID_REQUEST_GET_REPORT:
     {
         UCHAR reportId = (urb->UrbControlVendorClassRequest.Value) & 0xFF;
         UCHAR reportType = (urb->UrbControlVendorClassRequest.Value >> 8) & 0xFF; 
@@ -972,14 +973,14 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
 
         switch (reportType)
         {
-        case 0x03: // FEATURE
+        case HID_REPORT_TYPE_FEATURE:
         {
             switch (reportId)
             {
-            case 0xA3:
+            case HID_REPORT_ID_0:
             {
                 // Source: http://eleccelerator.com/wiki/index.php?title=DualShock_4#Class_Requests
-                UCHAR Response[49] =
+                UCHAR Response[HID_GET_FEATURE_REPORT_SIZE_0] =
                 {
                     0xA3, 0x41, 0x75, 0x67, 0x20, 0x20, 0x33, 0x20,
                     0x32, 0x30, 0x31, 0x33, 0x00, 0x00, 0x00, 0x00,
@@ -990,15 +991,15 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
                     0x00
                 };
 
-                urb->UrbControlVendorClassRequest.TransferBufferLength = 49;
-                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, 49);
+                urb->UrbControlVendorClassRequest.TransferBufferLength = HID_GET_FEATURE_REPORT_SIZE_0;
+                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, HID_GET_FEATURE_REPORT_SIZE_0);
 
                 break;
             }
-            case 0x02:
+            case HID_REPORT_ID_1:
             {
                 // Source: http://eleccelerator.com/wiki/index.php?title=DualShock_4#Class_Requests
-                UCHAR Response[37] =
+                UCHAR Response[HID_GET_FEATURE_REPORT_SIZE_1] =
                 {
                     0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x87,
                     0x22, 0x7B, 0xDD, 0xB2, 0x22, 0x47, 0xDD, 0xBD,
@@ -1007,22 +1008,22 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
                     0x1D, 0xC6, 0xDE, 0x08, 0x00
                 };
 
-                urb->UrbControlVendorClassRequest.TransferBufferLength = 37;
-                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, 37);
+                urb->UrbControlVendorClassRequest.TransferBufferLength = HID_GET_FEATURE_REPORT_SIZE_1;
+                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, HID_GET_FEATURE_REPORT_SIZE_1);
 
                 break;
             }
-            case 0x12:
+            case HID_REPORT_ID_2:
             {
                 // Source: http://eleccelerator.com/wiki/index.php?title=DualShock_4#Class_Requests
-                UCHAR Response[16] =
+                UCHAR Response[HID_GET_FEATURE_REPORT_SIZE_2] =
                 {
                     0x12, 0x8B, 0x09, 0x07, 0x6D, 0x66, 0x1C, 0x08,
                     0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
                 };
 
-                urb->UrbControlVendorClassRequest.TransferBufferLength = 16;
-                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, 16);
+                urb->UrbControlVendorClassRequest.TransferBufferLength = HID_GET_FEATURE_REPORT_SIZE_2;
+                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, HID_GET_FEATURE_REPORT_SIZE_2);
 
                 break;
             }
@@ -1037,7 +1038,7 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
 
         break;
     }
-    case 0x09: // SET_REPORT
+    case HID_REQUEST_SET_REPORT:
     {
         UCHAR reportId = (urb->UrbControlVendorClassRequest.Value) & 0xFF;
         UCHAR reportType = (urb->UrbControlVendorClassRequest.Value >> 8) & 0xFF; 
@@ -1046,37 +1047,37 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
 
         switch (reportType)
         {
-        case 0x03: // FEATURE
+        case HID_REPORT_TYPE_FEATURE:
         {
             switch (reportId)
             {
-            case 0x13:
+            case HID_REPORT_ID_3:
             {
                 // Source: http://eleccelerator.com/wiki/index.php?title=DualShock_4#Class_Requests
-                UCHAR Response[23] =
+                UCHAR Response[HID_SET_FEATURE_REPORT_SIZE_0] =
                 {
                     0x13, 0xAC, 0x9E, 0x17, 0x94, 0x05, 0xB0, 0x56,
                     0xE8, 0x81, 0x38, 0x08, 0x06, 0x51, 0x41, 0xC0,
                     0x7F, 0x12, 0xAA, 0xD9, 0x66, 0x3C, 0xCE
                 };
 
-                urb->UrbControlVendorClassRequest.TransferBufferLength = 23;
-                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, 23);
+                urb->UrbControlVendorClassRequest.TransferBufferLength = HID_SET_FEATURE_REPORT_SIZE_0;
+                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, HID_SET_FEATURE_REPORT_SIZE_0);
 
                 break;
             }
-            case 0x14:
+            case HID_REPORT_ID_4:
             {
                 // Source: http://eleccelerator.com/wiki/index.php?title=DualShock_4#Class_Requests
-                UCHAR Response[17] =
+                UCHAR Response[HID_SET_FEATURE_REPORT_SIZE_1] =
                 {
                     0x14, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     0x00
                 };
 
-                urb->UrbControlVendorClassRequest.TransferBufferLength = 17;
-                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, 17);
+                urb->UrbControlVendorClassRequest.TransferBufferLength = HID_SET_FEATURE_REPORT_SIZE_1;
+                RtlCopyBytes(urb->UrbControlVendorClassRequest.TransferBuffer, Response, HID_SET_FEATURE_REPORT_SIZE_1);
 
                 break;
             }

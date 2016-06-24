@@ -51,6 +51,10 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 
 #define DS4_HID_REPORT_SIZE             64
 
+#define HID_REQUEST_GET_REPORT          0x01
+#define HID_REQUEST_SET_REPORT          0x09
+#define HID_REPORT_TYPE_FEATURE         0x03
+
 //
 // Helpers
 // 

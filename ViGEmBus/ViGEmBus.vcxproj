@@ -254,6 +254,7 @@
     <ClInclude Include="..\Common\driver.h" />
     <ClInclude Include="..\Common\public.h" />
     <ClInclude Include="busenum.h" />
+    <ClInclude Include="ds4defs.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

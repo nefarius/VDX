@@ -195,9 +195,9 @@ VOID Bus_EvtIoDeviceControl(
     NTSTATUS status = STATUS_INVALID_PARAMETER;
     WDFDEVICE hDevice;
     size_t length = 0;
-    PBUSENUM_PLUGIN_HARDWARE plugIn = NULL;
-    PBUSENUM_UNPLUG_HARDWARE unPlug = NULL;
-    PBUSENUM_EJECT_HARDWARE eject = NULL;
+    PVIGEM_PLUGIN_TARGET plugIn = NULL;
+    PVIGEM_UNPLUG_TARGET unPlug = NULL;
+    PVIGEM_EJECT_TARGET eject = NULL;
     PXUSB_SUBMIT_REPORT xusbSubmit = NULL;
     PXUSB_REQUEST_NOTIFICATION xusbNotify = NULL;
     PDS4_SUBMIT_REPORT ds4Submit = NULL;
@@ -215,7 +215,7 @@ VOID Bus_EvtIoDeviceControl(
 
         KdPrint(("IOCTL_BUSENUM_PLUGIN_HARDWARE\n"));
 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_PLUGIN_HARDWARE), (PVOID)&plugIn, &length);
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(VIGEM_PLUGIN_TARGET), (PVOID)&plugIn, &length);
 
         if (!NT_SUCCESS(status))
         {
@@ -223,7 +223,7 @@ VOID Bus_EvtIoDeviceControl(
             break;
         }
 
-        if ((sizeof(BUSENUM_PLUGIN_HARDWARE) == plugIn->Size) && (length == InputBufferLength))
+        if ((sizeof(VIGEM_PLUGIN_TARGET) == plugIn->Size) && (length == InputBufferLength))
         {
             if (plugIn->SerialNo == 0)
             {
@@ -240,7 +240,7 @@ VOID Bus_EvtIoDeviceControl(
 
         KdPrint(("IOCTL_BUSENUM_UNPLUG_HARDWARE\n"));
 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_UNPLUG_HARDWARE), (PVOID)&unPlug, &length);
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(VIGEM_UNPLUG_TARGET), (PVOID)&unPlug, &length);
 
         if (!NT_SUCCESS(status))
         {
@@ -248,7 +248,7 @@ VOID Bus_EvtIoDeviceControl(
             break;
         }
 
-        if ((sizeof(BUSENUM_UNPLUG_HARDWARE) == unPlug->Size) && (length == InputBufferLength))
+        if ((sizeof(VIGEM_UNPLUG_TARGET) == unPlug->Size) && (length == InputBufferLength))
         {
             status = Bus_UnPlugDevice(hDevice, unPlug->SerialNo);
         }
@@ -259,7 +259,7 @@ VOID Bus_EvtIoDeviceControl(
 
         KdPrint(("IOCTL_BUSENUM_EJECT_HARDWARE\n"));
 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(BUSENUM_EJECT_HARDWARE), (PVOID)&eject, &length);
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(VIGEM_EJECT_TARGET), (PVOID)&eject, &length);
 
         if (!NT_SUCCESS(status))
         {

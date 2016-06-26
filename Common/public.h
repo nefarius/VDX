@@ -54,7 +54,7 @@ typedef enum _VIGEM_TARGET_TYPE
 //
 // Data structure used in IOCTL_BUSENUM_PLUGIN_HARDWARE requests.
 // 
-typedef struct _BUSENUM_PLUGIN_HARDWARE
+typedef struct _VIGEM_PLUGIN_TARGET
 {
     //
     // sizeof (struct _BUSENUM_HARDWARE)
@@ -70,12 +70,12 @@ typedef struct _BUSENUM_PLUGIN_HARDWARE
     // Type of the target device to emulate.
     // 
     VIGEM_TARGET_TYPE TargetType;
-} BUSENUM_PLUGIN_HARDWARE, *PBUSENUM_PLUGIN_HARDWARE;
+} VIGEM_PLUGIN_TARGET, *PVIGEM_PLUGIN_TARGET;
 
 //
 // Data structure used in IOCTL_BUSENUM_UNPLUG_HARDWARE requests.
 // 
-typedef struct _BUSENUM_UNPLUG_HARDWARE
+typedef struct _VIGEM_UNPLUG_TARGET
 {
     //
     // sizeof (struct _REMOVE_HARDWARE)
@@ -87,12 +87,12 @@ typedef struct _BUSENUM_UNPLUG_HARDWARE
     // 
     ULONG SerialNo;
 
-} BUSENUM_UNPLUG_HARDWARE, *PBUSENUM_UNPLUG_HARDWARE;
+} VIGEM_UNPLUG_TARGET, *PVIGEM_UNPLUG_TARGET;
 
 //
 // Data structure used in IOCTL_BUSENUM_EJECT_HARDWARE requests.
 // 
-typedef struct _BUSENUM_EJECT_HARDWARE
+typedef struct _VIGEM_EJECT_TARGET
 {
     //
     // sizeof (struct _EJECT_HARDWARE)
@@ -104,7 +104,7 @@ typedef struct _BUSENUM_EJECT_HARDWARE
     // 
     ULONG SerialNo;
 
-} BUSENUM_EJECT_HARDWARE, *PBUSENUM_EJECT_HARDWARE;
+} VIGEM_EJECT_TARGET, *PVIGEM_EJECT_TARGET;
 
 //
 // Data structure used in IOCTL_XUSB_REQUEST_NOTIFICATION requests.
@@ -177,7 +177,14 @@ typedef struct _XUSB_SUBMIT_REPORT
 // 
 typedef struct _DS4_SUBMIT_REPORT
 {
+    //
+    // sizeof(struct _DS4_SUBMIT_REPORT)
+    // 
     ULONG Size;
+
+    //
+    // Serial number of target device.
+    // 
     ULONG SerialNo;
     UCHAR Report[64];
 } DS4_SUBMIT_REPORT, *PDS4_SUBMIT_REPORT;

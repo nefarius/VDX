@@ -6,7 +6,6 @@
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (INIT, DriverEntry)
 #pragma alloc_text (PAGE, Bus_EvtDeviceAdd)
-#pragma alloc_text (PAGE, Bus_EvtIoDeviceControl)
 #pragma alloc_text (PAGE, Bus_EvtIoDefault)
 #pragma alloc_text (PAGE, Bus_FileCleanup)
 #pragma alloc_text (PAGE, Bus_PlugInDevice)
@@ -195,15 +194,6 @@ VOID Bus_EvtIoDeviceControl(
     NTSTATUS status = STATUS_INVALID_PARAMETER;
     WDFDEVICE hDevice;
     size_t length = 0;
-    PVIGEM_PLUGIN_TARGET plugIn = NULL;
-    PVIGEM_UNPLUG_TARGET unPlug = NULL;
-    PVIGEM_EJECT_TARGET eject = NULL;
-    PXUSB_SUBMIT_REPORT xusbSubmit = NULL;
-    PXUSB_REQUEST_NOTIFICATION xusbNotify = NULL;
-    PDS4_SUBMIT_REPORT ds4Submit = NULL;
-
-
-    PAGED_CODE();
 
     hDevice = WdfIoQueueGetDevice(Queue);
 
@@ -212,6 +202,8 @@ VOID Bus_EvtIoDeviceControl(
     switch (IoControlCode)
     {
     case IOCTL_BUSENUM_PLUGIN_HARDWARE:
+    {
+        PVIGEM_PLUGIN_TARGET plugIn = NULL;
 
         KdPrint(("IOCTL_BUSENUM_PLUGIN_HARDWARE\n"));
 
@@ -235,8 +227,11 @@ VOID Bus_EvtIoDeviceControl(
         }
 
         break;
+    }
 
     case IOCTL_BUSENUM_UNPLUG_HARDWARE:
+    {
+        PVIGEM_UNPLUG_TARGET unPlug = NULL;
 
         KdPrint(("IOCTL_BUSENUM_UNPLUG_HARDWARE\n"));
 
@@ -254,8 +249,11 @@ VOID Bus_EvtIoDeviceControl(
         }
 
         break;
+    }
 
     case IOCTL_BUSENUM_EJECT_HARDWARE:
+    {
+        PVIGEM_EJECT_TARGET eject = NULL;
 
         KdPrint(("IOCTL_BUSENUM_EJECT_HARDWARE\n"));
 
@@ -273,8 +271,11 @@ VOID Bus_EvtIoDeviceControl(
         }
 
         break;
+    }
 
     case IOCTL_XUSB_SUBMIT_REPORT:
+    {
+        PXUSB_SUBMIT_REPORT xusbSubmit = NULL;
 
         KdPrint(("IOCTL_XUSB_SUBMIT_REPORT\n"));
 
@@ -299,8 +300,11 @@ VOID Bus_EvtIoDeviceControl(
         }
 
         break;
+    }
 
     case IOCTL_XUSB_REQUEST_NOTIFICATION:
+    {
+        PXUSB_REQUEST_NOTIFICATION xusbNotify = NULL;
 
         KdPrint(("IOCTL_XUSB_REQUEST_NOTIFICATION\n"));
 
@@ -332,8 +336,11 @@ VOID Bus_EvtIoDeviceControl(
         }
 
         break;
+    }
 
     case IOCTL_DS4_SUBMIT_REPORT:
+    {
+        PDS4_SUBMIT_REPORT ds4Submit = NULL;
 
         KdPrint(("IOCTL_DS4_SUBMIT_REPORT\n"));
 
@@ -358,6 +365,7 @@ VOID Bus_EvtIoDeviceControl(
         }
 
         break;
+    }
 
     default:
         KdPrint(("UNKNOWN IOCTL CODE 0x%x\n", IoControlCode));
@@ -751,7 +759,7 @@ NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPOR
     PIO_STACK_LOCATION irpStack;
     BOOLEAN changed;
 
-
+    UNREFERENCED_PARAMETER(Report);
     KdPrint(("Entered Bus_Ds4SubmitReport\n"));
 
     // Get child
@@ -827,8 +835,8 @@ NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPOR
             urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_HID_REPORT_SIZE;
 
             // Copy report to cache and transfer buffer 
-            RtlCopyBytes(ds4Data->HidReport, &Report->Report, DS4_HID_REPORT_SIZE);
-            RtlCopyBytes(Buffer, ds4Data->HidReport, DS4_HID_REPORT_SIZE);
+            RtlCopyBytes(ds4Data->HidReport, Report->HidReport, DS4_HID_REPORT_SIZE);
+            RtlCopyBytes(Buffer, Report->HidReport, DS4_HID_REPORT_SIZE);
 
             // Complete pending request
             WdfRequestComplete(usbRequest, status);

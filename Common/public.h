@@ -172,6 +172,18 @@ typedef struct _XUSB_SUBMIT_REPORT
     XUSB_REPORT Report;
 } XUSB_SUBMIT_REPORT, *PXUSB_SUBMIT_REPORT;
 
+typedef struct _DS4_REPORT
+{
+    BYTE bThumbLX;
+    BYTE bThumbLY;
+    BYTE bThumbRX;
+    BYTE bThumbRY;
+    WORD wButtons;
+    BYTE bSpecial;
+    BYTE bTriggerL;
+    BYTE bTriggerR;
+} DS4_REPORT, *PDS4_REPORT;
+
 //
 // Experimental DS4 request data.
 // 
@@ -186,6 +198,6 @@ typedef struct _DS4_SUBMIT_REPORT
     // Serial number of target device.
     // 
     ULONG SerialNo;
-    UCHAR Report[64];
+    UCHAR HidReport[64];
 } DS4_SUBMIT_REPORT, *PDS4_SUBMIT_REPORT;
 

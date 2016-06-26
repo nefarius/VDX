@@ -879,7 +879,8 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         PDS4_DEVICE_DATA ds4Data = Ds4GetData(Device);
 
         // Data coming FROM us TO higher driver
-        if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
+        if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN
+            && pTransfer->PipeHandle == (USBD_PIPE_HANDLE)0xFFFF0084)
         {
             KdPrint((">> >> >> Incoming request, queuing...\n"));
 
@@ -889,6 +890,10 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
             status = WdfRequestForwardToIoQueue(Request, ds4Data->PendingUsbRequests);
 
             return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
+        }
+        else
+        {
+            KdPrint(("Warning: unimplemented pipe or transfer direction\n"));
         }
 
         // TODO: implement force-feedback requests

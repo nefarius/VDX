@@ -413,6 +413,25 @@ NTSTATUS Bus_CreatePdo(
 
                 ds4->PendingUsbRequests = pendingUsbQueue;
             }
+
+            // Initialize periodic timer
+            WDF_TIMER_CONFIG timerConfig;
+            WDF_TIMER_CONFIG_INIT_PERIODIC(&timerConfig, Ds4_PendingUsbRequestsTimerFunc, DS4_QUEUE_FLUSH_PERIOD);
+
+            // Timer object attributes
+            WDF_OBJECT_ATTRIBUTES timerAttribs;
+            WDF_OBJECT_ATTRIBUTES_INIT(&timerAttribs);
+
+            // PDO is parent
+            timerAttribs.ParentObject = hChild;
+
+            // Create timer
+            status = WdfTimerCreate(&timerConfig, &timerAttribs, &ds4->PendingUsbRequestsTimer);
+            if (!NT_SUCCESS(status))
+            {
+                KdPrint(("WdfTimerCreate failed 0x%x\n", status));
+                return status;
+            }
         }
     }
 
@@ -616,6 +635,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
         devinterfaceHid.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
         devinterfaceHid.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
 
+        // Expose GUID_DEVINTERFACE_HID so HIDUSB can initialize
         WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&devinterfaceHid, &GUID_DEVINTERFACE_HID, NULL);
 
         status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
@@ -627,6 +647,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 
         PDS4_DEVICE_DATA ds4Data = Ds4GetData(Device);
 
+        // Set default HID input report (everything zero`d)
         UCHAR DefaultHidReport[DS4_HID_REPORT_SIZE] =
         {
             0x01, 0x82, 0x7F, 0x7E, 0x80, 0x08, 0x00, 0x58,
@@ -639,7 +660,11 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
             0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00
         };
 
+        // Initialize HID report to defaults
         RtlCopyBytes(ds4Data->HidReport, DefaultHidReport, DS4_HID_REPORT_SIZE);
+
+        // Start pending IRP queue flush timer
+        WdfTimerStart(ds4Data->PendingUsbRequestsTimer, DS4_QUEUE_FLUSH_PERIOD);
     }
     break;
     default:
@@ -854,6 +879,52 @@ VOID Pdo_EvtIoInternalDeviceControl(
     if (status != STATUS_PENDING)
     {
         WdfRequestComplete(Request, status);
+    }
+}
+
+//
+// Completes pending I/O requests if feeder is too slow.
+// 
+VOID Ds4_PendingUsbRequestsTimerFunc(
+    _In_ WDFTIMER Timer
+)
+{
+    NTSTATUS status;
+    WDFREQUEST usbRequest;
+    WDFDEVICE hChild;
+    PDS4_DEVICE_DATA ds4Data;
+    PIRP pendingIrp;
+    PIO_STACK_LOCATION irpStack;
+
+    KdPrint(("Ds4_PendingUsbRequestsTimerFunc: Timer elapsed\n"));
+
+    hChild = WdfTimerGetParentObject(Timer);
+    ds4Data = Ds4GetData(hChild);
+
+    // Get pending USB request
+    status = WdfIoQueueRetrieveNextRequest(ds4Data->PendingUsbRequests, &usbRequest);
+
+    if (NT_SUCCESS(status))
+    {
+        KdPrint(("Ds4_PendingUsbRequestsTimerFunc: pending IRP found\n"));
+
+        // Get pending IRP
+        pendingIrp = WdfRequestWdmGetIrp(usbRequest);
+        irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
+
+        // Get USB request block
+        PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
+
+        // Get transfer buffer
+        PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
+        // Set buffer length to report size
+        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_HID_REPORT_SIZE;
+
+        // Copy cached report to transfer buffer 
+        RtlCopyBytes(Buffer, ds4Data->HidReport, DS4_HID_REPORT_SIZE);
+
+        // Complete pending request
+        WdfRequestComplete(usbRequest, status);
     }
 }
 

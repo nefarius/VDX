@@ -50,6 +50,7 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 #define XUSB_LEDNUM_SIZE                1
 
 #define DS4_HID_REPORT_SIZE             64
+#define DS4_QUEUE_FLUSH_PERIOD          5
 
 #define HID_REQUEST_GET_REPORT          0x01
 #define HID_REQUEST_SET_REPORT          0x09
@@ -127,6 +128,7 @@ typedef struct _DS4_DEVICE_DATA
 {
     UCHAR HidReport[DS4_HID_REPORT_SIZE];
     WDFQUEUE PendingUsbRequests;
+    WDFTIMER PendingUsbRequestsTimer;
 } DS4_DEVICE_DATA, *PDS4_DEVICE_DATA;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DS4_DEVICE_DATA, Ds4GetData)
@@ -153,6 +155,8 @@ EVT_WDF_CHILD_LIST_IDENTIFICATION_DESCRIPTION_COMPARE Bus_EvtChildListIdentifica
 EVT_WDF_DEVICE_PREPARE_HARDWARE Bus_EvtDevicePrepareHardware;
 
 EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Pdo_EvtIoInternalDeviceControl;
+
+EVT_WDF_TIMER Ds4_PendingUsbRequestsTimerFunc;
 
 //
 // Bus enumeration-specific functions

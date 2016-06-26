@@ -932,7 +932,7 @@ NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device)
     }
     case DualShock4Wired:
     {
-        PXUSB_DEVICE_DATA ds4 = XusbGetData(Device);
+        PDS4_DEVICE_DATA ds4 = Ds4GetData(Device);
 
         // Check context
         if (ds4 == NULL)
@@ -943,6 +943,7 @@ NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device)
         }
 
         // Higher driver shutting down, emptying PDOs queues
+        WdfTimerStop(ds4->PendingUsbRequestsTimer, TRUE);
         WdfIoQueuePurge(ds4->PendingUsbRequests, NULL, NULL);
     }
     default:

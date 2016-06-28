@@ -87,7 +87,7 @@ int main()
             plugin.SerialNo = serial;
             plugin.TargetType = DualShock4Wired;
 
-            auto retval = DeviceIoControl(bus, IOCTL_BUSENUM_PLUGIN_HARDWARE, &plugin, plugin.Size, nullptr, 0, &transfered, nullptr);
+            auto retval = DeviceIoControl(bus, IOCTL_VIGEM_PLUGIN_TARGET, &plugin, plugin.Size, nullptr, 0, &transfered, nullptr);
 
             printf("IOCTL_BUSENUM_PLUGIN_HARDWARE retval: %d, trans: %d\n", retval, transfered);
 
@@ -130,7 +130,7 @@ int main()
             unplug.Size = sizeof(VIGEM_UNPLUG_TARGET);
             unplug.SerialNo = getchar() - 48;
 
-            retval = DeviceIoControl(bus, IOCTL_BUSENUM_UNPLUG_HARDWARE, &unplug, unplug.Size, nullptr, 0, &transfered, nullptr);
+            retval = DeviceIoControl(bus, IOCTL_VIGEM_UNPLUG_TARGET, &unplug, unplug.Size, nullptr, 0, &transfered, nullptr);
 
             printf("IOCTL_BUSENUM_UNPLUG_HARDWARE retval: %d, trans: %d\n", retval, transfered);
 

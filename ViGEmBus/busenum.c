@@ -201,7 +201,7 @@ VOID Bus_EvtIoDeviceControl(
 
     switch (IoControlCode)
     {
-    case IOCTL_BUSENUM_PLUGIN_HARDWARE:
+    case IOCTL_VIGEM_PLUGIN_TARGET:
     {
         PVIGEM_PLUGIN_TARGET plugIn = NULL;
 
@@ -229,7 +229,7 @@ VOID Bus_EvtIoDeviceControl(
         break;
     }
 
-    case IOCTL_BUSENUM_UNPLUG_HARDWARE:
+    case IOCTL_VIGEM_UNPLUG_TARGET:
     {
         PVIGEM_UNPLUG_TARGET unPlug = NULL;
 
@@ -251,7 +251,7 @@ VOID Bus_EvtIoDeviceControl(
         break;
     }
 
-    case IOCTL_BUSENUM_EJECT_HARDWARE:
+    case IOCTL_VIGEM_EJECT_TARGET:
     {
         PVIGEM_EJECT_TARGET eject = NULL;
 

@@ -16,9 +16,8 @@ DWORD WINAPI notify(LPVOID param)
 {
     DWORD transfered = 0;
     BOOLEAN retval;
-    XUSB_REQUEST_NOTIFICATION notify = { 0 };
-    notify.Size = sizeof(XUSB_REQUEST_NOTIFICATION);
-    notify.SerialNo = serial;
+    XUSB_REQUEST_NOTIFICATION notify;
+    XUSB_REQUEST_NOTIFICATION_INIT(&notify, serial);
 
     HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     OVERLAPPED  lOverlapped = { 0 };
@@ -82,10 +81,8 @@ int main()
             serial = getchar() - 48;
 
             DWORD transfered = 0;
-            VIGEM_PLUGIN_TARGET plugin = { 0 };
-            plugin.Size = sizeof(VIGEM_PLUGIN_TARGET);
-            plugin.SerialNo = serial;
-            plugin.TargetType = Xbox360Wired;
+            VIGEM_PLUGIN_TARGET plugin;
+            VIGEM_PLUGIN_TARGET_INIT(&plugin, serial, Xbox360Wired);
 
             auto retval = DeviceIoControl(bus, IOCTL_VIGEM_PLUGIN_TARGET, &plugin, plugin.Size, nullptr, 0, &transfered, nullptr);
 
@@ -96,9 +93,8 @@ int main()
 
             getchar();
 
-            XUSB_SUBMIT_REPORT report = { 0 };
-            report.Size = sizeof(XUSB_SUBMIT_REPORT);
-            report.SerialNo = serial;
+            XUSB_SUBMIT_REPORT report;
+            XUSB_SUBMIT_REPORT_INIT(&report, serial);
             
             while (getchar() != 'a')
             {
@@ -126,9 +122,8 @@ int main()
             getchar();
             printf("Enter unplug serial:\n");
 
-            VIGEM_UNPLUG_TARGET unplug = { 0 };
-            unplug.Size = sizeof(VIGEM_UNPLUG_TARGET);
-            unplug.SerialNo = getchar() - 48;
+            VIGEM_UNPLUG_TARGET unplug;
+            VIGEM_UNPLUG_TARGET_INIT(&unplug, getchar() - 48);
 
             retval = DeviceIoControl(bus, IOCTL_VIGEM_UNPLUG_TARGET, &unplug, unplug.Size, nullptr, 0, &transfered, nullptr);
 

@@ -73,6 +73,22 @@ typedef struct _VIGEM_PLUGIN_TARGET
 } VIGEM_PLUGIN_TARGET, *PVIGEM_PLUGIN_TARGET;
 
 //
+// Initializes a VIGEM_PLUGIN_TARGET structure.
+// 
+VOID FORCEINLINE VIGEM_PLUGIN_TARGET_INIT(
+    _Out_ PVIGEM_PLUGIN_TARGET PlugIn,
+    _In_ ULONG SerialNo,
+    _In_ VIGEM_TARGET_TYPE TargetType
+)
+{
+    RtlZeroMemory(PlugIn, sizeof(VIGEM_PLUGIN_TARGET));
+
+    PlugIn->Size = sizeof(VIGEM_PLUGIN_TARGET);
+    PlugIn->SerialNo = SerialNo;
+    PlugIn->TargetType = TargetType;
+}
+
+//
 // Data structure used in IOCTL_VIGEM_UNPLUG_TARGET requests.
 // 
 typedef struct _VIGEM_UNPLUG_TARGET
@@ -88,6 +104,20 @@ typedef struct _VIGEM_UNPLUG_TARGET
     ULONG SerialNo;
 
 } VIGEM_UNPLUG_TARGET, *PVIGEM_UNPLUG_TARGET;
+
+//
+// Initializes a VIGEM_UNPLUG_TARGET structure.
+// 
+VOID FORCEINLINE VIGEM_UNPLUG_TARGET_INIT(
+    _Out_ PVIGEM_UNPLUG_TARGET UnPlug,
+    _In_ ULONG SerialNo
+)
+{
+    RtlZeroMemory(UnPlug, sizeof(VIGEM_PLUGIN_TARGET));
+
+    UnPlug->Size = sizeof(VIGEM_PLUGIN_TARGET);
+    UnPlug->SerialNo = SerialNo;
+}
 
 //
 // Data structure used in IOCTL_VIGEM_EJECT_TARGET requests.
@@ -138,6 +168,20 @@ typedef struct _XUSB_REQUEST_NOTIFICATION
 } XUSB_REQUEST_NOTIFICATION, *PXUSB_REQUEST_NOTIFICATION;
 
 //
+// Initializes a XUSB_REQUEST_NOTIFICATION structure.
+// 
+VOID FORCEINLINE XUSB_REQUEST_NOTIFICATION_INIT(
+    _Out_ PXUSB_REQUEST_NOTIFICATION Request,
+    _In_ ULONG SerialNo
+)
+{
+    RtlZeroMemory(Request, sizeof(XUSB_REQUEST_NOTIFICATION));
+
+    Request->Size = sizeof(XUSB_REQUEST_NOTIFICATION);
+    Request->SerialNo = SerialNo;
+}
+
+//
 // Represents an XINPUT_GAMEPAD-compatible report structure.
 // 
 typedef struct _XUSB_REPORT
@@ -171,6 +215,20 @@ typedef struct _XUSB_SUBMIT_REPORT
     // 
     XUSB_REPORT Report;
 } XUSB_SUBMIT_REPORT, *PXUSB_SUBMIT_REPORT;
+
+//
+// Initializes an XUSB report.
+// 
+VOID FORCEINLINE XUSB_SUBMIT_REPORT_INIT(
+    _Out_ PXUSB_SUBMIT_REPORT Report,
+    _In_ ULONG SerialNo
+)
+{
+    RtlZeroMemory(Report, sizeof(XUSB_SUBMIT_REPORT));
+
+    Report->Size = sizeof(XUSB_SUBMIT_REPORT);
+    Report->SerialNo = SerialNo;
+}
 
 //
 // DualShock 4 HID Input report
@@ -252,6 +310,9 @@ typedef struct _DS4_SUBMIT_REPORT
     DS4_REPORT HidReport;
 } DS4_SUBMIT_REPORT, *PDS4_SUBMIT_REPORT;
 
+//
+// Sets the current state of the D-PAD on a DualShock 4 report.
+// 
 VOID FORCEINLINE DS4_SET_DPAD(
     _Out_ PDS4_SUBMIT_REPORT Report,
     _In_ DS4_DPAD_DIRECTIONS Dpad
@@ -261,6 +322,9 @@ VOID FORCEINLINE DS4_SET_DPAD(
     Report->HidReport.wButtons |= (WORD)Dpad;
 }
 
+//
+// Initializes a DualShock 4 report.
+// 
 VOID FORCEINLINE DS4_SUBMIT_REPORT_INIT(
     _Out_ PDS4_SUBMIT_REPORT Report,
     _In_ ULONG SerialNo

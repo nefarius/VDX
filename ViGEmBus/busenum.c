@@ -648,7 +648,7 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
         KdPrint(("Bus_XusbSubmitReport: received new report\n"));
 
         // Get pending USB request
-        status = WdfIoQueueRetrieveNextRequest(xusbData->PendingUsbRequests, &usbRequest);
+        status = WdfIoQueueRetrieveNextRequest(xusbData->PendingUsbInRequests, &usbRequest);
 
         if (NT_SUCCESS(status))
         {

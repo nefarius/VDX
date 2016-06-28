@@ -24,6 +24,8 @@ DWORD WINAPI notify(LPVOID param)
     OVERLAPPED  lOverlapped = { 0 };
     lOverlapped.hEvent = hEvent;
 
+    Sleep(5000);
+
     while (TRUE)
     {
         printf("Sending IOCTL_XUSB_REQUEST_NOTIFICATION request...\n");
@@ -33,6 +35,8 @@ DWORD WINAPI notify(LPVOID param)
         WaitForSingleObject(hEvent, INFINITE);
 
         printf("IOCTL_XUSB_REQUEST_NOTIFICATION completed, LED: %d, Large: %d, Small: %d\n", notify.LedNumber, notify.LargeMotor, notify.SmallMotor);
+
+        //Sleep(1000);
     }
 
     return 0;
@@ -85,43 +89,43 @@ int main()
             VIGEM_PLUGIN_TARGET plugin = { 0 };
             plugin.Size = sizeof(VIGEM_PLUGIN_TARGET);
             plugin.SerialNo = serial;
-            plugin.TargetType = DualShock4Wired;
+            plugin.TargetType = Xbox360Wired;
 
             auto retval = DeviceIoControl(bus, IOCTL_VIGEM_PLUGIN_TARGET, &plugin, plugin.Size, nullptr, 0, &transfered, nullptr);
 
             printf("IOCTL_BUSENUM_PLUGIN_HARDWARE retval: %d, trans: %d\n", retval, transfered);
 
             DWORD myThreadID;
-            //HANDLE myHandle = CreateThread(0, 0, notify, NULL, 0, &myThreadID);
+            HANDLE myHandle = CreateThread(0, 0, notify, NULL, 0, &myThreadID);
 
             getchar();
 
-            //XUSB_SUBMIT_REPORT report = { 0 };
-            //report.Size = sizeof(XUSB_SUBMIT_REPORT);
-            //report.SerialNo = serial;
-            //
-            //while (getchar() != 'a')
-            //{
-            //    report.Report.bLeftTrigger++;
-            //
-            //    retval = DeviceIoControl(bus, IOCTL_XUSB_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);
-            //    printf("IOCTL_XUSB_SUBMIT_REPORT retval: %d, trans: %d, report.Report.bLeftTrigger = %d\n", retval, transfered, report.Report.bLeftTrigger);
-            //}
-
-            DS4_SUBMIT_REPORT report;
-            DS4_SUBMIT_REPORT_INIT(&report, serial);
-
-            int skip = 0;
-            srand(time(NULL));
-
-            while (TRUE /*getchar() != 'a'*/)
+            XUSB_SUBMIT_REPORT report = { 0 };
+            report.Size = sizeof(XUSB_SUBMIT_REPORT);
+            report.SerialNo = serial;
+            
+            while (getchar() != 'a')
             {
-                DS4_SET_DPAD(&report, Ds4DpadN);
-
-                retval = DeviceIoControl(bus, IOCTL_DS4_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);
-                printf("IOCTL_DS4_SUBMIT_REPORT retval: %d, trans: %d\n", retval, transfered);
-                Sleep(25);
+                report.Report.bLeftTrigger++;
+            
+                retval = DeviceIoControl(bus, IOCTL_XUSB_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);
+                printf("IOCTL_XUSB_SUBMIT_REPORT retval: %d, trans: %d, report.Report.bLeftTrigger = %d\n", retval, transfered, report.Report.bLeftTrigger);
             }
+
+            //DS4_SUBMIT_REPORT report;
+            //DS4_SUBMIT_REPORT_INIT(&report, serial);
+            //
+            //int skip = 0;
+            //srand(time(NULL));
+            //
+            //while (TRUE /*getchar() != 'a'*/)
+            //{
+            //    DS4_SET_DPAD(&report, Ds4DpadN);
+            //
+            //    retval = DeviceIoControl(bus, IOCTL_DS4_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);
+            //    printf("IOCTL_DS4_SUBMIT_REPORT retval: %d, trans: %d\n", retval, transfered);
+            //    Sleep(25);
+            //}
 
             getchar();
             printf("Enter unplug serial:\n");

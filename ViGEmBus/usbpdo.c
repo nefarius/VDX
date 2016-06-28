@@ -109,6 +109,8 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
         pDescriptor->iProduct = 0x02;
         pDescriptor->iSerialNumber = 0x03;
         pDescriptor->bNumConfigurations = 0x01;
+
+        break;
     }
     case DualShock4Wired:
     {
@@ -126,6 +128,8 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
         pDescriptor->iProduct = 0x02;
         pDescriptor->iSerialNumber = 0x00;
         pDescriptor->bNumConfigurations = 0x01;
+
+        break;
     }
     default:
         break;
@@ -337,6 +341,8 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommo
             pDescriptor->iConfiguration = 0x00;
             pDescriptor->bmAttributes = 0xA0;
             pDescriptor->MaxPower = 0xFA;
+
+            break;
         }
         case DualShock4Wired:
         {
@@ -348,6 +354,8 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommo
             pDescriptor->iConfiguration = 0x00;
             pDescriptor->bmAttributes = 0xC0;
             pDescriptor->MaxPower = 0xFA;
+
+            break;
         }
         default:
             break;
@@ -363,6 +371,8 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommo
         {
             RtlCopyMemory(urb->UrbControlDescriptorRequest.TransferBuffer, XusbDescriptorData, XUSB_DESCRIPTOR_SIZE);
         }
+
+        break;
     }
     case DualShock4Wired:
     {
@@ -370,6 +380,8 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommo
         {
             RtlCopyMemory(urb->UrbControlDescriptorRequest.TransferBuffer, Ds4DescriptorData, DS4_DESCRIPTOR_SIZE);
         }
+
+        break;
     }
     default:
         break;
@@ -603,6 +615,8 @@ NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon)
         pInfo->Protocol = 0x13;
 
         pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
+
+        break;
     }
     case DualShock4Wired:
     {
@@ -639,6 +653,8 @@ NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon)
         pInfo->Pipes[1].PipeType = 0x03;
         pInfo->Pipes[1].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0003;
         pInfo->Pipes[1].PipeFlags = 0x00;
+
+        break;
     }
     default:
         break;
@@ -783,7 +799,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
             /* This request is sent periodically and relies on data the "feeder"
             * has to supply, so we queue this request and return with STATUS_PENDING.
             * The request gets completed as soon as the "feeder" sent an update. */
-            status = WdfRequestForwardToIoQueue(Request, xusb->PendingUsbRequests);
+            status = WdfRequestForwardToIoQueue(Request, xusb->PendingUsbInRequests);
 
             return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
         }
@@ -855,6 +871,18 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
                 KdPrint(("WdfRequestRetrieveOutputBuffer failed with status 0x%X\n", status));
             }
         }
+        //else if (status == STATUS_NO_MORE_ENTRIES && !xusb->NotificationRequestsPassthrough)
+        //{
+        //    /* There is currently no inverted call ready to be completed and 
+        //       the PDO was created with the policy of answering every request, 
+        //       so we'll queue this request an complete it once an inverted call 
+        //       has arrived. This ensures that the user-land process will not
+        //       miss data due to race conditions. */
+        //    WdfRequestForwardToIoQueue(Request, xusb->PendingUsbOutRequests);
+        //    return STATUS_PENDING;
+        //}
+        
+        break;
     }
     case DualShock4Wired:
     {
@@ -867,8 +895,8 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
             KdPrint((">> >> >> Incoming request, queuing...\n"));
 
             /* This request is sent periodically and relies on data the "feeder"
-            * has to supply, so we queue this request and return with STATUS_PENDING.
-            * The request gets completed as soon as the "feeder" sent an update. */
+               has to supply, so we queue this request and return with STATUS_PENDING.
+               The request gets completed as soon as the "feeder" sent an update. */
             status = WdfRequestForwardToIoQueue(Request, ds4Data->PendingUsbRequests);
 
             return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
@@ -879,6 +907,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         }
 
         // TODO: implement force-feedback requests
+        break;
     }
     default:
         break;
@@ -909,8 +938,10 @@ NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device)
         }
 
         // Higher driver shutting down, emptying PDOs queues
-        WdfIoQueuePurge(xusb->PendingUsbRequests, NULL, NULL);
+        WdfIoQueuePurge(xusb->PendingUsbInRequests, NULL, NULL);
         WdfIoQueuePurge(xusb->PendingNotificationRequests, NULL, NULL);
+
+        break;
     }
     case DualShock4Wired:
     {
@@ -927,6 +958,8 @@ NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device)
         // Higher driver shutting down, emptying PDOs queues
         WdfTimerStop(ds4->PendingUsbRequestsTimer, TRUE);
         WdfIoQueuePurge(ds4->PendingUsbRequests, NULL, NULL);
+
+        break;
     }
     default:
         break;
@@ -1342,6 +1375,8 @@ NTSTATUS UsbPdo_GetDescriptorFromInterface(PURB urb, PPDO_DEVICE_DATA pCommon)
             RtlCopyMemory(pRequest->TransferBuffer, Ds4HidReportDescriptor, DS4_HID_REPORT_DESCRIPTOR_SIZE);
             status = STATUS_SUCCESS;
         }
+
+        break;
     }
     default:
         break;

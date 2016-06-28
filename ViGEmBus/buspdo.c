@@ -309,6 +309,8 @@ NTSTATUS Bus_CreatePdo(
                 KdPrint(("WdfObjectAllocateContext failed status 0x%x\n", status));
                 return status;
             }
+
+            break;
         }
         case DualShock4Wired:
         {
@@ -321,6 +323,8 @@ NTSTATUS Bus_CreatePdo(
                 KdPrint(("WdfObjectAllocateContext failed status 0x%x\n", status));
                 return status;
             }
+
+            break;
         }
         default:
             break;
@@ -346,31 +350,45 @@ NTSTATUS Bus_CreatePdo(
         pdoData->OwnerProcessId = OwnerProcessId;
 
         // Initialize additional contexts (if available)
-        PXUSB_DEVICE_DATA xusb = XusbGetData(hChild);
-        PDS4_DEVICE_DATA ds4 = Ds4GetData(hChild);
-
-        if (xusb != NULL)
+        switch (TargetType)
         {
+        case Xbox360Wired:
+        {
+            KdPrint(("Initializing XUSB context...\n"));
+
+            PXUSB_DEVICE_DATA xusb = XusbGetData(hChild);
+
             RtlZeroMemory(xusb, sizeof(XUSB_DEVICE_DATA));
 
             xusb->LedNumber = (UCHAR)SerialNo;
 
             // I/O Queue for pending IRPs
-            WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig, notificationsQueueConfig;
-            WDFQUEUE pendingUsbQueue, notificationsQueue;
+            WDF_IO_QUEUE_CONFIG usbInQueueConfig, usbOutQueueConfig, notificationsQueueConfig;
+            WDFQUEUE usbInQueue, usbOutQueue, notificationsQueue;
 
-            // Create and assign queue for incoming bulk transfer
+            // Create and assign queue for incoming/outgoing interrupt transfer
             {
-                WDF_IO_QUEUE_CONFIG_INIT(&pendingUsbQueueConfig, WdfIoQueueDispatchManual);
+                WDF_IO_QUEUE_CONFIG_INIT(&usbInQueueConfig, WdfIoQueueDispatchManual);
 
-                status = WdfIoQueueCreate(hChild, &pendingUsbQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &pendingUsbQueue);
+                status = WdfIoQueueCreate(hChild, &usbInQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &usbInQueue);
                 if (!NT_SUCCESS(status))
                 {
                     KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
                     return status;
                 }
 
-                xusb->PendingUsbRequests = pendingUsbQueue;
+                xusb->PendingUsbInRequests = usbInQueue;
+
+                WDF_IO_QUEUE_CONFIG_INIT(&usbOutQueueConfig, WdfIoQueueDispatchManual);
+
+                status = WdfIoQueueCreate(hChild, &usbOutQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &usbOutQueue);
+                if (!NT_SUCCESS(status))
+                {
+                    KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+                    return status;
+                }
+
+                xusb->PendingUsbOutRequests = usbOutQueue;
             }
 
             // Create and assign queue for user-land notification requests
@@ -385,6 +403,14 @@ NTSTATUS Bus_CreatePdo(
                 }
 
                 xusb->PendingNotificationRequests = notificationsQueue;
+
+                // Prepare notification callback
+                status = WdfIoQueueReadyNotify(xusb->PendingNotificationRequests, Pdo_EvtIoPendingNotificationRequestsQueueState, NULL);
+                if (!NT_SUCCESS(status))
+                {
+                    KdPrint(("WdfIoQueueReadyNotify failed 0x%x\n", status));
+                    return status;
+                }
             }
 
             // Reset report buffer
@@ -392,16 +418,21 @@ NTSTATUS Bus_CreatePdo(
 
             // This value never changes
             xusb->Report[1] = 0x14;
+
+            break;
         }
-
-        if (ds4 != NULL)
+        case DualShock4Wired:
         {
-            // I/O Queue for pending IRPs
-            WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig;
-            WDFQUEUE pendingUsbQueue;
+            PDS4_DEVICE_DATA ds4 = Ds4GetData(hChild);
 
-            // Create and assign queue for incoming bulk transfer
+            KdPrint(("Initializing DS4 context...\n"));
+
+            // Create and assign queue for incoming interrupt transfer
             {
+                // I/O Queue for pending IRPs
+                WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig;
+                WDFQUEUE pendingUsbQueue;
+
                 WDF_IO_QUEUE_CONFIG_INIT(&pendingUsbQueueConfig, WdfIoQueueDispatchManual);
 
                 status = WdfIoQueueCreate(hChild, &pendingUsbQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &pendingUsbQueue);
@@ -415,23 +446,30 @@ NTSTATUS Bus_CreatePdo(
             }
 
             // Initialize periodic timer
-            WDF_TIMER_CONFIG timerConfig;
-            WDF_TIMER_CONFIG_INIT_PERIODIC(&timerConfig, Ds4_PendingUsbRequestsTimerFunc, DS4_QUEUE_FLUSH_PERIOD);
-
-            // Timer object attributes
-            WDF_OBJECT_ATTRIBUTES timerAttribs;
-            WDF_OBJECT_ATTRIBUTES_INIT(&timerAttribs);
-
-            // PDO is parent
-            timerAttribs.ParentObject = hChild;
-
-            // Create timer
-            status = WdfTimerCreate(&timerConfig, &timerAttribs, &ds4->PendingUsbRequestsTimer);
-            if (!NT_SUCCESS(status))
             {
-                KdPrint(("WdfTimerCreate failed 0x%x\n", status));
-                return status;
+                WDF_TIMER_CONFIG timerConfig;
+                WDF_TIMER_CONFIG_INIT_PERIODIC(&timerConfig, Ds4_PendingUsbRequestsTimerFunc, DS4_QUEUE_FLUSH_PERIOD);
+
+                // Timer object attributes
+                WDF_OBJECT_ATTRIBUTES timerAttribs;
+                WDF_OBJECT_ATTRIBUTES_INIT(&timerAttribs);
+
+                // PDO is parent
+                timerAttribs.ParentObject = hChild;
+
+                // Create timer
+                status = WdfTimerCreate(&timerConfig, &timerAttribs, &ds4->PendingUsbRequestsTimer);
+                if (!NT_SUCCESS(status))
+                {
+                    KdPrint(("WdfTimerCreate failed 0x%x\n", status));
+                    return status;
+                }
             }
+
+            break;
+        }
+        default:
+            break;
         }
     }
 
@@ -622,8 +660,9 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
             KdPrint(("WdfDeviceAddQueryInterface failed status 0x%x\n", status));
             return status;
         }
+
+        break;
     }
-    break;
     case DualShock4Wired:
     {
         INTERFACE devinterfaceHid;
@@ -665,8 +704,9 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 
         // Start pending IRP queue flush timer
         WdfTimerStart(ds4Data->PendingUsbRequestsTimer, DS4_QUEUE_FLUSH_PERIOD);
+
+        break;
     }
-    break;
     default:
         break;
     }
@@ -925,6 +965,65 @@ VOID Ds4_PendingUsbRequestsTimerFunc(
 
         // Complete pending request
         WdfRequestComplete(usbRequest, status);
+    }
+}
+
+//
+// Get called when the user-land notifications queue has received new requests.
+// 
+VOID Pdo_EvtIoPendingNotificationRequestsQueueState(
+    _In_ WDFQUEUE   Queue,
+    _In_ WDFCONTEXT Context
+)
+{
+    NTSTATUS status;
+    WDFDEVICE hDevice;
+    PPDO_DEVICE_DATA pdoData;
+    WDFREQUEST request;
+
+
+    KdPrint(("Pdo_EvtIoPendingNotificationRequestsQueueState called\n"));
+
+    UNREFERENCED_PARAMETER(Context);
+
+    hDevice = WdfIoQueueGetDevice(Queue);
+    pdoData = PdoGetData(hDevice);
+
+    switch (pdoData->TargetType)
+    {
+    case Xbox360Wired:
+    {
+        PXUSB_DEVICE_DATA xusb = XusbGetData(hDevice);
+
+        status = WdfIoQueueRetrieveNextRequest(xusb->PendingUsbOutRequests, &request);
+
+        if (NT_SUCCESS(status))
+        {
+            PXUSB_REQUEST_NOTIFICATION notify = NULL;
+
+            status = WdfRequestRetrieveOutputBuffer(request, sizeof(XUSB_REQUEST_NOTIFICATION), (PVOID)&notify, NULL);
+
+            if (NT_SUCCESS(status))
+            {
+                // Assign values to output buffer
+                notify->Size = sizeof(XUSB_REQUEST_NOTIFICATION);
+                notify->SerialNo = pdoData->SerialNo;
+                notify->LedNumber = xusb->LedNumber;
+                notify->LargeMotor = xusb->Rumble[3];
+                notify->SmallMotor = xusb->Rumble[4];
+
+                WdfRequestCompleteWithInformation(request, status, notify->Size);
+            }
+            else
+            {
+                KdPrint(("WdfRequestRetrieveOutputBuffer failed with status 0x%X\n", status));
+            }
+        }
+
+        break;
+    }
+    default:
+        break;
     }
 }
 

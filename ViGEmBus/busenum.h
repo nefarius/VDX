@@ -65,6 +65,8 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 // 
 #define CURRENT_PROCESS_ID() ((DWORD)((DWORD_PTR)PsGetCurrentProcessId() & 0xFFFFFFFF))
 
+#define IS_OWNER(_pdo_) (_pdo_->OwnerProcessId == CURRENT_PROCESS_ID())
+
 
 //
 // Used to identify children in the device list of the bus.

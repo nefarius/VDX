@@ -172,6 +172,9 @@ typedef struct _XUSB_SUBMIT_REPORT
     XUSB_REPORT Report;
 } XUSB_SUBMIT_REPORT, *PXUSB_SUBMIT_REPORT;
 
+//
+// DualShock 4 HID Input report
+// 
 typedef struct _DS4_REPORT
 {
     BYTE bThumbLX;
@@ -185,7 +188,51 @@ typedef struct _DS4_REPORT
 } DS4_REPORT, *PDS4_REPORT;
 
 //
-// Experimental DS4 request data.
+// DualShock 4 digital buttons
+// 
+typedef enum _DS4_BUTTONS
+{
+    Ds4ThumbR = 1 << 15,
+    Ds4ThumbL = 1 << 14,
+    Ds4Options = 1 << 13,
+    Ds4Share = 1 << 12,
+    Ds4TriggerR = 1 << 11,
+    Ds4TriggerL = 1 << 10,
+    Ds4ShoulderR = 1 << 9,
+    Ds4ShoulderL = 1 << 8,
+    Ds4Triangle = 1 << 7,
+    Ds4Circle = 1 << 6,
+    Ds4Cross = 1 << 5,
+    Ds4Square = 1 << 4
+} DS4_BUTTONS, *PDS4_BUTTONS;
+
+//
+// DualShock 4 special buttons
+// 
+typedef enum _DS4_SPECIAL_BUTTONS
+{
+    Ds4Ps = 1 << 0,
+    Ds4Touchpad = 1 << 1
+} DS4_SPECIAL_BUTTONS, *PDS4_SPECIAL_BUTTONS;
+
+//
+// DualShock 4 directional pad values
+// 
+typedef enum _DS4_DPAD_DIRECTIONS
+{
+    Ds4DpadNone = 0x8,
+    Ds4DpadNW = 0x7,
+    Ds4DpadW = 0x6,
+    Ds4DpadSW = 0x5,
+    Ds4DpadS = 0x4,
+    Ds4DpadSE = 0x3,
+    Ds4DpadE = 0x2,
+    Ds4DpadNE = 0x1,
+    Ds4DpadN = 0x0
+} DS4_DPAD_DIRECTIONS, *PDS4_DPAD_DIRECTIONS;
+
+//
+// DualShock 4 request data
 // 
 typedef struct _DS4_SUBMIT_REPORT
 {
@@ -198,6 +245,37 @@ typedef struct _DS4_SUBMIT_REPORT
     // Serial number of target device.
     // 
     ULONG SerialNo;
-    UCHAR HidReport[64];
+
+    //
+    // HID Input report
+    // 
+    DS4_REPORT HidReport;
 } DS4_SUBMIT_REPORT, *PDS4_SUBMIT_REPORT;
+
+VOID FORCEINLINE DS4_SET_DPAD(
+    _Out_ PDS4_SUBMIT_REPORT Report,
+    _In_ DS4_DPAD_DIRECTIONS Dpad
+)
+{
+    Report->HidReport.wButtons &= ~0xF;
+    Report->HidReport.wButtons |= (WORD)Dpad;
+}
+
+VOID FORCEINLINE DS4_SUBMIT_REPORT_INIT(
+    _Out_ PDS4_SUBMIT_REPORT Report,
+    _In_ ULONG SerialNo
+)
+{
+    RtlZeroMemory(Report, sizeof(DS4_SUBMIT_REPORT));
+
+    Report->Size = sizeof(DS4_SUBMIT_REPORT);
+    Report->SerialNo = SerialNo;
+
+    Report->HidReport.bThumbLX = 0x80;
+    Report->HidReport.bThumbLY = 0x80;
+    Report->HidReport.bThumbRX = 0x80;
+    Report->HidReport.bThumbRY = 0x80;
+
+    DS4_SET_DPAD(Report, Ds4DpadNone);
+}
 

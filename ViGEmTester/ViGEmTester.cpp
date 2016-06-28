@@ -108,28 +108,15 @@ int main()
             //    printf("IOCTL_XUSB_SUBMIT_REPORT retval: %d, trans: %d, report.Report.bLeftTrigger = %d\n", retval, transfered, report.Report.bLeftTrigger);
             //}
 
-            DS4_SUBMIT_REPORT report = { 0 };
-            report.Size = sizeof(DS4_SUBMIT_REPORT);
-            report.SerialNo = serial;
-
-            UCHAR Ds4HidReport[64] =
-            {
-                0x01, 0xFF, 0x00, 0x83, 0x7A, 0xA8, 0x00, 0x00,
-                0x00, 0x00, 0x93, 0x5F, 0xFB, 0xD2, 0xFF, 0xDA,
-                0xFF, 0xD8, 0xFF, 0x4F, 0xEE, 0x14, 0x1B, 0x99,
-                0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x00,
-                0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80,
-                0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00,
-                0x80, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00,
-                0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00
-            };
+            DS4_SUBMIT_REPORT report;
+            DS4_SUBMIT_REPORT_INIT(&report, serial);
 
             int skip = 0;
             srand(time(NULL));
 
             while (TRUE /*getchar() != 'a'*/)
-            {        
-                memcpy(report.HidReport, Ds4HidReport, 64);
+            {
+                DS4_SET_DPAD(&report, Ds4DpadN);
 
                 retval = DeviceIoControl(bus, IOCTL_DS4_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);
                 printf("IOCTL_DS4_SUBMIT_REPORT retval: %d, trans: %d\n", retval, transfered);

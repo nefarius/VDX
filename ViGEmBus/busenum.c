@@ -633,7 +633,7 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
     }
 
     // Check if caller owns this PDO
-    if (pdoData->OwnerProcessId != CURRENT_PROCESS_ID())
+    if (!IS_OWNER(pdoData))
     {
         KdPrint(("Bus_XusbSubmitReport: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
         return STATUS_ACCESS_DENIED;
@@ -725,7 +725,7 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
     }
 
     // Check if caller owns this PDO
-    if (pdoData->OwnerProcessId != CURRENT_PROCESS_ID())
+    if (!IS_OWNER(pdoData))
     {
         KdPrint(("Bus_XusbQueueNotification: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
         return STATUS_ACCESS_DENIED;
@@ -746,6 +746,9 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
     return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
 }
 
+//
+// Sends a report update to a DS4 PDO.
+// 
 NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPORT Report)
 {
     NTSTATUS status = STATUS_SUCCESS;
@@ -757,9 +760,8 @@ NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPOR
     WDFREQUEST usbRequest;
     PIRP pendingIrp;
     PIO_STACK_LOCATION irpStack;
-    BOOLEAN changed;
 
-    UNREFERENCED_PARAMETER(Report);
+
     KdPrint(("Entered Bus_Ds4SubmitReport\n"));
 
     // Get child
@@ -801,49 +803,40 @@ NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPOR
     }
 
     // Check if caller owns this PDO
-    if (pdoData->OwnerProcessId != CURRENT_PROCESS_ID())
+    if (!IS_OWNER(pdoData))
     {
         KdPrint(("Bus_Ds4SubmitReport: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
         return STATUS_ACCESS_DENIED;
     }
 
-    // Check if input is different from previous value
-    changed = TRUE;// (RtlCompareMemory(ds4Data->HidReport, &Report->Report, sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
+    // Get pending USB request
+    status = WdfIoQueueRetrieveNextRequest(ds4Data->PendingUsbRequests, &usbRequest);
 
-    // Don't waste pending IRP if input hasn't changed
-    if (changed)
+    if (NT_SUCCESS(status))
     {
-        KdPrint(("Bus_Ds4SubmitReport: received new report\n"));
+        KdPrint(("Bus_Ds4SubmitReport: pending IRP found\n"));
 
-        // Get pending USB request
-        status = WdfIoQueueRetrieveNextRequest(ds4Data->PendingUsbRequests, &usbRequest);
+        // Get pending IRP
+        pendingIrp = WdfRequestWdmGetIrp(usbRequest);
+        irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
 
-        if (NT_SUCCESS(status))
-        {
-            KdPrint(("Bus_Ds4SubmitReport: pending IRP found\n"));
+        // Get USB request block
+        PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
 
-            // Get pending IRP
-            pendingIrp = WdfRequestWdmGetIrp(usbRequest);
-            irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
+        // Get transfer buffer
+        PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
+        // Set buffer length to report size
+        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_HID_REPORT_SIZE;
 
-            // Get USB request block
-            PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
+        /* Copy report to cache and transfer buffer 
+         * Skip first byte as it contains the never changing report id */
+        RtlCopyBytes(ds4Data->HidReport + 1, &Report->HidReport, Report->Size);
+        RtlCopyBytes(Buffer + 1, &Report->HidReport, Report->Size);
 
-            // Get transfer buffer
-            PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
-            // Set buffer length to report size
-            urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_HID_REPORT_SIZE;
-
-            // Copy report to cache and transfer buffer 
-            RtlCopyBytes(ds4Data->HidReport, Report->HidReport, DS4_HID_REPORT_SIZE);
-            RtlCopyBytes(Buffer, Report->HidReport, DS4_HID_REPORT_SIZE);
-
-            // Complete pending request
-            WdfRequestComplete(usbRequest, status);
-        }
+        // Complete pending request
+        WdfRequestComplete(usbRequest, status);
     }
 
     return status;
 }
-
 

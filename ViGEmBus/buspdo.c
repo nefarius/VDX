@@ -173,8 +173,9 @@ NTSTATUS Bus_CreatePdo(
                 return status;
             }
         }
+
+        break;
     }
-    break;
     //
     // A Sony DualShock 4 device was requested
     // 
@@ -236,8 +237,9 @@ NTSTATUS Bus_CreatePdo(
                 return status;
             }
         }
+
+        break;
     }
-    break;
     }
 
     // set device id

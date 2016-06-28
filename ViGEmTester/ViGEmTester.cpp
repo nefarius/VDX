@@ -24,8 +24,6 @@ DWORD WINAPI notify(LPVOID param)
     OVERLAPPED  lOverlapped = { 0 };
     lOverlapped.hEvent = hEvent;
 
-    Sleep(5000);
-
     while (TRUE)
     {
         printf("Sending IOCTL_XUSB_REQUEST_NOTIFICATION request...\n");
@@ -35,8 +33,6 @@ DWORD WINAPI notify(LPVOID param)
         WaitForSingleObject(hEvent, INFINITE);
 
         printf("IOCTL_XUSB_REQUEST_NOTIFICATION completed, LED: %d, Large: %d, Small: %d\n", notify.LedNumber, notify.LargeMotor, notify.SmallMotor);
-
-        //Sleep(1000);
     }
 
     return 0;

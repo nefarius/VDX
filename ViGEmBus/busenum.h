@@ -118,9 +118,7 @@ typedef struct _XUSB_DEVICE_DATA
     UCHAR		LedNumber;
     UCHAR		Report[XUSB_REPORT_SIZE];
     WDFQUEUE    PendingUsbInRequests;
-    WDFQUEUE    PendingUsbOutRequests;
     WDFQUEUE    PendingNotificationRequests;
-    BOOLEAN     NotificationRequestsPassthrough;
 } XUSB_DEVICE_DATA, *PXUSB_DEVICE_DATA;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XUSB_DEVICE_DATA, XusbGetData)
@@ -162,7 +160,6 @@ EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Pdo_EvtIoInternalDeviceControl;
 
 EVT_WDF_TIMER Ds4_PendingUsbRequestsTimerFunc;
 
-EVT_WDF_IO_QUEUE_STATE Pdo_EvtIoPendingNotificationRequestsQueueState;
 
 //
 // Bus enumeration-specific functions

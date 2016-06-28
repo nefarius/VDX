@@ -871,16 +871,6 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
                 KdPrint(("WdfRequestRetrieveOutputBuffer failed with status 0x%X\n", status));
             }
         }
-        //else if (status == STATUS_NO_MORE_ENTRIES && !xusb->NotificationRequestsPassthrough)
-        //{
-        //    /* There is currently no inverted call ready to be completed and 
-        //       the PDO was created with the policy of answering every request, 
-        //       so we'll queue this request an complete it once an inverted call 
-        //       has arrived. This ensures that the user-land process will not
-        //       miss data due to race conditions. */
-        //    WdfRequestForwardToIoQueue(Request, xusb->PendingUsbOutRequests);
-        //    return STATUS_PENDING;
-        //}
         
         break;
     }

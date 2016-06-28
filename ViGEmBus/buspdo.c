@@ -363,10 +363,10 @@ NTSTATUS Bus_CreatePdo(
             xusb->LedNumber = (UCHAR)SerialNo;
 
             // I/O Queue for pending IRPs
-            WDF_IO_QUEUE_CONFIG usbInQueueConfig, usbOutQueueConfig, notificationsQueueConfig;
-            WDFQUEUE usbInQueue, usbOutQueue, notificationsQueue;
+            WDF_IO_QUEUE_CONFIG usbInQueueConfig, notificationsQueueConfig;
+            WDFQUEUE usbInQueue, notificationsQueue;
 
-            // Create and assign queue for incoming/outgoing interrupt transfer
+            // Create and assign queue for incoming interrupt transfer
             {
                 WDF_IO_QUEUE_CONFIG_INIT(&usbInQueueConfig, WdfIoQueueDispatchManual);
 
@@ -378,17 +378,6 @@ NTSTATUS Bus_CreatePdo(
                 }
 
                 xusb->PendingUsbInRequests = usbInQueue;
-
-                WDF_IO_QUEUE_CONFIG_INIT(&usbOutQueueConfig, WdfIoQueueDispatchManual);
-
-                status = WdfIoQueueCreate(hChild, &usbOutQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &usbOutQueue);
-                if (!NT_SUCCESS(status))
-                {
-                    KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
-                    return status;
-                }
-
-                xusb->PendingUsbOutRequests = usbOutQueue;
             }
 
             // Create and assign queue for user-land notification requests
@@ -403,14 +392,6 @@ NTSTATUS Bus_CreatePdo(
                 }
 
                 xusb->PendingNotificationRequests = notificationsQueue;
-
-                // Prepare notification callback
-                status = WdfIoQueueReadyNotify(xusb->PendingNotificationRequests, Pdo_EvtIoPendingNotificationRequestsQueueState, NULL);
-                if (!NT_SUCCESS(status))
-                {
-                    KdPrint(("WdfIoQueueReadyNotify failed 0x%x\n", status));
-                    return status;
-                }
             }
 
             // Reset report buffer
@@ -965,65 +946,6 @@ VOID Ds4_PendingUsbRequestsTimerFunc(
 
         // Complete pending request
         WdfRequestComplete(usbRequest, status);
-    }
-}
-
-//
-// Get called when the user-land notifications queue has received new requests.
-// 
-VOID Pdo_EvtIoPendingNotificationRequestsQueueState(
-    _In_ WDFQUEUE   Queue,
-    _In_ WDFCONTEXT Context
-)
-{
-    NTSTATUS status;
-    WDFDEVICE hDevice;
-    PPDO_DEVICE_DATA pdoData;
-    WDFREQUEST request;
-
-
-    KdPrint(("Pdo_EvtIoPendingNotificationRequestsQueueState called\n"));
-
-    UNREFERENCED_PARAMETER(Context);
-
-    hDevice = WdfIoQueueGetDevice(Queue);
-    pdoData = PdoGetData(hDevice);
-
-    switch (pdoData->TargetType)
-    {
-    case Xbox360Wired:
-    {
-        PXUSB_DEVICE_DATA xusb = XusbGetData(hDevice);
-
-        status = WdfIoQueueRetrieveNextRequest(xusb->PendingUsbOutRequests, &request);
-
-        if (NT_SUCCESS(status))
-        {
-            PXUSB_REQUEST_NOTIFICATION notify = NULL;
-
-            status = WdfRequestRetrieveOutputBuffer(request, sizeof(XUSB_REQUEST_NOTIFICATION), (PVOID)&notify, NULL);
-
-            if (NT_SUCCESS(status))
-            {
-                // Assign values to output buffer
-                notify->Size = sizeof(XUSB_REQUEST_NOTIFICATION);
-                notify->SerialNo = pdoData->SerialNo;
-                notify->LedNumber = xusb->LedNumber;
-                notify->LargeMotor = xusb->Rumble[3];
-                notify->SmallMotor = xusb->Rumble[4];
-
-                WdfRequestCompleteWithInformation(request, status, notify->Size);
-            }
-            else
-            {
-                KdPrint(("WdfRequestRetrieveOutputBuffer failed with status 0x%X\n", status));
-            }
-        }
-
-        break;
-    }
-    default:
-        break;
     }
 }
 

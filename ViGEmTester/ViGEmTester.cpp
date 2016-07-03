@@ -14,6 +14,7 @@ int serial = 0;
 
 DWORD WINAPI notify(LPVOID param)
 {
+    DWORD error = ERROR_SUCCESS;
     DWORD transfered = 0;
     BOOLEAN retval;
     XUSB_REQUEST_NOTIFICATION notify;
@@ -23,16 +24,26 @@ DWORD WINAPI notify(LPVOID param)
     OVERLAPPED  lOverlapped = { 0 };
     lOverlapped.hEvent = hEvent;
 
-    while (TRUE)
+    do
     {
         printf("Sending IOCTL_XUSB_REQUEST_NOTIFICATION request...\n");
         retval = DeviceIoControl(bus, IOCTL_XUSB_REQUEST_NOTIFICATION, &notify, notify.Size, &notify, notify.Size, &transfered, &lOverlapped);
         printf("IOCTL_XUSB_REQUEST_NOTIFICATION retval: %d, trans: %d\n", retval, transfered);
 
-        WaitForSingleObject(hEvent, INFINITE);
+        if (GetLastError() == ERROR_IO_PENDING)
+        {
+            SetLastError(ERROR_SUCCESS);
+        }
 
-        printf("IOCTL_XUSB_REQUEST_NOTIFICATION completed, LED: %d, Large: %d, Small: %d\n", notify.LedNumber, notify.LargeMotor, notify.SmallMotor);
-    }
+        GetOverlappedResult(bus, &lOverlapped, &transfered, TRUE);
+
+        error = GetLastError();
+
+        printf("IOCTL_XUSB_REQUEST_NOTIFICATION completed, LED: %d, Large: %d, Small: %d, error: %d\n", 
+            notify.LedNumber, notify.LargeMotor, notify.SmallMotor, error);
+    } while (error != ERROR_OPERATION_ABORTED);
+
+    printf("Thread aborted...\n");
 
     return 0;
 }
@@ -90,6 +101,10 @@ int main()
 
             DWORD myThreadID;
             HANDLE myHandle = CreateThread(0, 0, notify, NULL, 0, &myThreadID);
+
+            //Sleep(2000);
+            //
+            //CloseHandle(bus);
 
             getchar();
 

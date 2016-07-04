@@ -1,22 +1,55 @@
-// The following ifdef block is the standard way of creating macros which make exporting 
-// from a DLL simpler. All files within this DLL are compiled with the VIGEMUM_EXPORTS
-// symbol defined on the command line. This symbol should not be defined on any project
-// that uses this DLL. This way any other project whose source files include this file see 
-// VIGEMUM_API functions as being imported from a DLL, whereas this DLL sees symbols
-// defined with this macro as being exported.
-#ifdef VIGEMUM_EXPORTS
-#define VIGEMUM_API __declspec(dllexport)
-#else
-#define VIGEMUM_API __declspec(dllimport)
+#ifdef _MSC_VER
+#pragma once
 #endif
 
-// This class is exported from the ViGEmUM.dll
-class VIGEMUM_API CViGEmUM {
-public:
-	CViGEmUM(void);
-	// TODO: add your methods here.
-};
+#include <initguid.h>
+#include <public.h>
 
-extern VIGEMUM_API int nViGEmUM;
+#ifdef VIGEM_EXPORTS
+#define VIGEM_API __declspec(dllexport)
+#else
+#define VIGEM_API __declspec(dllimport)
+#endif
 
-VIGEMUM_API int fnViGEmUM(void);
+#define VIGEM_TARGETS_MAX   4
+
+//
+// Represents a virtual gamepad object.
+// 
+typedef struct _VIGEM_TARGET
+{
+    IN ULONG Size;
+    IN USHORT Version;
+    IN ULONG SerialNo;
+} VIGEM_TARGET, *PVIGEM_TARGET;
+
+//
+// Initializes a virtual gamepad object.
+// 
+VOID FORCEINLINE VIGEM_TARGET_INIT(
+    _Out_ PVIGEM_TARGET Target
+)
+{
+    RtlZeroMemory(Target, sizeof(VIGEM_TARGET));
+
+    Target->Size = sizeof(VIGEM_TARGET);
+    Target->Version = 1;
+}
+
+typedef VOID(CALLBACK* vigem_xusb_notification)(
+    VIGEM_TARGET Target, 
+    UCHAR LargeMotor,
+    UCHAR SmallMotor,
+    UCHAR LedNumber);
+
+VIGEM_API DWORD vigem_init();
+
+VIGEM_API VOID vigem_shutdown();
+
+VIGEM_API DWORD vigem_register_xusb_notification(
+    IN vigem_xusb_notification notification, 
+    IN VIGEM_TARGET Target);
+
+VIGEM_API DWORD vigem_target_plugin(
+    _In_ VIGEM_TARGET_TYPE Type,
+    _Out_ PVIGEM_TARGET Target);

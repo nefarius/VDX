@@ -97,7 +97,7 @@ int main()
 
             auto retval = DeviceIoControl(bus, IOCTL_VIGEM_PLUGIN_TARGET, &plugin, plugin.Size, nullptr, 0, &transfered, nullptr);
 
-            printf("IOCTL_BUSENUM_PLUGIN_HARDWARE retval: %d, trans: %d\n", retval, transfered);
+            printf("IOCTL_BUSENUM_PLUGIN_HARDWARE retval: %d, trans: %d, error: %d\n", retval, transfered, GetLastError());
 
             DWORD myThreadID;
             HANDLE myHandle = CreateThread(0, 0, notify, NULL, 0, &myThreadID);

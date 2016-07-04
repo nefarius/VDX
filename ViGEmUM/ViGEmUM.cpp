@@ -158,7 +158,7 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
     return error;
 }
 
-VIGEM_API DWORD vigem_xusb_submit_report(
+VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
     VIGEM_TARGET Target, 
     XUSB_REPORT Report)
 {
@@ -168,7 +168,7 @@ VIGEM_API DWORD vigem_xusb_submit_report(
 
     if (Target.SerialNo == 0)
     {
-        return ERROR_INVALID_PARAMETER;
+        return VIGEM_ERROR_INVALID_TARGET;
     }
 
     XUSB_SUBMIT_REPORT report;
@@ -181,6 +181,6 @@ VIGEM_API DWORD vigem_xusb_submit_report(
     // TODO: add error checking
     GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE);
 
-    return ERROR_SUCCESS;
+    return VIGEM_ERROR_NONE;
 }
 

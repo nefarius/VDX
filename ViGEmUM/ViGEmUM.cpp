@@ -6,6 +6,7 @@
 #include <SetupAPI.h>
 #include <stdlib.h>
 #include <winioctl.h>
+#include <thread>
 
 HANDLE g_hViGEmBus = INVALID_HANDLE_VALUE;
 
@@ -65,27 +66,60 @@ VIGEM_API VOID vigem_shutdown()
     }
 }
 
-VIGEM_API DWORD vigem_register_xusb_notification(
-    IN vigem_xusb_notification notification, 
+VIGEM_API VOID vigem_register_xusb_notification(
+    IN VIGEM_XUSB_NOTIFICATION Notification,
     IN VIGEM_TARGET Target)
 {
-    return 0;
+    std::thread _async{ [](
+        VIGEM_XUSB_NOTIFICATION _Notification,
+        VIGEM_TARGET _Target)
+    {
+        DWORD error = ERROR_SUCCESS;
+        DWORD transfered = 0;
+        BOOLEAN retval;
+        OVERLAPPED lOverlapped = { 0 };
+        lOverlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+        XUSB_REQUEST_NOTIFICATION notify;
+        XUSB_REQUEST_NOTIFICATION_INIT(&notify, _Target.SerialNo);
+
+        if (_Target.SerialNo == 0)
+        {
+            return;
+        }
+
+        do
+        {
+            DeviceIoControl(g_hViGEmBus, IOCTL_XUSB_REQUEST_NOTIFICATION, &notify, notify.Size, &notify, notify.Size, &transfered, &lOverlapped);
+
+            if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
+            {
+                _Notification(_Target, notify.LargeMotor, notify.SmallMotor, notify.LedNumber);
+            }
+            else
+            {
+                error = GetLastError();
+            }
+        } while (error != ERROR_OPERATION_ABORTED);
+
+    }, Notification, Target };
+
+    _async.detach();
 }
 
 VIGEM_API DWORD vigem_target_plugin(
-    VIGEM_TARGET_TYPE Type, 
+    VIGEM_TARGET_TYPE Type,
     PVIGEM_TARGET Target)
 {
     DWORD transfered = 0;
     DWORD error = ERROR_SUCCESS;
     VIGEM_PLUGIN_TARGET plugin;
-    HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     OVERLAPPED lOverlapped = { 0 };
-    lOverlapped.hEvent = hEvent;
-    
-    for (UINT serial = 1; serial <= VIGEM_TARGETS_MAX; serial++)
+    lOverlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+    for (Target->SerialNo = 1; Target->SerialNo <= VIGEM_TARGETS_MAX; Target->SerialNo++)
     {
-        VIGEM_PLUGIN_TARGET_INIT(&plugin, serial, Type);
+        VIGEM_PLUGIN_TARGET_INIT(&plugin, Target->SerialNo, Type);
 
         DeviceIoControl(g_hViGEmBus, IOCTL_VIGEM_PLUGIN_TARGET, &plugin, plugin.Size, nullptr, 0, &transfered, &lOverlapped);
 
@@ -98,5 +132,31 @@ VIGEM_API DWORD vigem_target_plugin(
     }
 
     return error;
+}
+
+VIGEM_API DWORD vigem_xusb_submit_report(
+    VIGEM_TARGET Target, 
+    XUSB_REPORT Report)
+{
+    DWORD transfered = 0;
+    OVERLAPPED lOverlapped = { 0 };
+    lOverlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+    if (Target.SerialNo == 0)
+    {
+        return ERROR_INVALID_PARAMETER;
+    }
+
+    XUSB_SUBMIT_REPORT report;
+    XUSB_SUBMIT_REPORT_INIT(&report, Target.SerialNo);
+
+    report.Report = Report;
+
+    DeviceIoControl(g_hViGEmBus, IOCTL_XUSB_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, &lOverlapped);
+
+    // TODO: add error checking
+    GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE);
+
+    return ERROR_SUCCESS;
 }
 

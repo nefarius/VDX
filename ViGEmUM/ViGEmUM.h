@@ -36,7 +36,7 @@ VOID FORCEINLINE VIGEM_TARGET_INIT(
     Target->Version = 1;
 }
 
-typedef VOID(CALLBACK* vigem_xusb_notification)(
+typedef VOID(CALLBACK* VIGEM_XUSB_NOTIFICATION)(
     VIGEM_TARGET Target, 
     UCHAR LargeMotor,
     UCHAR SmallMotor,
@@ -46,10 +46,14 @@ VIGEM_API DWORD vigem_init();
 
 VIGEM_API VOID vigem_shutdown();
 
-VIGEM_API DWORD vigem_register_xusb_notification(
-    IN vigem_xusb_notification notification, 
+VIGEM_API VOID vigem_register_xusb_notification(
+    IN VIGEM_XUSB_NOTIFICATION Notification, 
     IN VIGEM_TARGET Target);
 
 VIGEM_API DWORD vigem_target_plugin(
     _In_ VIGEM_TARGET_TYPE Type,
     _Out_ PVIGEM_TARGET Target);
+
+VIGEM_API DWORD vigem_xusb_submit_report(
+    _In_ VIGEM_TARGET Target,
+    _In_ XUSB_REPORT Report);

@@ -8,49 +8,60 @@
 #include <SetupAPI.h>
 #include <Xinput.h>
 #include <time.h>
+#include <ViGEmUM.h>
 
 HANDLE bus;
 int serial = 0;
 
-DWORD WINAPI notify(LPVOID param)
+VOID my_xusb_notification(
+    VIGEM_TARGET Target,
+    UCHAR LargeMotor,
+    UCHAR SmallMotor,
+    UCHAR LedNumber)
 {
-    DWORD error = ERROR_SUCCESS;
-    DWORD transfered = 0;
-    BOOLEAN retval;
-    XUSB_REQUEST_NOTIFICATION notify;
-    XUSB_REQUEST_NOTIFICATION_INIT(&notify, serial);
-
-    HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    OVERLAPPED  lOverlapped = { 0 };
-    lOverlapped.hEvent = hEvent;
-
-    do
-    {
-        printf("Sending IOCTL_XUSB_REQUEST_NOTIFICATION request...\n");
-        retval = DeviceIoControl(bus, IOCTL_XUSB_REQUEST_NOTIFICATION, &notify, notify.Size, &notify, notify.Size, &transfered, &lOverlapped);
-        printf("IOCTL_XUSB_REQUEST_NOTIFICATION retval: %d, trans: %d\n", retval, transfered);
-
-        if (GetLastError() == ERROR_IO_PENDING)
-        {
-            SetLastError(ERROR_SUCCESS);
-        }
-
-        GetOverlappedResult(bus, &lOverlapped, &transfered, TRUE);
-
-        error = GetLastError();
-
-        printf("IOCTL_XUSB_REQUEST_NOTIFICATION completed, LED: %d, Large: %d, Small: %d, error: %d\n", 
-            notify.LedNumber, notify.LargeMotor, notify.SmallMotor, error);
-    } while (error != ERROR_OPERATION_ABORTED);
-
-    printf("Thread aborted...\n");
-
-    return 0;
+    printf("Serial: %d, LM: %d, SM: %d, LED: %d\n",
+        Target.SerialNo,
+        LargeMotor,
+        SmallMotor,
+        LedNumber);
 }
 
 int main()
 {
-    printf("XUSB_SUBMIT_REPORT = %llu, XINPUT_GAMEPAD = %llu, XUSB_REPORT = %llu\n\n\n", sizeof(XUSB_SUBMIT_REPORT), sizeof(XINPUT_GAMEPAD), sizeof(XUSB_REPORT));
+    if (vigem_init() != 0)
+    {
+        printf("Couldn't open bus\n");
+        getchar();
+        return 1;
+    }
+
+    VIGEM_TARGET x360;
+    VIGEM_TARGET_INIT(&x360);
+
+    if (vigem_target_plugin(Xbox360Wired, &x360) != 0)
+    {
+        printf("Couldn't get target object\n");
+        getchar();
+        return 1;
+    }
+
+    vigem_register_xusb_notification(
+        (VIGEM_XUSB_NOTIFICATION)my_xusb_notification,
+        x360);
+
+    printf("Success!");
+    getchar();
+
+    XUSB_REPORT r = { 0 };
+
+    while (getchar() != 'a')
+    {
+        r.bLeftTrigger++;
+
+        vigem_xusb_submit_report(x360, r);
+    }
+
+    return 0;
 
     SP_DEVICE_INTERFACE_DATA deviceInterfaceData = {};
     deviceInterfaceData.cbSize = sizeof(deviceInterfaceData);
@@ -99,22 +110,15 @@ int main()
 
             printf("IOCTL_BUSENUM_PLUGIN_HARDWARE retval: %d, trans: %d, error: %d\n", retval, transfered, GetLastError());
 
-            DWORD myThreadID;
-            HANDLE myHandle = CreateThread(0, 0, notify, NULL, 0, &myThreadID);
-
-            //Sleep(2000);
-            //
-            //CloseHandle(bus);
-
             getchar();
 
             XUSB_SUBMIT_REPORT report;
             XUSB_SUBMIT_REPORT_INIT(&report, serial);
-            
+
             while (getchar() != 'a')
             {
                 report.Report.bLeftTrigger++;
-            
+
                 retval = DeviceIoControl(bus, IOCTL_XUSB_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, nullptr);
                 printf("IOCTL_XUSB_SUBMIT_REPORT retval: %d, trans: %d, report.Report.bLeftTrigger = %d\n", retval, transfered, report.Report.bLeftTrigger);
             }

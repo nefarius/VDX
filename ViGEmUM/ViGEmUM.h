@@ -13,6 +13,15 @@
 
 #define VIGEM_TARGETS_MAX   4
 
+typedef enum _VIGEM_ERRORS
+{
+    VIGEM_ERROR_NONE = 0x0000,
+    VIGEM_ERROR_BUS_NOT_FOUND,
+    VIGEM_ERROR_NO_FREE_SLOT
+} VIGEM_ERROR;
+
+#define VIGEM_SUCCESS(_val_) (_val_ == VIGEM_ERROR_NONE)
+
 //
 // Represents a virtual gamepad object.
 // 
@@ -42,7 +51,7 @@ typedef VOID(CALLBACK* VIGEM_XUSB_NOTIFICATION)(
     UCHAR SmallMotor,
     UCHAR LedNumber);
 
-VIGEM_API DWORD vigem_init();
+VIGEM_API VIGEM_ERROR vigem_init();
 
 VIGEM_API VOID vigem_shutdown();
 
@@ -50,7 +59,7 @@ VIGEM_API VOID vigem_register_xusb_notification(
     IN VIGEM_XUSB_NOTIFICATION Notification, 
     IN VIGEM_TARGET Target);
 
-VIGEM_API DWORD vigem_target_plugin(
+VIGEM_API VIGEM_ERROR vigem_target_plugin(
     _In_ VIGEM_TARGET_TYPE Type,
     _Out_ PVIGEM_TARGET Target);
 

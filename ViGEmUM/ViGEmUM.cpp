@@ -12,13 +12,13 @@ HANDLE g_hViGEmBus = INVALID_HANDLE_VALUE;
 
 
 
-VIGEM_API DWORD vigem_init()
+VIGEM_API VIGEM_ERROR vigem_init()
 {
     SP_DEVICE_INTERFACE_DATA deviceInterfaceData = { 0 };
     deviceInterfaceData.cbSize = sizeof(deviceInterfaceData);
     DWORD memberIndex = 0;
     DWORD requiredSize = 0;
-    DWORD error = ERROR_SUCCESS;
+    VIGEM_ERROR error = VIGEM_ERROR_NONE;
 
     auto deviceInfoSet = SetupDiGetClassDevs(&GUID_DEVINTERFACE_BUSENUM_VIGEM, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
@@ -36,7 +36,7 @@ VIGEM_API DWORD vigem_init()
         {
             SetupDiDestroyDeviceInfoList(deviceInfoSet);
             free(detailDataBuffer);
-            error = ERROR_NOT_FOUND;
+            error = VIGEM_ERROR_BUS_NOT_FOUND;
             continue;
         }
 
@@ -70,6 +70,11 @@ VIGEM_API VOID vigem_register_xusb_notification(
     IN VIGEM_XUSB_NOTIFICATION Notification,
     IN VIGEM_TARGET Target)
 {
+    if (Target.SerialNo == 0)
+    {
+        return;
+    }
+
     std::thread _async{ [](
         VIGEM_XUSB_NOTIFICATION _Notification,
         VIGEM_TARGET _Target)
@@ -83,11 +88,6 @@ VIGEM_API VOID vigem_register_xusb_notification(
         XUSB_REQUEST_NOTIFICATION notify;
         XUSB_REQUEST_NOTIFICATION_INIT(&notify, _Target.SerialNo);
 
-        if (_Target.SerialNo == 0)
-        {
-            return;
-        }
-
         do
         {
             DeviceIoControl(g_hViGEmBus, IOCTL_XUSB_REQUEST_NOTIFICATION, &notify, notify.Size, &notify, notify.Size, &transfered, &lOverlapped);
@@ -100,19 +100,19 @@ VIGEM_API VOID vigem_register_xusb_notification(
             {
                 error = GetLastError();
             }
-        } while (error != ERROR_OPERATION_ABORTED);
+        } while (error != ERROR_OPERATION_ABORTED && error != ERROR_ACCESS_DENIED);
 
     }, Notification, Target };
 
     _async.detach();
 }
 
-VIGEM_API DWORD vigem_target_plugin(
+VIGEM_API VIGEM_ERROR vigem_target_plugin(
     VIGEM_TARGET_TYPE Type,
     PVIGEM_TARGET Target)
 {
     DWORD transfered = 0;
-    DWORD error = ERROR_SUCCESS;
+    VIGEM_ERROR error = VIGEM_ERROR_NONE;
     VIGEM_PLUGIN_TARGET plugin;
     OVERLAPPED lOverlapped = { 0 };
     lOverlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -128,7 +128,7 @@ VIGEM_API DWORD vigem_target_plugin(
             break;
         }
 
-        error = ERROR_NO_MORE_DEVICES;
+        error = VIGEM_ERROR_NO_FREE_SLOT;
     }
 
     return error;

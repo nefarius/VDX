@@ -28,7 +28,7 @@ VOID my_xusb_notification(
 
 int main()
 {
-    if (vigem_init() != 0)
+    if (!VIGEM_SUCCESS(vigem_init()))
     {
         printf("Couldn't open bus\n");
         getchar();
@@ -38,7 +38,7 @@ int main()
     VIGEM_TARGET x360;
     VIGEM_TARGET_INIT(&x360);
 
-    if (vigem_target_plugin(Xbox360Wired, &x360) != 0)
+    if (!VIGEM_SUCCESS(vigem_target_plugin(Xbox360Wired, &x360)))
     {
         printf("Couldn't get target object\n");
         getchar();

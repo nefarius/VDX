@@ -178,8 +178,17 @@ VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
 
     DeviceIoControl(g_hViGEmBus, IOCTL_XUSB_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, &lOverlapped);
 
-    // TODO: add error checking
-    GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE);
+    if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) == 0)
+    {
+        switch (GetLastError())
+        {
+        case ERROR_ACCESS_DENIED:
+            return VIGEM_ERROR_INVALID_TARGET;
+            break;
+        default:
+            break;
+        }
+    }
 
     return VIGEM_ERROR_NONE;
 }

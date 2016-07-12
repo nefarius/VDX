@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2016 Benjamin "Nefarius" Höglinger
+Copyright (c) 2016 Benjamin "Nefarius" HÃ¶glinger
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -136,7 +136,6 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
     PVIGEM_TARGET Target)
 {
     DWORD transfered = 0;
-    VIGEM_ERROR error = VIGEM_ERROR_NONE;
     VIGEM_PLUGIN_TARGET plugin;
     OVERLAPPED lOverlapped = { 0 };
     lOverlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -149,13 +148,11 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
 
         if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
         {
-            break;
+            return VIGEM_ERROR_NONE;
         }
-
-        error = VIGEM_ERROR_NO_FREE_SLOT;
     }
 
-    return error;
+    return VIGEM_ERROR_NO_FREE_SLOT;
 }
 
 VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(

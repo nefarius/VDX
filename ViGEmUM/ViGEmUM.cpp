@@ -94,7 +94,7 @@ VIGEM_API VOID vigem_register_xusb_notification(
     IN VIGEM_XUSB_NOTIFICATION Notification,
     IN VIGEM_TARGET Target)
 {
-    if (Target.SerialNo == 0)
+    if (Target.SerialNo == 0 || Notification == nullptr)
     {
         return;
     }

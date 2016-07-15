@@ -264,6 +264,7 @@
     <ClCompile Include="busenum.c" />
     <ClCompile Include="buspdo.c" />
     <ClCompile Include="usbpdo.c" />
+    <ClCompile Include="util.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

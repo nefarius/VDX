@@ -271,3 +271,10 @@ NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device);
 NTSTATUS UsbPdo_ClassInterface(PURB urb);
 NTSTATUS UsbPdo_GetDescriptorFromInterface(PURB urb, PPDO_DEVICE_DATA pCommon);
 
+//
+// Utility functions
+//
+
+VOID ReverseByteArray(PUCHAR Array, INT Length);
+VOID GenerateRandomMacAddress(PUCHAR Array, INT Length);
+

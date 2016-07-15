@@ -485,6 +485,33 @@ NTSTATUS Bus_CreatePdo(
 
 #pragma endregion
 
+#pragma region Load/generate MAC address
+
+        WDFKEY keyParams, keySettings;
+
+        status = WdfDriverOpenParametersRegistryKey(WdfGetDriver(), STANDARD_RIGHTS_ALL, WDF_NO_OBJECT_ATTRIBUTES, &keyParams);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfDriverOpenParametersRegistryKey failed 0x%x\n", status));
+            return status;
+        }
+
+        DECLARE_UNICODE_STRING_SIZE(subPath, 255);
+        RtlUnicodeStringPrintf(&subPath, L"Targets\\DualShock\\%02d", SerialNo);
+
+        status = WdfRegistryCreateKey(keyParams, &subPath, 
+            STANDARD_RIGHTS_ALL, REG_OPTION_NON_VOLATILE, NULL, WDF_NO_OBJECT_ATTRIBUTES, &keySettings);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfRegistryCreateKey failed 0x%x\n", status));
+            return status;
+        }
+
+        WdfRegistryClose(keySettings);
+        WdfRegistryClose(keyParams);
+
+#pragma endregion
+
         break;
     }
     default:

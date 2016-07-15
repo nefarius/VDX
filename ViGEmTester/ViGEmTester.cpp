@@ -28,6 +28,8 @@ VOID my_xusb_notification(
 
 int main()
 {
+    printf("Starting...\n");
+
     if (!VIGEM_SUCCESS(vigem_init()))
     {
         printf("Couldn't open bus\n");

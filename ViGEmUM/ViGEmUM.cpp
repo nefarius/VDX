@@ -42,7 +42,7 @@ VIGEM_API VIGEM_ERROR vigem_init()
     deviceInterfaceData.cbSize = sizeof(deviceInterfaceData);
     DWORD memberIndex = 0;
     DWORD requiredSize = 0;
-    VIGEM_ERROR error = VIGEM_ERROR_NONE;
+    VIGEM_ERROR error = VIGEM_ERROR_BUS_NOT_FOUND;
 
     auto deviceInfoSet = SetupDiGetClassDevs(&GUID_DEVINTERFACE_BUSENUM_VIGEM, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
@@ -74,6 +74,9 @@ VIGEM_API VIGEM_ERROR vigem_init()
             nullptr);
 
         free(detailDataBuffer);
+
+        error = VIGEM_ERROR_NONE;
+
         break;
     }
 
@@ -94,6 +97,11 @@ VIGEM_API VOID vigem_register_xusb_notification(
     IN VIGEM_XUSB_NOTIFICATION Notification,
     IN VIGEM_TARGET Target)
 {
+    if (g_hViGEmBus == nullptr)
+    {
+        return;
+    }
+
     if (Target.SerialNo == 0 || Notification == nullptr)
     {
         return;
@@ -105,7 +113,6 @@ VIGEM_API VOID vigem_register_xusb_notification(
     {
         DWORD error = ERROR_SUCCESS;
         DWORD transfered = 0;
-        BOOLEAN retval;
         OVERLAPPED lOverlapped = { 0 };
         lOverlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
@@ -135,6 +142,11 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
     VIGEM_TARGET_TYPE Type,
     PVIGEM_TARGET Target)
 {
+    if (g_hViGEmBus == nullptr)
+    {
+        return VIGEM_ERROR_BUS_NOT_FOUND;
+    }
+
     DWORD transfered = 0;
     VIGEM_PLUGIN_TARGET plugin;
     OVERLAPPED lOverlapped = { 0 };
@@ -159,6 +171,11 @@ VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
     VIGEM_TARGET Target, 
     XUSB_REPORT Report)
 {
+    if (g_hViGEmBus == nullptr)
+    {
+        return VIGEM_ERROR_BUS_NOT_FOUND;
+    }
+
     DWORD transfered = 0;
     OVERLAPPED lOverlapped = { 0 };
     lOverlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);

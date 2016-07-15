@@ -21,16 +21,12 @@ VOID ReverseByteArray(PUCHAR Array, INT Length)
 
 VOID GenerateRandomMacAddress(PUCHAR Array, INT Length)
 {
-    UCHAR mac[6] = { 0 };
+    // Vendor "C0:13:37"
+    UCHAR mac[6] = { 0xC0, 0x13, 0x37, 0x00, 0x00, 0x00 };
     ULONG seed;
 
     if (Length < 6)
         return;
-
-    // Vendor "C0:13:37"
-    mac[0] = 0xC0;
-    mac[1] = 0x13;
-    mac[2] = 0x37;
 
     // NIC (random)
     for (size_t i = 3; i < 6; i++)

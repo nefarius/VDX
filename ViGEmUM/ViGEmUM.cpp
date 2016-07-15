@@ -93,18 +93,18 @@ VIGEM_API VOID vigem_shutdown()
     }
 }
 
-VIGEM_API VOID vigem_register_xusb_notification(
+VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
     IN VIGEM_XUSB_NOTIFICATION Notification,
     IN VIGEM_TARGET Target)
 {
     if (g_hViGEmBus == nullptr)
     {
-        return;
+        return VIGEM_ERROR_BUS_NOT_FOUND;
     }
 
     if (Target.SerialNo == 0 || Notification == nullptr)
     {
-        return;
+        return VIGEM_ERROR_INVALID_TARGET;
     }
 
     std::thread _async{ [](
@@ -136,6 +136,8 @@ VIGEM_API VOID vigem_register_xusb_notification(
     }, Notification, Target };
 
     _async.detach();
+
+    return VIGEM_ERROR_NONE;
 }
 
 VIGEM_API VIGEM_ERROR vigem_target_plugin(

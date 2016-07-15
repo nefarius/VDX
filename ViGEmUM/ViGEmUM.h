@@ -81,7 +81,7 @@ VIGEM_API VIGEM_ERROR vigem_init();
 
 VIGEM_API VOID vigem_shutdown();
 
-VIGEM_API VOID vigem_register_xusb_notification(
+VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
     IN VIGEM_XUSB_NOTIFICATION Notification, 
     IN VIGEM_TARGET Target);
 

@@ -787,7 +787,7 @@ NTSTATUS UsbPdo_SelectInterface(PURB urb, PPDO_DEVICE_DATA pCommon)
 }
 
 //
-// Dispatch bulk (or interrupt, if any) transfers.
+// Dispatch interrupt transfers.
 // 
 NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST Request)
 {

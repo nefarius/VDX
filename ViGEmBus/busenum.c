@@ -84,67 +84,76 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     // More than one process may talk to the bus at the same time
     WdfDeviceInitSetExclusive(DeviceInit, FALSE);
 
-    // Prepare child list
+#pragma region Prepare child list
+
+    WDF_CHILD_LIST_CONFIG_INIT(&config, sizeof(PDO_IDENTIFICATION_DESCRIPTION), Bus_EvtDeviceListCreatePdo);
+
+    config.EvtChildListIdentificationDescriptionCompare = Bus_EvtChildListIdentificationDescriptionCompare;
+
+    WdfFdoInitSetDefaultChildListConfig(DeviceInit, &config, WDF_NO_OBJECT_ATTRIBUTES);
+
+#pragma endregion
+
+#pragma region Assign File Object Configuration
+
+    WDF_FILEOBJECT_CONFIG_INIT(&foConfig, NULL, NULL, Bus_FileCleanup);
+
+    WdfDeviceInitSetFileObjectConfig(DeviceInit, &foConfig, WDF_NO_OBJECT_ATTRIBUTES);
+
+#pragma endregion
+
+#pragma region Create FDO
+
+    status = WdfDeviceCreate(&DeviceInit, WDF_NO_OBJECT_ATTRIBUTES, &device);
+
+    if (!NT_SUCCESS(status))
     {
-        WDF_CHILD_LIST_CONFIG_INIT(&config, sizeof(PDO_IDENTIFICATION_DESCRIPTION), Bus_EvtDeviceListCreatePdo);
-
-        config.EvtChildListIdentificationDescriptionCompare = Bus_EvtChildListIdentificationDescriptionCompare;
-
-        WdfFdoInitSetDefaultChildListConfig(DeviceInit, &config, WDF_NO_OBJECT_ATTRIBUTES);
+        KdPrint(("Error creating device 0x%x\n", status));
+        return status;
     }
 
-    // Assign File Object Configuration
-    {
-        WDF_FILEOBJECT_CONFIG_INIT(&foConfig, NULL, NULL, Bus_FileCleanup);
+#pragma endregion
 
-        WdfDeviceInitSetFileObjectConfig(DeviceInit, &foConfig, WDF_NO_OBJECT_ATTRIBUTES);
+#pragma region Create default I/O queue for FDO
+
+    WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&queueConfig, WdfIoQueueDispatchParallel);
+
+    queueConfig.EvtIoDeviceControl = Bus_EvtIoDeviceControl;
+    queueConfig.EvtIoDefault = Bus_EvtIoDefault;
+
+    __analysis_assume(queueConfig.EvtIoStop != 0);
+    status = WdfIoQueueCreate(device, &queueConfig, WDF_NO_OBJECT_ATTRIBUTES, &queue);
+    __analysis_assume(queueConfig.EvtIoStop == 0);
+
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("WdfIoQueueCreate failed status 0x%x\n", status));
+        return status;
     }
 
-    // Create FDO
-    {
-        status = WdfDeviceCreate(&DeviceInit, WDF_NO_OBJECT_ATTRIBUTES, &device);
+#pragma endregion
 
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("Error creating device 0x%x\n", status));
-            return status;
-        }
+#pragma region Expose FDO interface
+
+    status = WdfDeviceCreateDeviceInterface(device, &GUID_DEVINTERFACE_BUSENUM_VIGEM, NULL);
+
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("WdfDeviceCreateDeviceInterface failed status 0x%x\n", status));
+        return status;
     }
 
-    // Create default I/O queue for FDO
-    {
-        WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&queueConfig, WdfIoQueueDispatchParallel);
+#pragma endregion
 
-        queueConfig.EvtIoDeviceControl = Bus_EvtIoDeviceControl;
-        queueConfig.EvtIoDefault = Bus_EvtIoDefault;
-
-        __analysis_assume(queueConfig.EvtIoStop != 0);
-        status = WdfIoQueueCreate(device, &queueConfig, WDF_NO_OBJECT_ATTRIBUTES, &queue);
-        __analysis_assume(queueConfig.EvtIoStop == 0);
-
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfIoQueueCreate failed status 0x%x\n", status));
-            return status;
-        }
-    }
-
-    // Expose FDO interface
-    {
-        status = WdfDeviceCreateDeviceInterface(device, &GUID_DEVINTERFACE_BUSENUM_VIGEM, NULL);
-
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfDeviceCreateDeviceInterface failed status 0x%x\n", status));
-            return status;
-        }
-    }
+#pragma region Set bus information
 
     busInfo.BusTypeGuid = GUID_BUS_TYPE_USB;
     busInfo.LegacyBusType = PNPBus;
     busInfo.BusNumber = 0;
 
     WdfDeviceSetBusInformationForChildren(device, &busInfo);
+
+#pragma endregion
 
     return status;
 }
@@ -619,20 +628,21 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
 
     KdPrint(("Entered Bus_XusbSubmitReport\n"));
 
-    // Get child
-    {
-        list = WdfFdoGetDefaultChildList(Device);
+#pragma region Get PDO from child list
 
-        PDO_IDENTIFICATION_DESCRIPTION description;
+    list = WdfFdoGetDefaultChildList(Device);
 
-        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
+    PDO_IDENTIFICATION_DESCRIPTION description;
 
-        description.SerialNo = SerialNo;
+    WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
 
-        WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
+    description.SerialNo = SerialNo;
 
-        hChild = WdfChildListRetrievePdo(list, &info);
-    }
+    WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
+
+    hChild = WdfChildListRetrievePdo(list, &info);
+
+#pragma endregion
 
     // Validate child
     if (hChild == NULL)
@@ -719,20 +729,21 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
 
     KdPrint(("Entered Bus_XusbQueueNotification\n"));
 
-    // Get child
-    {
-        list = WdfFdoGetDefaultChildList(Device);
+#pragma region Get PDO from child list
 
-        PDO_IDENTIFICATION_DESCRIPTION description;
+    list = WdfFdoGetDefaultChildList(Device);
 
-        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
+    PDO_IDENTIFICATION_DESCRIPTION description;
 
-        description.SerialNo = SerialNo;
+    WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
 
-        WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
+    description.SerialNo = SerialNo;
 
-        hChild = WdfChildListRetrievePdo(list, &info);
-    }
+    WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
+
+    hChild = WdfChildListRetrievePdo(list, &info);
+
+#pragma endregion
 
     // Validate child
     if (hChild == NULL)
@@ -789,20 +800,21 @@ NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPOR
 
     KdPrint(("Entered Bus_Ds4SubmitReport\n"));
 
-    // Get child
-    {
-        list = WdfFdoGetDefaultChildList(Device);
+#pragma region Get PDO from child list
 
-        PDO_IDENTIFICATION_DESCRIPTION description;
+    list = WdfFdoGetDefaultChildList(Device);
 
-        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
+    PDO_IDENTIFICATION_DESCRIPTION description;
 
-        description.SerialNo = SerialNo;
+    WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
 
-        WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
+    description.SerialNo = SerialNo;
 
-        hChild = WdfChildListRetrievePdo(list, &info);
-    }
+    WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
+
+    hChild = WdfChildListRetrievePdo(list, &info);
+
+#pragma endregion
 
     // Validate child
     if (hChild == NULL)
@@ -853,7 +865,7 @@ NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPOR
         // Set buffer length to report size
         urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_HID_REPORT_SIZE;
 
-        /* Copy report to cache and transfer buffer 
+        /* Copy report to cache and transfer buffer
          * Skip first byte as it contains the never changing report id */
         RtlCopyBytes(ds4Data->HidReport + 1, &Report->HidReport, Report->Size);
         RtlCopyBytes(Buffer + 1, &Report->HidReport, Report->Size);

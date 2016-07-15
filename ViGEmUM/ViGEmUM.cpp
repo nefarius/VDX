@@ -209,3 +209,41 @@ VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
     return VIGEM_ERROR_NONE;
 }
 
+VIGEM_API VIGEM_ERROR vigem_ds4_submit_report(VIGEM_TARGET Target, DS4_REPORT Report)
+{
+    if (g_hViGEmBus == nullptr)
+    {
+        return VIGEM_ERROR_BUS_NOT_FOUND;
+    }
+
+    DWORD transfered = 0;
+    OVERLAPPED lOverlapped = { 0 };
+    lOverlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+    if (Target.SerialNo == 0)
+    {
+        return VIGEM_ERROR_INVALID_TARGET;
+    }
+
+    DS4_SUBMIT_REPORT report;
+    DS4_SUBMIT_REPORT_INIT(&report, Target.SerialNo);
+
+    report.HidReport = Report;
+
+    DeviceIoControl(g_hViGEmBus, IOCTL_DS4_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, &lOverlapped);
+
+    if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) == 0)
+    {
+        switch (GetLastError())
+        {
+        case ERROR_ACCESS_DENIED:
+            return VIGEM_ERROR_INVALID_TARGET;
+            break;
+        default:
+            break;
+        }
+    }
+
+    return VIGEM_ERROR_NONE;
+}
+

@@ -92,3 +92,7 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
 VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
     _In_ VIGEM_TARGET Target,
     _In_ XUSB_REPORT Report);
+
+VIGEM_API VIGEM_ERROR vigem_ds4_submit_report(
+    _In_ VIGEM_TARGET Target,
+    _In_ DS4_REPORT Report);

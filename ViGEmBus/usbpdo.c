@@ -1004,8 +1004,8 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
     {
     case HID_REQUEST_GET_REPORT:
     {
-        UCHAR reportId = (pRequest->Value) & 0xFF;
-        UCHAR reportType = (pRequest->Value >> 8) & 0xFF;
+        UCHAR reportId = HID_GET_REPORT_ID(pRequest);
+        UCHAR reportType = HID_GET_REPORT_TYPE(pRequest);
 
         KdPrint((">> >> >> >> GET_REPORT(%d): %d\n", reportType, reportId));
 
@@ -1078,8 +1078,8 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
     }
     case HID_REQUEST_SET_REPORT:
     {
-        UCHAR reportId = (pRequest->Value) & 0xFF;
-        UCHAR reportType = (pRequest->Value >> 8) & 0xFF;
+        UCHAR reportId = HID_GET_REPORT_ID(pRequest);
+        UCHAR reportType = HID_GET_REPORT_TYPE(pRequest);
 
         KdPrint((">> >> >> >> SET_REPORT(%d): %d\n", reportType, reportId));
 

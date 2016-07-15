@@ -92,6 +92,16 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 
 #define IS_OWNER(_pdo_) (_pdo_->OwnerProcessId == CURRENT_PROCESS_ID())
 
+//
+// Extracts the HID Report ID from the supplied class request.
+//
+#define HID_GET_REPORT_ID(_req_) ((_req_->Value) & 0xFF)
+
+//
+// Extracts the HID Report type from the supplied class request.
+//
+#define HID_GET_REPORT_TYPE(_req_) ((_req_->Value >> 8) & 0xFF)
+
 
 //
 // Used to identify children in the device list of the bus.

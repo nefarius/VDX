@@ -1051,17 +1051,17 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
 
                 break;
             }
-            case HID_REPORT_ID_2:
+            case HID_REPORT_MAC_ADDRESSES_ID:
             {
                 // Source: http://eleccelerator.com/wiki/index.php?title=DualShock_4#Class_Requests
-                UCHAR Response[HID_GET_FEATURE_REPORT_SIZE_2] =
+                UCHAR Response[HID_GET_FEATURE_REPORT_MAC_ADDRESSES_SIZE] =
                 {
                     0x12, 0x8B, 0x09, 0x07, 0x6D, 0x66, 0x1C, 0x08,
                     0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
                 };
 
-                pRequest->TransferBufferLength = HID_GET_FEATURE_REPORT_SIZE_2;
-                RtlCopyBytes(pRequest->TransferBuffer, Response, HID_GET_FEATURE_REPORT_SIZE_2);
+                pRequest->TransferBufferLength = HID_GET_FEATURE_REPORT_MAC_ADDRESSES_SIZE;
+                RtlCopyBytes(pRequest->TransferBuffer, Response, HID_GET_FEATURE_REPORT_MAC_ADDRESSES_SIZE);
 
                 break;
             }

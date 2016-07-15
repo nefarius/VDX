@@ -397,7 +397,10 @@ NTSTATUS Bus_CreatePdo(
 
         RtlZeroMemory(xusb, sizeof(XUSB_DEVICE_DATA));
 
+        // Is later overwritten by actual XInput slot
         xusb->LedNumber = (UCHAR)SerialNo;
+        // This value never changes
+        xusb->Report[1] = 0x14;
 
         // I/O Queue for pending IRPs
         WDF_IO_QUEUE_CONFIG usbInQueueConfig, notificationsQueueConfig;
@@ -432,12 +435,6 @@ NTSTATUS Bus_CreatePdo(
         xusb->PendingNotificationRequests = notificationsQueue;
 
 #pragma endregion
-
-        // Reset report buffer
-        RtlZeroMemory(xusb->Report, XUSB_REPORT_SIZE);
-
-        // This value never changes
-        xusb->Report[1] = 0x14;
 
         break;
     }

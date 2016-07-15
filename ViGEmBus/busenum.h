@@ -168,6 +168,8 @@ typedef struct _DS4_DEVICE_DATA
     UCHAR HidReport[DS4_HID_REPORT_SIZE];
     WDFQUEUE PendingUsbRequests;
     WDFTIMER PendingUsbRequestsTimer;
+    UCHAR TargetMacAddress[6];
+    UCHAR HostMacAddress[6];
 } DS4_DEVICE_DATA, *PDS4_DEVICE_DATA;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DS4_DEVICE_DATA, Ds4GetData)

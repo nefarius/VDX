@@ -194,42 +194,6 @@ typedef struct _MAC_ADDRESS
     UCHAR Nic2;
 } MAC_ADDRESS, *PMAC_ADDRESS;
 
-typedef struct _DS4_LIGHTBAR_COLOR
-{
-    //
-    // Red part of the Lightbar (0-255).
-    //
-    UCHAR Red;
-
-    //
-    // Green part of the Lightbar (0-255).
-    //
-    UCHAR Green;
-
-    //
-    // Blue part of the Lightbar (0-255).
-    //
-    UCHAR Blue;
-} DS4_LIGHTBAR_COLOR, *PDS4_LIGHTBAR_COLOR;
-
-typedef struct _DS4_OUTPUT_REPORT
-{
-    //
-    // Vibration intensity value of the small motor (0-255).
-    // 
-    UCHAR SmallMotor;
-
-    //
-    // Vibration intensity value of the large motor (0-255).
-    // 
-    UCHAR LargeMotor;
-    
-    //
-    // Color values of the Lightbar.
-    //
-    DS4_LIGHTBAR_COLOR LightbarColor;
-} DS4_OUTPUT_REPORT, *PDS4_OUTPUT_REPORT;
-
 //
 // DS4-specific device context data.
 // 
@@ -333,7 +297,7 @@ Bus_XusbSubmitReport(
 );
 
 NTSTATUS
-Bus_XusbQueueNotification(
+Bus_QueueNotification(
     WDFDEVICE Device,
     ULONG SerialNo,
     WDFREQUEST Request

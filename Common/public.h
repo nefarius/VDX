@@ -54,6 +54,7 @@ DEFINE_GUID(GUID_DEVCLASS_VIGEM_RAWPDO,
 #define IOCTL_XUSB_REQUEST_NOTIFICATION BUSENUM_RW_IOCTL(IOCTL_VIGEM_BASE + 0x200)
 #define IOCTL_XUSB_SUBMIT_REPORT        BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x201)
 #define IOCTL_DS4_SUBMIT_REPORT         BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x202)
+#define IOCTL_DS4_REQUEST_NOTIFICATION  BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x203)
 
 
 //
@@ -236,6 +237,77 @@ VOID FORCEINLINE XUSB_SUBMIT_REPORT_INIT(
     Report->Size = sizeof(XUSB_SUBMIT_REPORT);
     Report->SerialNo = SerialNo;
 }
+
+typedef struct _DS4_LIGHTBAR_COLOR
+{
+    //
+    // Red part of the Lightbar (0-255).
+    //
+    UCHAR Red;
+
+    //
+    // Green part of the Lightbar (0-255).
+    //
+    UCHAR Green;
+
+    //
+    // Blue part of the Lightbar (0-255).
+    //
+    UCHAR Blue;
+} DS4_LIGHTBAR_COLOR, *PDS4_LIGHTBAR_COLOR;
+
+typedef struct _DS4_OUTPUT_REPORT
+{
+    //
+    // Vibration intensity value of the small motor (0-255).
+    // 
+    UCHAR SmallMotor;
+
+    //
+    // Vibration intensity value of the large motor (0-255).
+    // 
+    UCHAR LargeMotor;
+
+    //
+    // Color values of the Lightbar.
+    //
+    DS4_LIGHTBAR_COLOR LightbarColor;
+} DS4_OUTPUT_REPORT, *PDS4_OUTPUT_REPORT;
+
+
+//
+// Data structure used in IOCTL_DS4_REQUEST_NOTIFICATION requests.
+// 
+typedef struct _DS4_REQUEST_NOTIFICATION
+{
+    //
+    // sizeof(struct _XUSB_REQUEST_NOTIFICATION)
+    // 
+    ULONG Size;
+
+    //
+    // Serial number of target device.
+    // 
+    ULONG SerialNo;
+
+    DS4_OUTPUT_REPORT Report;
+
+} DS4_REQUEST_NOTIFICATION, *PDS4_REQUEST_NOTIFICATION;
+
+//
+// Initializes a DS4_REQUEST_NOTIFICATION structure.
+// 
+VOID FORCEINLINE DS4_REQUEST_NOTIFICATION_INIT(
+    _Out_ PDS4_REQUEST_NOTIFICATION Request,
+    _In_ ULONG SerialNo
+)
+{
+    RtlZeroMemory(Request, sizeof(DS4_REQUEST_NOTIFICATION));
+
+    Request->Size = sizeof(DS4_REQUEST_NOTIFICATION);
+    Request->SerialNo = SerialNo;
+}
+
 
 //
 // DualShock 4 HID Input report

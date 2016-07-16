@@ -343,7 +343,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_XusbQueueNotification(hDevice, xusbNotify->SerialNo, Request);
+            status = Bus_QueueNotification(hDevice, xusbNotify->SerialNo, Request);
         }
 
         break;
@@ -373,6 +373,42 @@ VOID Bus_EvtIoDeviceControl(
             }
 
             status = Bus_Ds4SubmitReport(hDevice, ds4Submit->SerialNo, ds4Submit);
+        }
+
+        break;
+    }
+
+    case IOCTL_DS4_REQUEST_NOTIFICATION:
+    {
+        PDS4_REQUEST_NOTIFICATION ds4Notify = NULL;
+
+        KdPrint(("IOCTL_DS4_REQUEST_NOTIFICATION\n"));
+
+        // Don't accept the request if the output buffer can't hold the results
+        if (OutputBufferLength < sizeof(DS4_REQUEST_NOTIFICATION))
+        {
+            KdPrint(("IOCTL_DS4_REQUEST_NOTIFICATION: output buffer too small: %ul\n", OutputBufferLength));
+            break;
+        }
+
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(DS4_REQUEST_NOTIFICATION), (PVOID)&ds4Notify, &length);
+
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            break;
+        }
+
+        if ((sizeof(DS4_REQUEST_NOTIFICATION) == ds4Notify->Size) && (length == InputBufferLength))
+        {
+            // This request only supports a single PDO at a time
+            if (ds4Notify->SerialNo == 0)
+            {
+                status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            status = Bus_QueueNotification(hDevice, ds4Notify->SerialNo, Request);
         }
 
         break;
@@ -609,7 +645,7 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
 //
 // Queues an inverted call to receive XUSB-specific updates.
 // 
-NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Request)
+NTSTATUS Bus_QueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Request)
 {
     NTSTATUS status = STATUS_INVALID_PARAMETER;
     WDFCHILDLIST list;
@@ -617,9 +653,10 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
     WDFDEVICE hChild;
     PPDO_DEVICE_DATA pdoData;
     PXUSB_DEVICE_DATA xusbData;
+    PDS4_DEVICE_DATA ds4Data;
 
 
-    KdPrint(("Entered Bus_XusbQueueNotification\n"));
+    KdPrint(("Entered Bus_QueueNotification\n"));
 
 #pragma region Get PDO from child list
 
@@ -640,7 +677,7 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
     // Validate child
     if (hChild == NULL)
     {
-        KdPrint(("Bus_XusbQueueNotification: PDO with serial %d not found\n", SerialNo));
+        KdPrint(("Bus_QueueNotification: PDO with serial %d not found\n", SerialNo));
         return STATUS_NO_SUCH_DEVICE;
     }
 
@@ -648,27 +685,43 @@ NTSTATUS Bus_XusbQueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST 
     pdoData = PdoGetData(hChild);
     if (pdoData == NULL)
     {
-        KdPrint(("Bus_XusbQueueNotification: PDO context not found\n"));
+        KdPrint(("Bus_QueueNotification: PDO context not found\n"));
         return STATUS_INVALID_PARAMETER;
     }
 
     // Check if caller owns this PDO
     if (!IS_OWNER(pdoData))
     {
-        KdPrint(("Bus_XusbQueueNotification: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
+        KdPrint(("Bus_QueueNotification: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
         return STATUS_ACCESS_DENIED;
     }
 
-    xusbData = XusbGetData(hChild);
-
-    if (xusbData != NULL)
+    // Queue the request for later completion by the PDO and return STATUS_PENDING
+    switch (pdoData->TargetType)
     {
-        // Queue the request for later completion by the PDO and return STATUS_PENDING
+    case Xbox360Wired:
+
+        xusbData = XusbGetData(hChild);
+
+        if (xusbData == NULL) break;
+
         status = WdfRequestForwardToIoQueue(Request, xusbData->PendingNotificationRequests);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfRequestForwardToIoQueue failed with status 0x%X\n", status));
-        }
+
+        break;
+    case DualShock4Wired:
+
+        ds4Data = Ds4GetData(hChild);
+
+        if (ds4Data == NULL) break;
+
+        status = WdfRequestForwardToIoQueue(Request, ds4Data->PendingNotificationRequests);
+
+        break;
+    }
+
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("WdfRequestForwardToIoQueue failed with status 0x%X\n", status));
     }
 
     return (NT_SUCCESS(status)) ? STATUS_PENDING : status;

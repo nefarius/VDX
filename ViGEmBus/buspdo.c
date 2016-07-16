@@ -404,20 +404,17 @@ NTSTATUS Bus_CreatePdo(
 
         // I/O Queue for pending IRPs
         WDF_IO_QUEUE_CONFIG usbInQueueConfig, notificationsQueueConfig;
-        WDFQUEUE usbInQueue, notificationsQueue;
 
 #pragma region Create and assign queue for incoming interrupt transfer
 
         WDF_IO_QUEUE_CONFIG_INIT(&usbInQueueConfig, WdfIoQueueDispatchManual);
 
-        status = WdfIoQueueCreate(hChild, &usbInQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &usbInQueue);
+        status = WdfIoQueueCreate(hChild, &usbInQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xusb->PendingUsbInRequests);
         if (!NT_SUCCESS(status))
         {
             KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
             return status;
         }
-
-        xusb->PendingUsbInRequests = usbInQueue;
 
 #pragma endregion
 
@@ -425,14 +422,12 @@ NTSTATUS Bus_CreatePdo(
 
         WDF_IO_QUEUE_CONFIG_INIT(&notificationsQueueConfig, WdfIoQueueDispatchManual);
 
-        status = WdfIoQueueCreate(hChild, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &notificationsQueue);
+        status = WdfIoQueueCreate(hChild, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xusb->PendingNotificationRequests);
         if (!NT_SUCCESS(status))
         {
             KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
             return status;
         }
-
-        xusb->PendingNotificationRequests = notificationsQueue;
 
 #pragma endregion
 
@@ -444,22 +439,19 @@ NTSTATUS Bus_CreatePdo(
 
         KdPrint(("Initializing DS4 context...\n"));
 
-#pragma region Create and assign queue for incoming interrupt transfer
-
         // I/O Queue for pending IRPs
-        WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig;
-        WDFQUEUE pendingUsbQueue;
+        WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig, notificationsQueueConfig;
+
+#pragma region Create and assign queue for incoming interrupt transfer
 
         WDF_IO_QUEUE_CONFIG_INIT(&pendingUsbQueueConfig, WdfIoQueueDispatchManual);
 
-        status = WdfIoQueueCreate(hChild, &pendingUsbQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &pendingUsbQueue);
+        status = WdfIoQueueCreate(hChild, &pendingUsbQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &ds4->PendingUsbInRequests);
         if (!NT_SUCCESS(status))
         {
             KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
             return status;
         }
-
-        ds4->PendingUsbInRequests = pendingUsbQueue;
 
 #pragma endregion
 
@@ -485,7 +477,22 @@ NTSTATUS Bus_CreatePdo(
 
 #pragma endregion
 
+#pragma region Create and assign queue for user-land notification requests
+
+        WDF_IO_QUEUE_CONFIG_INIT(&notificationsQueueConfig, WdfIoQueueDispatchManual);
+
+        status = WdfIoQueueCreate(hChild, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &ds4->PendingNotificationRequests);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+            return status;
+        }
+
+#pragma endregion
+
 #pragma region Load/generate MAC address
+
+        // TODO: tidy up this region
 
         WDFKEY keyParams, keyTargets, keyDS, keySerial;
         UNICODE_STRING keyName, valueName;
@@ -519,7 +526,7 @@ NTSTATUS Bus_CreatePdo(
 
         DECLARE_UNICODE_STRING_SIZE(serialPath, 4);
         RtlUnicodeStringPrintf(&serialPath, L"%04d", SerialNo);
-        
+
         status = WdfRegistryCreateKey(keyDS, &serialPath,
             KEY_ALL_ACCESS, REG_OPTION_NON_VOLATILE, NULL, WDF_NO_OBJECT_ATTRIBUTES, &keySerial);
         if (!NT_SUCCESS(status))

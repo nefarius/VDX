@@ -254,6 +254,11 @@ typedef struct _DS4_DEVICE_DATA
     WDFTIMER PendingUsbInRequestsTimer;
 
     //
+    // Queue for inverted calls
+    //
+    WDFQUEUE PendingNotificationRequests;
+
+    //
     // Auto-generated MAC address of the target device
     //
     MAC_ADDRESS TargetMacAddress;

@@ -179,8 +179,8 @@ typedef struct _MAC_ADDRESS
 typedef struct _DS4_DEVICE_DATA
 {
     UCHAR HidReport[DS4_HID_REPORT_SIZE];
-    WDFQUEUE PendingUsbRequests;
-    WDFTIMER PendingUsbRequestsTimer;
+    WDFQUEUE PendingUsbInRequests;
+    WDFTIMER PendingUsbInRequestsTimer;
     MAC_ADDRESS TargetMacAddress;
     MAC_ADDRESS HostMacAddress;
 } DS4_DEVICE_DATA, *PDS4_DEVICE_DATA;

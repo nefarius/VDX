@@ -459,7 +459,7 @@ NTSTATUS Bus_CreatePdo(
             return status;
         }
 
-        ds4->PendingUsbRequests = pendingUsbQueue;
+        ds4->PendingUsbInRequests = pendingUsbQueue;
 
 #pragma endregion
 
@@ -476,7 +476,7 @@ NTSTATUS Bus_CreatePdo(
         timerAttribs.ParentObject = hChild;
 
         // Create timer
-        status = WdfTimerCreate(&timerConfig, &timerAttribs, &ds4->PendingUsbRequestsTimer);
+        status = WdfTimerCreate(&timerConfig, &timerAttribs, &ds4->PendingUsbInRequestsTimer);
         if (!NT_SUCCESS(status))
         {
             KdPrint(("WdfTimerCreate failed 0x%x\n", status));
@@ -812,7 +812,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
         RtlCopyBytes(ds4Data->HidReport, DefaultHidReport, DS4_HID_REPORT_SIZE);
 
         // Start pending IRP queue flush timer
-        WdfTimerStart(ds4Data->PendingUsbRequestsTimer, DS4_QUEUE_FLUSH_PERIOD);
+        WdfTimerStart(ds4Data->PendingUsbInRequestsTimer, DS4_QUEUE_FLUSH_PERIOD);
 
         break;
     }
@@ -1051,7 +1051,7 @@ VOID Ds4_PendingUsbRequestsTimerFunc(
     ds4Data = Ds4GetData(hChild);
 
     // Get pending USB request
-    status = WdfIoQueueRetrieveNextRequest(ds4Data->PendingUsbRequests, &usbRequest);
+    status = WdfIoQueueRetrieveNextRequest(ds4Data->PendingUsbInRequests, &usbRequest);
 
     if (NT_SUCCESS(status))
     {

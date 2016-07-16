@@ -912,7 +912,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
             /* This request is sent periodically and relies on data the "feeder"
                has to supply, so we queue this request and return with STATUS_PENDING.
                The request gets completed as soon as the "feeder" sent an update. */
-            status = WdfRequestForwardToIoQueue(Request, ds4Data->PendingUsbRequests);
+            status = WdfRequestForwardToIoQueue(Request, ds4Data->PendingUsbInRequests);
 
             return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
         }
@@ -971,8 +971,8 @@ NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device)
         }
 
         // Higher driver shutting down, emptying PDOs queues
-        WdfTimerStop(ds4->PendingUsbRequestsTimer, TRUE);
-        WdfIoQueuePurge(ds4->PendingUsbRequests, NULL, NULL);
+        WdfTimerStop(ds4->PendingUsbInRequestsTimer, TRUE);
+        WdfIoQueuePurge(ds4->PendingUsbInRequests, NULL, NULL);
 
         break;
     }

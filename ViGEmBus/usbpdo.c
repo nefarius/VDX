@@ -917,7 +917,9 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
             return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
         }
 
-        RtlCopyBytes(&ds4Data->OutputReport, (PUCHAR)pTransfer->TransferBuffer + 4, 5);
+        RtlCopyBytes(&ds4Data->OutputReport, 
+            (PUCHAR)pTransfer->TransferBuffer + DS4_OUTPUT_BUFFER_OFFSET, 
+            DS4_OUTPUT_BUFFER_LENGTH);
         
         KdPrint(("LM: %d, SM: %d, R: %d, G: %d, B: %d\n", 
             ds4Data->OutputReport.LargeMotor,

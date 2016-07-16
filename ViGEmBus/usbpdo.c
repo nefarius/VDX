@@ -1062,7 +1062,9 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb, WDFDEVICE Device)
                     0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
                 };
 
+                // Insert (auto-generated) MAC address into response
                 RtlCopyBytes(Response + 1, &ds4->TargetMacAddress, sizeof(MAC_ADDRESS));
+                // Adjust byte order
                 ReverseByteArray(Response + 1, sizeof(MAC_ADDRESS));
 
                 pRequest->TransferBufferLength = HID_GET_FEATURE_REPORT_MAC_ADDRESSES_SIZE;

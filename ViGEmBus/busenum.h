@@ -160,6 +160,9 @@ typedef struct _XUSB_DEVICE_DATA
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XUSB_DEVICE_DATA, XusbGetData)
 
+//
+// Represents a MAC address.
+//
 typedef struct _MAC_ADDRESS
 {
     UCHAR Vendor0;

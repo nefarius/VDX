@@ -317,12 +317,6 @@ Bus_UnPlugDevice(
 );
 
 NTSTATUS
-Bus_EjectDevice(
-    WDFDEVICE Device,
-    ULONG SerialNo
-);
-
-NTSTATUS
 Bus_CreatePdo(
     _In_ WDFDEVICE Device,
     _In_ PWDFDEVICE_INIT ChildInit,

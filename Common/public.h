@@ -50,7 +50,6 @@ DEFINE_GUID(GUID_DEVCLASS_VIGEM_RAWPDO,
 // 
 #define IOCTL_VIGEM_PLUGIN_TARGET       BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x000)
 #define IOCTL_VIGEM_UNPLUG_TARGET       BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x001)
-#define IOCTL_VIGEM_EJECT_TARGET        BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x002)
 
 #define IOCTL_XUSB_REQUEST_NOTIFICATION BUSENUM_RW_IOCTL(IOCTL_VIGEM_BASE + 0x200)
 #define IOCTL_XUSB_SUBMIT_REPORT        BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x201)
@@ -143,23 +142,6 @@ VOID FORCEINLINE VIGEM_UNPLUG_TARGET_INIT(
     UnPlug->Size = sizeof(VIGEM_PLUGIN_TARGET);
     UnPlug->SerialNo = SerialNo;
 }
-
-//
-// Data structure used in IOCTL_VIGEM_EJECT_TARGET requests.
-// 
-typedef struct _VIGEM_EJECT_TARGET
-{
-    //
-    // sizeof (struct _EJECT_HARDWARE)
-    //
-    IN ULONG Size;
-
-    //
-    // Serial number of target device.
-    // 
-    ULONG SerialNo;
-
-} VIGEM_EJECT_TARGET, *PVIGEM_EJECT_TARGET;
 
 //
 // Data structure used in IOCTL_XUSB_REQUEST_NOTIFICATION requests.

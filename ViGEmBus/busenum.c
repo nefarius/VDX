@@ -35,7 +35,6 @@ SOFTWARE.
 #pragma alloc_text (PAGE, Bus_FileCleanup)
 #pragma alloc_text (PAGE, Bus_PlugInDevice)
 #pragma alloc_text (PAGE, Bus_UnPlugDevice)
-#pragma alloc_text (PAGE, Bus_EjectDevice)
 #endif
 
 //
@@ -285,28 +284,6 @@ VOID Bus_EvtIoDeviceControl(
         break;
     }
 
-    case IOCTL_VIGEM_EJECT_TARGET:
-    {
-        PVIGEM_EJECT_TARGET eject = NULL;
-
-        KdPrint(("IOCTL_BUSENUM_EJECT_HARDWARE\n"));
-
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(VIGEM_EJECT_TARGET), (PVOID)&eject, &length);
-
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
-            break;
-        }
-
-        if (eject->Size == InputBufferLength)
-        {
-            status = Bus_EjectDevice(hDevice, eject->SerialNo);
-        }
-
-        break;
-    }
-
     case IOCTL_XUSB_SUBMIT_REPORT:
     {
         PXUSB_SUBMIT_REPORT xusbSubmit = NULL;
@@ -520,91 +497,6 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
     }
 
     WdfChildListEndIteration(list, &iterator);
-
-    return status;
-}
-
-//
-// Simulates a device ejection event.
-// 
-NTSTATUS Bus_EjectDevice(WDFDEVICE Device, ULONG SerialNo)
-{
-    WDFDEVICE hChild;
-    NTSTATUS status = STATUS_INVALID_PARAMETER;
-    WDFCHILDLIST list;
-
-    PAGED_CODE();
-
-    list = WdfFdoGetDefaultChildList(Device);
-
-    //
-    // A zero serial number means eject all children
-    //
-    if (0 == SerialNo)
-    {
-        WDF_CHILD_LIST_ITERATOR iterator;
-
-        WDF_CHILD_LIST_ITERATOR_INIT(&iterator, WdfRetrievePresentChildren);
-
-        WdfChildListBeginIteration(list, &iterator);
-
-        for (; ;)
-        {
-            WDF_CHILD_RETRIEVE_INFO childInfo;
-            PDO_IDENTIFICATION_DESCRIPTION description;
-            BOOLEAN ret;
-
-            //
-            // Init the structures.
-            //
-            WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
-            WDF_CHILD_RETRIEVE_INFO_INIT(&childInfo, &description.Header);
-
-            WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
-
-            //
-            // Get the device identification description
-            //
-            status = WdfChildListRetrieveNextDevice(list, &iterator, &hChild, &childInfo);
-
-            if (!NT_SUCCESS(status) || status == STATUS_NO_MORE_ENTRIES)
-            {
-                break;
-            }
-
-            ASSERT(childInfo.Status == WdfChildListRetrieveDeviceSuccess);
-
-            //
-            // Use that description to request an eject.
-            //
-            ret = WdfChildListRequestChildEject(list, &description.Header);
-
-            if (!ret)
-            {
-                WDFVERIFY(ret);
-            }
-        }
-
-        WdfChildListEndIteration(list, &iterator);
-
-        if (status == STATUS_NO_MORE_ENTRIES)
-        {
-            status = STATUS_SUCCESS;
-        }
-    }
-    else
-    {
-        PDO_IDENTIFICATION_DESCRIPTION description;
-
-        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
-
-        description.SerialNo = SerialNo;
-
-        if (WdfChildListRequestChildEject(list, &description.Header))
-        {
-            status = STATUS_SUCCESS;
-        }
-    }
 
     return status;
 }

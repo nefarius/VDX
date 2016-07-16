@@ -160,6 +160,16 @@ typedef struct _XUSB_DEVICE_DATA
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XUSB_DEVICE_DATA, XusbGetData)
 
+typedef struct _MAC_ADDRESS
+{
+    UCHAR Vendor0;
+    UCHAR Vendor1;
+    UCHAR Vendor2;
+    UCHAR Nic0;
+    UCHAR Nic1;
+    UCHAR Nic2;
+} MAC_ADDRESS, *PMAC_ADDRESS;
+
 //
 // DS4-specific device context data.
 // 
@@ -168,8 +178,8 @@ typedef struct _DS4_DEVICE_DATA
     UCHAR HidReport[DS4_HID_REPORT_SIZE];
     WDFQUEUE PendingUsbRequests;
     WDFTIMER PendingUsbRequestsTimer;
-    UCHAR TargetMacAddress[6];
-    UCHAR HostMacAddress[6];
+    MAC_ADDRESS TargetMacAddress;
+    MAC_ADDRESS HostMacAddress;
 } DS4_DEVICE_DATA, *PDS4_DEVICE_DATA;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DS4_DEVICE_DATA, Ds4GetData)
@@ -278,5 +288,5 @@ NTSTATUS UsbPdo_GetDescriptorFromInterface(PURB urb, PPDO_DEVICE_DATA pCommon);
 //
 
 VOID ReverseByteArray(PUCHAR Array, INT Length);
-VOID GenerateRandomMacAddress(PUCHAR Array, INT Length);
+VOID GenerateRandomMacAddress(PMAC_ADDRESS Address);
 

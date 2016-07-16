@@ -487,7 +487,8 @@ NTSTATUS Bus_CreatePdo(
 
 #pragma region Load/generate MAC address
 
-        WDFKEY keyParams, keySettings;
+        WDFKEY keyParams, keyTargets, keyDS, keySerial;
+        UNICODE_STRING keyName, valueName;
 
         status = WdfDriverOpenParametersRegistryKey(WdfGetDriver(), STANDARD_RIGHTS_ALL, WDF_NO_OBJECT_ATTRIBUTES, &keyParams);
         if (!NT_SUCCESS(status))
@@ -496,18 +497,69 @@ NTSTATUS Bus_CreatePdo(
             return status;
         }
 
-        DECLARE_UNICODE_STRING_SIZE(subPath, 255);
-        RtlUnicodeStringPrintf(&subPath, L"Targets\\DualShock\\%02d", SerialNo);
+        RtlUnicodeStringInit(&keyName, L"Targets");
 
-        status = WdfRegistryCreateKey(keyParams, &subPath,
-            STANDARD_RIGHTS_ALL, REG_OPTION_NON_VOLATILE, NULL, WDF_NO_OBJECT_ATTRIBUTES, &keySettings);
+        status = WdfRegistryCreateKey(keyParams, &keyName,
+            KEY_ALL_ACCESS, REG_OPTION_NON_VOLATILE, NULL, WDF_NO_OBJECT_ATTRIBUTES, &keyTargets);
         if (!NT_SUCCESS(status))
         {
             KdPrint(("WdfRegistryCreateKey failed 0x%x\n", status));
             return status;
         }
 
-        WdfRegistryClose(keySettings);
+        RtlUnicodeStringInit(&keyName, L"DualShock");
+
+        status = WdfRegistryCreateKey(keyTargets, &keyName,
+            KEY_ALL_ACCESS, REG_OPTION_NON_VOLATILE, NULL, WDF_NO_OBJECT_ATTRIBUTES, &keyDS);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfRegistryCreateKey failed 0x%x\n", status));
+            return status;
+        }
+
+        DECLARE_UNICODE_STRING_SIZE(serialPath, 4);
+        RtlUnicodeStringPrintf(&serialPath, L"%04d", SerialNo);
+        
+        status = WdfRegistryCreateKey(keyDS, &serialPath,
+            KEY_ALL_ACCESS, REG_OPTION_NON_VOLATILE, NULL, WDF_NO_OBJECT_ATTRIBUTES, &keySerial);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfRegistryCreateKey failed 0x%x\n", status));
+            return status;
+        }
+
+        RtlUnicodeStringInit(&valueName, L"TargetMacAddress");
+
+        status = WdfRegistryQueryValue(keySerial, &valueName, sizeof(MAC_ADDRESS), &ds4->TargetMacAddress, NULL, NULL);
+
+        KdPrint(("MAC-Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+            ds4->TargetMacAddress.Vendor0,
+            ds4->TargetMacAddress.Vendor1,
+            ds4->TargetMacAddress.Vendor2,
+            ds4->TargetMacAddress.Nic0,
+            ds4->TargetMacAddress.Nic1,
+            ds4->TargetMacAddress.Nic2));
+
+        if (status == STATUS_OBJECT_NAME_NOT_FOUND)
+        {
+            GenerateRandomMacAddress(&ds4->TargetMacAddress);
+
+            status = WdfRegistryAssignValue(keySerial, &valueName, REG_BINARY, sizeof(MAC_ADDRESS), (PVOID)&ds4->TargetMacAddress);
+            if (!NT_SUCCESS(status))
+            {
+                KdPrint(("WdfRegistryAssignValue failed 0x%x\n", status));
+                return status;
+            }
+        }
+        else if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfRegistryQueryValue failed 0x%x\n", status));
+            return status;
+        }
+
+        WdfRegistryClose(keySerial);
+        WdfRegistryClose(keyDS);
+        WdfRegistryClose(keyTargets);
         WdfRegistryClose(keyParams);
 
 #pragma endregion

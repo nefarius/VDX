@@ -19,21 +19,16 @@ VOID ReverseByteArray(PUCHAR Array, INT Length)
     ExFreePoolWithTag(s, VIGEM_POOL_TAG);
 }
 
-VOID GenerateRandomMacAddress(PUCHAR Array, INT Length)
+VOID GenerateRandomMacAddress(PMAC_ADDRESS Address)
 {
     // Vendor "C0:13:37"
-    UCHAR mac[6] = { 0xC0, 0x13, 0x37, 0x00, 0x00, 0x00 };
-    ULONG seed;
+    Address->Vendor0 = 0xC0;
+    Address->Vendor1 = 0x13;
+    Address->Vendor2 = 0x37;
 
-    if (Length < 6)
-        return;
-
-    // NIC (random)
-    for (size_t i = 3; i < 6; i++)
-    {
-        seed = KeQueryPerformanceCounter(NULL).LowPart;
-        mac[i] = RtlRandomEx(&seed) % 0xFF;
-    }
-
-    RtlCopyBytes(Array, mac, Length);
+    ULONG seed = KeQueryPerformanceCounter(NULL).LowPart;
+    
+    Address->Nic0 = RtlRandomEx(&seed) % 0xFF;
+    Address->Nic1 = RtlRandomEx(&seed) % 0xFF;
+    Address->Nic2 = RtlRandomEx(&seed) % 0xFF;
 }

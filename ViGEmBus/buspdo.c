@@ -971,7 +971,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             KdPrint((">> >> URB_FUNCTION_CLASS_INTERFACE\n"));
 
-            status = UsbPdo_ClassInterface(urb);
+            status = UsbPdo_ClassInterface(urb, hDevice);
 
             break;
 
@@ -1045,7 +1045,7 @@ VOID Ds4_PendingUsbRequestsTimerFunc(
     PIRP pendingIrp;
     PIO_STACK_LOCATION irpStack;
 
-    KdPrint(("Ds4_PendingUsbRequestsTimerFunc: Timer elapsed\n"));
+    // KdPrint(("Ds4_PendingUsbRequestsTimerFunc: Timer elapsed\n"));
 
     hChild = WdfTimerGetParentObject(Timer);
     ds4Data = Ds4GetData(hChild);
@@ -1055,7 +1055,7 @@ VOID Ds4_PendingUsbRequestsTimerFunc(
 
     if (NT_SUCCESS(status))
     {
-        KdPrint(("Ds4_PendingUsbRequestsTimerFunc: pending IRP found\n"));
+        // KdPrint(("Ds4_PendingUsbRequestsTimerFunc: pending IRP found\n"));
 
         // Get pending IRP
         pendingIrp = WdfRequestWdmGetIrp(usbRequest);

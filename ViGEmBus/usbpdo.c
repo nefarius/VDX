@@ -986,7 +986,7 @@ NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device)
 //
 // Processes URBs containing HID-related requests.
 // 
-NTSTATUS UsbPdo_ClassInterface(PURB urb)
+NTSTATUS UsbPdo_ClassInterface(PURB urb, WDFDEVICE Device)
 {
     UNREFERENCED_PARAMETER(urb);
 
@@ -999,6 +999,8 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
         pRequest->Value,
         pRequest->Index,
         pRequest->TransferBufferLength));
+
+    PDS4_DEVICE_DATA ds4 = Ds4GetData(Device);
 
     switch (pRequest->Request)
     {
@@ -1059,6 +1061,9 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb)
                     0x12, 0x8B, 0x09, 0x07, 0x6D, 0x66, 0x1C, 0x08,
                     0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
                 };
+
+                RtlCopyBytes(Response + 1, &ds4->TargetMacAddress, sizeof(MAC_ADDRESS));
+                ReverseByteArray(Response + 1, sizeof(MAC_ADDRESS));
 
                 pRequest->TransferBufferLength = HID_GET_FEATURE_REPORT_MAC_ADDRESSES_SIZE;
                 RtlCopyBytes(pRequest->TransferBuffer, Response, HID_GET_FEATURE_REPORT_MAC_ADDRESSES_SIZE);

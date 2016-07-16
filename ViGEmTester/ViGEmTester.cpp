@@ -37,6 +37,8 @@ int main()
         return 1;
     }
 
+    //goto skip;
+
     VIGEM_TARGET x360;
     VIGEM_TARGET_INIT(&x360);
 
@@ -53,6 +55,8 @@ int main()
 
     printf("X360 Success!");
     getchar();
+
+    skip:
 
     VIGEM_TARGET ds4;
     VIGEM_TARGET_INIT(&ds4);

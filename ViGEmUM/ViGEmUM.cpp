@@ -114,7 +114,7 @@ VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
         DWORD error = ERROR_SUCCESS;
         DWORD transfered = 0;
         OVERLAPPED lOverlapped = { 0 };
-        lOverlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+        lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
         XUSB_REQUEST_NOTIFICATION notify;
         XUSB_REQUEST_NOTIFICATION_INIT(&notify, _Target.SerialNo);
@@ -126,6 +126,51 @@ VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
             if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
             {
                 _Notification(_Target, notify.LargeMotor, notify.SmallMotor, notify.LedNumber);
+            }
+            else
+            {
+                error = GetLastError();
+            }
+        } while (error != ERROR_OPERATION_ABORTED && error != ERROR_ACCESS_DENIED);
+
+    }, Notification, Target };
+
+    _async.detach();
+
+    return VIGEM_ERROR_NONE;
+}
+
+VIGEM_ERROR vigem_register_ds4_notification(VIGEM_DS4_NOTIFICATION Notification, VIGEM_TARGET Target)
+{
+    if (g_hViGEmBus == nullptr)
+    {
+        return VIGEM_ERROR_BUS_NOT_FOUND;
+    }
+
+    if (Target.SerialNo == 0 || Notification == nullptr)
+    {
+        return VIGEM_ERROR_INVALID_TARGET;
+    }
+
+    std::thread _async{ [](
+        VIGEM_DS4_NOTIFICATION _Notification,
+        VIGEM_TARGET _Target)
+    {
+        DWORD error = ERROR_SUCCESS;
+        DWORD transfered = 0;
+        OVERLAPPED lOverlapped = { 0 };
+        lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+        DS4_REQUEST_NOTIFICATION notify;
+        DS4_REQUEST_NOTIFICATION_INIT(&notify, _Target.SerialNo);
+
+        do
+        {
+            DeviceIoControl(g_hViGEmBus, IOCTL_DS4_REQUEST_NOTIFICATION, &notify, notify.Size, &notify, notify.Size, &transfered, &lOverlapped);
+
+            if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
+            {
+                _Notification(_Target, notify.Report.LargeMotor, notify.Report.SmallMotor, notify.Report.LightbarColor);
             }
             else
             {
@@ -152,7 +197,7 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
     DWORD transfered = 0;
     VIGEM_PLUGIN_TARGET plugin;
     OVERLAPPED lOverlapped = { 0 };
-    lOverlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
     for (Target->SerialNo = 1; Target->SerialNo <= VIGEM_TARGETS_MAX; Target->SerialNo++)
     {
@@ -180,7 +225,7 @@ VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
 
     DWORD transfered = 0;
     OVERLAPPED lOverlapped = { 0 };
-    lOverlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
     if (Target.SerialNo == 0)
     {
@@ -218,7 +263,7 @@ VIGEM_API VIGEM_ERROR vigem_ds4_submit_report(VIGEM_TARGET Target, DS4_REPORT Re
 
     DWORD transfered = 0;
     OVERLAPPED lOverlapped = { 0 };
-    lOverlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
     if (Target.SerialNo == 0)
     {

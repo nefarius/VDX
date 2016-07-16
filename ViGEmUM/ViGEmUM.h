@@ -77,12 +77,22 @@ typedef VOID(CALLBACK* VIGEM_XUSB_NOTIFICATION)(
     UCHAR SmallMotor,
     UCHAR LedNumber);
 
+typedef VOID(CALLBACK* VIGEM_DS4_NOTIFICATION)(
+    VIGEM_TARGET Target,
+    UCHAR LargeMotor,
+    UCHAR SmallMotor,
+    DS4_LIGHTBAR_COLOR LightbarColor);
+
 VIGEM_API VIGEM_ERROR vigem_init();
 
 VIGEM_API VOID vigem_shutdown();
 
 VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
     IN VIGEM_XUSB_NOTIFICATION Notification, 
+    IN VIGEM_TARGET Target);
+
+VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
+    IN VIGEM_DS4_NOTIFICATION Notification,
     IN VIGEM_TARGET Target);
 
 VIGEM_API VIGEM_ERROR vigem_target_plugin(
@@ -96,3 +106,4 @@ VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
 VIGEM_API VIGEM_ERROR vigem_ds4_submit_report(
     _In_ VIGEM_TARGET Target,
     _In_ DS4_REPORT Report);
+

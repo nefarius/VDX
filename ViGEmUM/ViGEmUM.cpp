@@ -140,7 +140,7 @@ VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
     return VIGEM_ERROR_NONE;
 }
 
-VIGEM_ERROR vigem_register_ds4_notification(VIGEM_DS4_NOTIFICATION Notification, VIGEM_TARGET Target)
+VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(VIGEM_DS4_NOTIFICATION Notification, VIGEM_TARGET Target)
 {
     if (g_hViGEmBus == nullptr)
     {

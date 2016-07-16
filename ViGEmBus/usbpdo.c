@@ -795,7 +795,6 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 
     NTSTATUS status;
     PPDO_DEVICE_DATA pdoData = PdoGetData(Device);
-    PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
     WDFREQUEST notifyRequest;
 
     if (pdoData == NULL)
@@ -808,6 +807,8 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
     {
     case Xbox360Wired:
     {
+        PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
+
         // Check context
         if (xusb == NULL)
         {
@@ -917,16 +918,34 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
             return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
         }
 
+        // Store relevant bytes of buffer in PDO context
         RtlCopyBytes(&ds4Data->OutputReport, 
             (PUCHAR)pTransfer->TransferBuffer + DS4_OUTPUT_BUFFER_OFFSET, 
             DS4_OUTPUT_BUFFER_LENGTH);
         
-        KdPrint(("LM: %d, SM: %d, R: %d, G: %d, B: %d\n", 
-            ds4Data->OutputReport.LargeMotor,
-            ds4Data->OutputReport.SmallMotor,
-            ds4Data->OutputReport.LightbarColor.Red,
-            ds4Data->OutputReport.LightbarColor.Green,
-            ds4Data->OutputReport.LightbarColor.Blue));
+        // Notify user-mode process that new data is available
+        status = WdfIoQueueRetrieveNextRequest(ds4Data->PendingNotificationRequests, &notifyRequest);
+
+        if (NT_SUCCESS(status))
+        {
+            PDS4_REQUEST_NOTIFICATION notify = NULL;
+
+            status = WdfRequestRetrieveOutputBuffer(notifyRequest, sizeof(DS4_REQUEST_NOTIFICATION), (PVOID)&notify, NULL);
+
+            if (NT_SUCCESS(status))
+            {
+                // Assign values to output buffer
+                notify->Size = sizeof(DS4_REQUEST_NOTIFICATION);
+                notify->SerialNo = pdoData->SerialNo;
+                notify->Report = ds4Data->OutputReport;
+
+                WdfRequestCompleteWithInformation(notifyRequest, status, notify->Size);
+            }
+            else
+            {
+                KdPrint(("WdfRequestRetrieveOutputBuffer failed with status 0x%X\n", status));
+            }
+        }
 
         break;
     }

@@ -26,6 +26,22 @@ VOID my_xusb_notification(
         LedNumber);
 }
 
+VOID my_ds4_notification(
+    VIGEM_TARGET Target,
+    UCHAR LargeMotor,
+    UCHAR SmallMotor,
+    DS4_LIGHTBAR_COLOR LightbarColor)
+{
+    printf("Serial: %d, LM: %d, SM: %d, R: %d, G: %d, B: %d\n",
+        Target.SerialNo,
+        LargeMotor,
+        SmallMotor,
+        LightbarColor.Red,
+        LightbarColor.Green,
+        LightbarColor.Blue);
+}
+
+
 int main()
 {
     printf("Starting...\n");
@@ -67,6 +83,10 @@ int main()
         getchar();
         return 1;
     }
+
+    vigem_register_ds4_notification(
+        (VIGEM_DS4_NOTIFICATION)my_ds4_notification,
+        ds4);
 
     printf("DS4 Success!");
     getchar();

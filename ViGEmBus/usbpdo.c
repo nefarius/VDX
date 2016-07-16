@@ -839,7 +839,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         {
             PUCHAR Buffer = pTransfer->TransferBuffer;
 
-            KdPrint(("-- LED Buffer: %02X %02X %02X", Buffer[0], Buffer[1], Buffer[2]));
+            KdPrint(("-- LED Buffer: %02X %02X %02X\n", Buffer[0], Buffer[1], Buffer[2]));
 
             // extract LED byte to get controller slot
             if (Buffer[0] == 0x01 && Buffer[1] == 0x03 && Buffer[2] >= 0x02)
@@ -849,7 +849,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
                 if (Buffer[2] == 0x04) xusb->LedNumber = 2;
                 if (Buffer[2] == 0x05) xusb->LedNumber = 3;
 
-                KdPrint(("-- LED Number: %d", xusb->LedNumber));
+                KdPrint(("-- LED Number: %d\n", xusb->LedNumber));
             }
         }
 
@@ -858,7 +858,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         {
             PUCHAR Buffer = pTransfer->TransferBuffer;
 
-            KdPrint(("-- Rumble Buffer: %02X %02X %02X %02X %02X %02X %02X %02X",
+            KdPrint(("-- Rumble Buffer: %02X %02X %02X %02X %02X %02X %02X %02X\n",
                 Buffer[0],
                 Buffer[1],
                 Buffer[2],
@@ -1062,10 +1062,15 @@ NTSTATUS UsbPdo_ClassInterface(PURB urb, WDFDEVICE Device)
                     0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
                 };
 
-                // Insert (auto-generated) MAC address into response
+                // Insert (auto-generated) target MAC address into response
                 RtlCopyBytes(Response + 1, &ds4->TargetMacAddress, sizeof(MAC_ADDRESS));
                 // Adjust byte order
                 ReverseByteArray(Response + 1, sizeof(MAC_ADDRESS));
+
+                // Insert (auto-generated) host MAC address into response
+                RtlCopyBytes(Response + 10, &ds4->HostMacAddress, sizeof(MAC_ADDRESS));
+                // Adjust byte order
+                ReverseByteArray(Response + 10, sizeof(MAC_ADDRESS));
 
                 pRequest->TransferBufferLength = HID_GET_FEATURE_REPORT_MAC_ADDRESSES_SIZE;
                 RtlCopyBytes(pRequest->TransferBuffer, Response, HID_GET_FEATURE_REPORT_MAC_ADDRESSES_SIZE);

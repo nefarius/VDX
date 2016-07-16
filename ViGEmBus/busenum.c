@@ -867,7 +867,7 @@ NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPOR
 
         /* Copy report to cache and transfer buffer
          * Skip first byte as it contains the never changing report id */
-        RtlCopyBytes(ds4Data->HidReport + 1, &Report->HidReport, Report->Size);
+        RtlCopyBytes(ds4Data->HidInputReport + 1, &Report->HidReport, Report->Size);
         RtlCopyBytes(Buffer + 1, &Report->HidReport, Report->Size);
 
         // Complete pending request

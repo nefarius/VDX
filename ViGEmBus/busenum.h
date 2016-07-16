@@ -151,10 +151,29 @@ WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(PDO_DEVICE_DATA, PdoGetData)
 // 
 typedef struct _XUSB_DEVICE_DATA
 {
+    //
+    // Rumble buffer
+    //
     UCHAR		Rumble[XUSB_RUMBLE_SIZE];
+
+    //
+    // LED number (represents XInput slot index)
+    //
     UCHAR		LedNumber;
+
+    //
+    // Report buffer
+    //
     UCHAR		Report[XUSB_REPORT_SIZE];
+
+    //
+    // Queue for incoming interrupt transfer
+    //
     WDFQUEUE    PendingUsbInRequests;
+
+    //
+    // Queue for inverted calls
+    //
     WDFQUEUE    PendingNotificationRequests;
 } XUSB_DEVICE_DATA, *PXUSB_DEVICE_DATA;
 
@@ -173,15 +192,75 @@ typedef struct _MAC_ADDRESS
     UCHAR Nic2;
 } MAC_ADDRESS, *PMAC_ADDRESS;
 
+typedef struct _DS4_LIGHTBAR_COLOR
+{
+    //
+    // Red part of the Lightbar (0-255).
+    //
+    UCHAR Red;
+
+    //
+    // Green part of the Lightbar (0-255).
+    //
+    UCHAR Green;
+
+    //
+    // Blue part of the Lightbar (0-255).
+    //
+    UCHAR Blue;
+} DS4_LIGHTBAR_COLOR, *PDS4_LIGHTBAR_COLOR;
+
+typedef struct _DS4_OUTPUT_REPORT
+{
+    //
+    // Vibration intensity value of the small motor (0-255).
+    // 
+    UCHAR SmallMotor;
+
+    //
+    // Vibration intensity value of the large motor (0-255).
+    // 
+    UCHAR LargeMotor;
+    
+    //
+    // Color values of the Lightbar.
+    //
+    DS4_LIGHTBAR_COLOR LightbarColor;
+} DS4_OUTPUT_REPORT, *PDS4_OUTPUT_REPORT;
+
 //
 // DS4-specific device context data.
 // 
 typedef struct _DS4_DEVICE_DATA
 {
-    UCHAR HidReport[DS4_HID_REPORT_SIZE];
+    //
+    // HID Input Report buffer
+    //
+    UCHAR HidInputReport[DS4_HID_REPORT_SIZE];
+
+    //
+    // Output report cache
+    //
+    DS4_OUTPUT_REPORT OutputReport;
+
+    //
+    // Queue for incoming interrupt transfer
+    //
     WDFQUEUE PendingUsbInRequests;
+
+    //
+    // Timer for dispatching interrupt transfer
+    //
     WDFTIMER PendingUsbInRequestsTimer;
+
+    //
+    // Auto-generated MAC address of the target device
+    //
     MAC_ADDRESS TargetMacAddress;
+
+    //
+    // Default MAC address of the host (not used)
+    //
     MAC_ADDRESS HostMacAddress;
 } DS4_DEVICE_DATA, *PDS4_DEVICE_DATA;
 
@@ -283,7 +362,7 @@ NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_SelectInterface(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST Request);
 NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device);
-NTSTATUS UsbPdo_ClassInterface(PURB urb, WDFDEVICE Device);
+NTSTATUS UsbPdo_ClassInterface(PURB urb, WDFDEVICE Device, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_GetDescriptorFromInterface(PURB urb, PPDO_DEVICE_DATA pCommon);
 
 //

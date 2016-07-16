@@ -808,8 +808,9 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
             0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00
         };
 
-        // Initialize HID report to defaults
-        RtlCopyBytes(ds4Data->HidReport, DefaultHidReport, DS4_HID_REPORT_SIZE);
+        // Initialize HID reports to defaults
+        RtlCopyBytes(ds4Data->HidInputReport, DefaultHidReport, DS4_HID_REPORT_SIZE);
+        RtlZeroMemory(&ds4Data->OutputReport, sizeof(DS4_OUTPUT_REPORT));
 
         // Start pending IRP queue flush timer
         WdfTimerStart(ds4Data->PendingUsbInRequestsTimer, DS4_QUEUE_FLUSH_PERIOD);
@@ -971,7 +972,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             KdPrint((">> >> URB_FUNCTION_CLASS_INTERFACE\n"));
 
-            status = UsbPdo_ClassInterface(urb, hDevice);
+            status = UsbPdo_ClassInterface(urb, hDevice, pdoData);
 
             break;
 
@@ -1070,7 +1071,7 @@ VOID Ds4_PendingUsbRequestsTimerFunc(
         urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_HID_REPORT_SIZE;
 
         // Copy cached report to transfer buffer 
-        RtlCopyBytes(Buffer, ds4Data->HidReport, DS4_HID_REPORT_SIZE);
+        RtlCopyBytes(Buffer, ds4Data->HidInputReport, DS4_HID_REPORT_SIZE);
 
         // Complete pending request
         WdfRequestComplete(usbRequest, status);

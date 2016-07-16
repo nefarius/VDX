@@ -37,7 +37,7 @@ int main()
         return 1;
     }
 
-    //goto skip;
+    goto skip;
 
     VIGEM_TARGET x360;
     VIGEM_TARGET_INIT(&x360);
@@ -79,7 +79,7 @@ int main()
         r.bLeftTrigger++;
         ds4r.bTriggerL++;
 
-        vigem_xusb_submit_report(x360, r);
+        //vigem_xusb_submit_report(x360, r);
         vigem_ds4_submit_report(ds4, ds4r);
     }
 

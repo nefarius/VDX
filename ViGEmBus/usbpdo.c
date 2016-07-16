@@ -988,8 +988,6 @@ NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device)
 // 
 NTSTATUS UsbPdo_ClassInterface(PURB urb, WDFDEVICE Device)
 {
-    UNREFERENCED_PARAMETER(urb);
-
     struct _URB_CONTROL_VENDOR_OR_CLASS_REQUEST* pRequest = &urb->UrbControlVendorClassRequest;
 
     KdPrint((">> >> >> URB_FUNCTION_CLASS_INTERFACE\n"));

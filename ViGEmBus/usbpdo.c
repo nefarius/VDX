@@ -819,7 +819,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         // Data coming FROM us TO higher driver
         if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
         {
-            KdPrint((">> >> >> Incoming request, queuing...\n"));
+            // KdPrint((">> >> >> Incoming request, queuing...\n"));
 
             /* This request is sent periodically and relies on data the "feeder"
             * has to supply, so we queue this request and return with STATUS_PENDING.
@@ -830,10 +830,10 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         }
 
         // Data coming FROM the higher driver TO us
-        KdPrint((">> >> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER: Handle %p, Flags %X, Length %d\n",
-            pTransfer->PipeHandle,
-            pTransfer->TransferFlags,
-            pTransfer->TransferBufferLength));
+        // KdPrint((">> >> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER: Handle %p, Flags %X, Length %d\n",
+        //     pTransfer->PipeHandle,
+        //     pTransfer->TransferFlags,
+        //     pTransfer->TransferBufferLength));
 
         if (pTransfer->TransferBufferLength == XUSB_LEDSET_SIZE) // Led
         {
@@ -907,7 +907,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN
             && pTransfer->PipeHandle == (USBD_PIPE_HANDLE)0xFFFF0084)
         {
-            KdPrint((">> >> >> Incoming request, queuing...\n"));
+            // KdPrint((">> >> >> Incoming request, queuing...\n"));
 
             /* This request is sent periodically and relies on data the "feeder"
                has to supply, so we queue this request and return with STATUS_PENDING.

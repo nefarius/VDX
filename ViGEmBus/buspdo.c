@@ -499,7 +499,7 @@ NTSTATUS Bus_CreatePdo(
         DECLARE_UNICODE_STRING_SIZE(subPath, 255);
         RtlUnicodeStringPrintf(&subPath, L"Targets\\DualShock\\%02d", SerialNo);
 
-        status = WdfRegistryCreateKey(keyParams, &subPath, 
+        status = WdfRegistryCreateKey(keyParams, &subPath,
             STANDARD_RIGHTS_ALL, REG_OPTION_NON_VOLATILE, NULL, WDF_NO_OBJECT_ATTRIBUTES, &keySettings);
         if (!NT_SUCCESS(status))
         {
@@ -795,11 +795,11 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
     hDevice = WdfIoQueueGetDevice(Queue);
 
-    KdPrint(("Pdo_EvtIoInternalDeviceControl: 0x%p\n", hDevice));
+    // KdPrint(("Pdo_EvtIoInternalDeviceControl: 0x%p\n", hDevice));
 
     pdoData = PdoGetData(hDevice);
 
-    KdPrint(("Pdo_EvtIoInternalDeviceControl PDO: 0x%p\n", pdoData));
+    // KdPrint(("Pdo_EvtIoInternalDeviceControl PDO: 0x%p\n", pdoData));
 
     // No help from the framework available from here on
     irp = WdfRequestWdmGetIrp(Request);
@@ -809,7 +809,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
     {
     case IOCTL_INTERNAL_USB_SUBMIT_URB:
 
-        KdPrint((">> IOCTL_INTERNAL_USB_SUBMIT_URB\n"));
+        // KdPrint((">> IOCTL_INTERNAL_USB_SUBMIT_URB\n"));
 
         urb = (PURB)URB_FROM_IRP(irp);
 
@@ -826,7 +826,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
         case URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER:
 
-            KdPrint((">> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
+            // KdPrint((">> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
 
             status = UsbPdo_BulkOrInterruptTransfer(urb, hDevice, Request);
 

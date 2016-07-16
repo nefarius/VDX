@@ -68,7 +68,7 @@ VOID FORCEINLINE VIGEM_TARGET_INIT(
     RtlZeroMemory(Target, sizeof(VIGEM_TARGET));
 
     Target->Size = sizeof(VIGEM_TARGET);
-    Target->Version = 1;
+    Target->Version = VIGEM_COMMON_VERSION;
 }
 
 typedef VOID(CALLBACK* VIGEM_XUSB_NOTIFICATION)(

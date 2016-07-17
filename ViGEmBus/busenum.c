@@ -82,6 +82,8 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     WdfDeviceInitSetDeviceType(DeviceInit, FILE_DEVICE_BUS_EXTENDER);
     // More than one process may talk to the bus at the same time
     WdfDeviceInitSetExclusive(DeviceInit, FALSE);
+    // Bus is power policy owner over all PDOs
+    WdfDeviceInitSetPowerPolicyOwnership(DeviceInit, TRUE);
 
 #pragma region Prepare child list
 
@@ -256,7 +258,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_PlugInDevice(hDevice, plugIn->SerialNo, plugIn->TargetType);
+            status = Bus_PlugInDevice(hDevice, plugIn->SerialNo, plugIn->TargetType, Request);
         }
 
         break;
@@ -444,7 +446,7 @@ VOID Bus_EvtIoDefault(
 //
 // Simulates a device plug-in event.
 // 
-NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ ULONG SerialNo, _In_ VIGEM_TARGET_TYPE TargetType)
+NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE TargetType, WDFREQUEST Request)
 {
     PDO_IDENTIFICATION_DESCRIPTION description;
     NTSTATUS status;
@@ -460,6 +462,7 @@ NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ ULONG SerialNo, _In_ VIGEM
     description.SerialNo = SerialNo;
     description.TargetType = TargetType;
     description.OwnerProcessId = CURRENT_PROCESS_ID();
+    description.PlugInRequest = Request;
 
     status = WdfChildListAddOrUpdateChildDescriptionAsPresent(WdfFdoGetDefaultChildList(Device), &description.Header, NULL);
 
@@ -474,7 +477,8 @@ NTSTATUS Bus_PlugInDevice(_In_ WDFDEVICE Device, _In_ ULONG SerialNo, _In_ VIGEM
 
     KdPrint(("Bus_PlugInDevice exiting with 0x%x\n", status));
 
-    return status;
+    // Request gets completet upon PDO finished creation
+    return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
 }
 
 //

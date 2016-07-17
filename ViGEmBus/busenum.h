@@ -121,6 +121,8 @@ typedef struct _PDO_IDENTIFICATION_DESCRIPTION
     DWORD OwnerProcessId;
 
     VIGEM_TARGET_TYPE TargetType;
+
+    WDFREQUEST PlugInRequest;
 } PDO_IDENTIFICATION_DESCRIPTION, *PPDO_IDENTIFICATION_DESCRIPTION;
 
 //
@@ -142,6 +144,8 @@ typedef struct _PDO_DEVICE_DATA
     // Device type this PDO is emulating
     // 
     VIGEM_TARGET_TYPE TargetType;
+
+    WDFREQUEST PlugInRequest;
 
 } PDO_DEVICE_DATA, *PPDO_DEVICE_DATA;
 
@@ -270,7 +274,8 @@ NTSTATUS
 Bus_PlugInDevice(
     _In_ WDFDEVICE Device,
     _In_ ULONG SerialNo,
-    _In_ VIGEM_TARGET_TYPE TargetType
+    _In_ VIGEM_TARGET_TYPE TargetType,
+    _In_ WDFREQUEST Request
 );
 
 NTSTATUS
@@ -283,9 +288,7 @@ NTSTATUS
 Bus_CreatePdo(
     _In_ WDFDEVICE Device,
     _In_ PWDFDEVICE_INIT ChildInit,
-    _In_ ULONG SerialNo,
-    _In_ VIGEM_TARGET_TYPE TargetType,
-    _In_ DWORD OwnerProcessId
+    _In_ PPDO_IDENTIFICATION_DESCRIPTION Description
 );
 
 NTSTATUS

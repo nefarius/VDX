@@ -355,6 +355,7 @@ NTSTATUS Bus_CreatePdo(
     pdoData->TargetType = Description->TargetType;
     pdoData->OwnerProcessId = Description->OwnerProcessId;
     pdoData->PlugInRequest = Description->PlugInRequest;
+    pdoData->Initialized = FALSE;
 
     // Initialize additional contexts (if available)
     switch (Description->TargetType)
@@ -602,6 +603,7 @@ NTSTATUS Bus_CreatePdo(
 
                 if (!NT_SUCCESS(status))
                 {
+                    // PDO creation failed, somplete request with error code
                     WdfRequestComplete(Description->PlugInRequest, status);
                 }
 
@@ -807,7 +809,12 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 
 prepare_finished:
 
-    WdfRequestComplete(pdoData->PlugInRequest, status);
+    // Notify creator that target was created successfully
+    if (!pdoData->Initialized)
+    {
+        WdfRequestComplete(pdoData->PlugInRequest, status);
+        pdoData->Initialized = TRUE;
+    }
 
     return status;
 }

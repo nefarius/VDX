@@ -145,15 +145,7 @@ typedef struct _PDO_DEVICE_DATA
     // 
     VIGEM_TARGET_TYPE TargetType;
 
-    //
-    // Plug-In Request to complete upon PDO initialization
-    //
     WDFREQUEST PlugInRequest;
-
-    //
-    // Was PDO created successfully
-    //
-    BOOLEAN Initialized;
 
 } PDO_DEVICE_DATA, *PPDO_DEVICE_DATA;
 

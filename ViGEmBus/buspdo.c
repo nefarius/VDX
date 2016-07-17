@@ -93,8 +93,7 @@ NTSTATUS Bus_CreatePdo(
     DECLARE_UNICODE_STRING_SIZE(buffer, MAX_INSTANCE_ID_LEN);
     // reserve space for device id
     DECLARE_UNICODE_STRING_SIZE(deviceId, MAX_INSTANCE_ID_LEN);
-    // reserve space for device description
-    DECLARE_UNICODE_STRING_SIZE(deviceDescription, MAX_DEVICE_DESCRIPTION_LEN);
+    UNICODE_STRING deviceDescription;
 
 
     PAGED_CODE();
@@ -137,7 +136,7 @@ NTSTATUS Bus_CreatePdo(
 #pragma region Set device description
 
         // prepare device description
-        status = RtlUnicodeStringPrintf(&deviceDescription, L"Virtual Xbox 360 Controller");
+        status = RtlUnicodeStringInit(&deviceDescription, L"Virtual Xbox 360 Controller");
         if (!NT_SUCCESS(status))
         {
             return status;
@@ -213,7 +212,7 @@ NTSTATUS Bus_CreatePdo(
 #pragma region Set device description
 
         // prepare device description
-        status = RtlUnicodeStringPrintf(&deviceDescription, L"Virtual DualShock 4 Controller");
+        status = RtlUnicodeStringInit(&deviceDescription, L"Virtual DualShock 4 Controller");
         if (!NT_SUCCESS(status))
         {
             return status;
@@ -272,6 +271,12 @@ NTSTATUS Bus_CreatePdo(
 
         break;
     }
+    default:
+
+        KdPrint(("Unsupported target type\n"));
+        return STATUS_INVALID_PARAMETER;
+
+        break;
     }
 
     // set device id

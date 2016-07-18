@@ -133,6 +133,8 @@ VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
             }
         } while (error != ERROR_OPERATION_ABORTED && error != ERROR_ACCESS_DENIED);
 
+        CloseHandle(lOverlapped.hEvent);
+
     }, Notification, Target };
 
     _async.detach();
@@ -142,6 +144,8 @@ VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
 
 VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(VIGEM_DS4_NOTIFICATION Notification, VIGEM_TARGET Target)
 {
+    // TODO: de-duplicate this section
+
     if (g_hViGEmBus == nullptr)
     {
         return VIGEM_ERROR_BUS_NOT_FOUND;
@@ -178,6 +182,8 @@ VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(VIGEM_DS4_NOTIFICATION Not
             }
         } while (error != ERROR_OPERATION_ABORTED && error != ERROR_ACCESS_DENIED);
 
+        CloseHandle(lOverlapped.hEvent);
+
     }, Notification, Target };
 
     _async.detach();
@@ -207,15 +213,18 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
 
         if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
         {
+            CloseHandle(lOverlapped.hEvent);
             return VIGEM_ERROR_NONE;
         }
     }
+
+    CloseHandle(lOverlapped.hEvent);
 
     return VIGEM_ERROR_NO_FREE_SLOT;
 }
 
 VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
-    VIGEM_TARGET Target, 
+    VIGEM_TARGET Target,
     XUSB_REPORT Report)
 {
     if (g_hViGEmBus == nullptr)
@@ -223,14 +232,14 @@ VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
         return VIGEM_ERROR_BUS_NOT_FOUND;
     }
 
-    DWORD transfered = 0;
-    OVERLAPPED lOverlapped = { 0 };
-    lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-
     if (Target.SerialNo == 0)
     {
         return VIGEM_ERROR_INVALID_TARGET;
     }
+
+    DWORD transfered = 0;
+    OVERLAPPED lOverlapped = { 0 };
+    lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
     XUSB_SUBMIT_REPORT report;
     XUSB_SUBMIT_REPORT_INIT(&report, Target.SerialNo);
@@ -241,6 +250,8 @@ VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
 
     if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) == 0)
     {
+        CloseHandle(lOverlapped.hEvent);
+
         switch (GetLastError())
         {
         case ERROR_ACCESS_DENIED:
@@ -250,6 +261,8 @@ VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
             break;
         }
     }
+
+    CloseHandle(lOverlapped.hEvent);
 
     return VIGEM_ERROR_NONE;
 }
@@ -261,14 +274,14 @@ VIGEM_API VIGEM_ERROR vigem_ds4_submit_report(VIGEM_TARGET Target, DS4_REPORT Re
         return VIGEM_ERROR_BUS_NOT_FOUND;
     }
 
-    DWORD transfered = 0;
-    OVERLAPPED lOverlapped = { 0 };
-    lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-
     if (Target.SerialNo == 0)
     {
         return VIGEM_ERROR_INVALID_TARGET;
     }
+
+    DWORD transfered = 0;
+    OVERLAPPED lOverlapped = { 0 };
+    lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
     DS4_SUBMIT_REPORT report;
     DS4_SUBMIT_REPORT_INIT(&report, Target.SerialNo);
@@ -279,6 +292,8 @@ VIGEM_API VIGEM_ERROR vigem_ds4_submit_report(VIGEM_TARGET Target, DS4_REPORT Re
 
     if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) == 0)
     {
+        CloseHandle(lOverlapped.hEvent);
+
         switch (GetLastError())
         {
         case ERROR_ACCESS_DENIED:
@@ -288,6 +303,8 @@ VIGEM_API VIGEM_ERROR vigem_ds4_submit_report(VIGEM_TARGET Target, DS4_REPORT Re
             break;
         }
     }
+
+    CloseHandle(lOverlapped.hEvent);
 
     return VIGEM_ERROR_NONE;
 }

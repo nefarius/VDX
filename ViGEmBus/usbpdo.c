@@ -110,7 +110,7 @@ VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(
 }
 
 //
-// Set device descriptor to identify as wired Microsoft Xbox 360 Controller.
+// Set device descriptor to identify the current USB device.
 // 
 NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
 {
@@ -119,7 +119,7 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
     switch (pCommon->TargetType)
     {
     case Xbox360Wired:
-    {
+
         pDescriptor->bLength = 0x12;
         pDescriptor->bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE;
         pDescriptor->bcdUSB = 0x0200; // USB v2.0
@@ -136,9 +136,9 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
         pDescriptor->bNumConfigurations = 0x01;
 
         break;
-    }
+
     case DualShock4Wired:
-    {
+
         pDescriptor->bLength = 0x12;
         pDescriptor->bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE;
         pDescriptor->bcdUSB = 0x0200; // USB v2.0
@@ -155,9 +155,9 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
         pDescriptor->bNumConfigurations = 0x01;
 
         break;
-    }
+
     default:
-        break;
+        return STATUS_UNSUCCESSFUL;
     }
 
     return STATUS_SUCCESS;
@@ -383,7 +383,7 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommo
             break;
         }
         default:
-            break;
+            return STATUS_UNSUCCESSFUL;
         }
     }
 
@@ -409,7 +409,7 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommo
         break;
     }
     default:
-        break;
+        return STATUS_UNSUCCESSFUL;
     }
 
     return STATUS_SUCCESS;
@@ -492,13 +492,17 @@ NTSTATUS UsbPdo_GetStringDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
 
             urb->UrbControlDescriptorRequest.TransferBufferLength = DS4_PRODUCT_NAME_LENGTH;
             RtlCopyBytes(urb->UrbControlDescriptorRequest.TransferBuffer, ProductString, DS4_PRODUCT_NAME_LENGTH);
+
+            break;
         }
         default:
             break;
         }
+
+        break;
     }
     default:
-        break;
+        return STATUS_UNSUCCESSFUL;
     }
 
     return STATUS_SUCCESS;
@@ -682,7 +686,7 @@ NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon)
         break;
     }
     default:
-        break;
+        return STATUS_UNSUCCESSFUL;
     }
 
     return STATUS_SUCCESS;
@@ -919,10 +923,10 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         }
 
         // Store relevant bytes of buffer in PDO context
-        RtlCopyBytes(&ds4Data->OutputReport, 
-            (PUCHAR)pTransfer->TransferBuffer + DS4_OUTPUT_BUFFER_OFFSET, 
+        RtlCopyBytes(&ds4Data->OutputReport,
+            (PUCHAR)pTransfer->TransferBuffer + DS4_OUTPUT_BUFFER_OFFSET,
             DS4_OUTPUT_BUFFER_LENGTH);
-        
+
         // Notify user-mode process that new data is available
         status = WdfIoQueueRetrieveNextRequest(ds4Data->PendingNotificationRequests, &notifyRequest);
 

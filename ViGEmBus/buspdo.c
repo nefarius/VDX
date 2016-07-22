@@ -281,189 +281,17 @@ NTSTATUS Bus_CreatePdo(
     switch (Description->TargetType)
     {
     case Xbox360Wired:
-    {
-        KdPrint(("Initializing XUSB context...\n"));
-
-        PXUSB_DEVICE_DATA xusb = XusbGetData(hChild);
-
-        RtlZeroMemory(xusb, sizeof(XUSB_DEVICE_DATA));
-
-        // Is later overwritten by actual XInput slot
-        xusb->LedNumber = (UCHAR)Description->SerialNo;
-        // This value never changes
-        xusb->Report[1] = 0x14;
-
-        // I/O Queue for pending IRPs
-        WDF_IO_QUEUE_CONFIG usbInQueueConfig, notificationsQueueConfig;
-
-#pragma region Create and assign queue for incoming interrupt transfer
-
-        WDF_IO_QUEUE_CONFIG_INIT(&usbInQueueConfig, WdfIoQueueDispatchManual);
-
-        status = WdfIoQueueCreate(hChild, &usbInQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xusb->PendingUsbInRequests);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
-            goto pdo_finished;
-        }
-
-#pragma endregion
-
-#pragma region Create and assign queue for user-land notification requests
-
-        WDF_IO_QUEUE_CONFIG_INIT(&notificationsQueueConfig, WdfIoQueueDispatchManual);
-
-        status = WdfIoQueueCreate(hChild, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xusb->PendingNotificationRequests);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
-            goto pdo_finished;
-        }
-
-#pragma endregion
+    
+        status = Xusb_AssignPdoContext(hChild, Description);
 
         break;
-    }
+
     case DualShock4Wired:
-    {
-        PDS4_DEVICE_DATA ds4 = Ds4GetData(hChild);
-
-        KdPrint(("Initializing DS4 context...\n"));
-
-        // I/O Queue for pending IRPs
-        WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig, notificationsQueueConfig;
-
-#pragma region Create and assign queue for incoming interrupt transfer
-
-        WDF_IO_QUEUE_CONFIG_INIT(&pendingUsbQueueConfig, WdfIoQueueDispatchManual);
-
-        status = WdfIoQueueCreate(hChild, &pendingUsbQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &ds4->PendingUsbInRequests);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
-            goto pdo_finished;
-        }
-
-#pragma endregion
-
-#pragma region Initialize periodic timer
-
-        WDF_TIMER_CONFIG timerConfig;
-        WDF_TIMER_CONFIG_INIT_PERIODIC(&timerConfig, Ds4_PendingUsbRequestsTimerFunc, DS4_QUEUE_FLUSH_PERIOD);
-
-        // Timer object attributes
-        WDF_OBJECT_ATTRIBUTES timerAttribs;
-        WDF_OBJECT_ATTRIBUTES_INIT(&timerAttribs);
-
-        // PDO is parent
-        timerAttribs.ParentObject = hChild;
-
-        // Create timer
-        status = WdfTimerCreate(&timerConfig, &timerAttribs, &ds4->PendingUsbInRequestsTimer);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfTimerCreate failed 0x%x\n", status));
-            goto pdo_finished;
-        }
-
-#pragma endregion
-
-#pragma region Create and assign queue for user-land notification requests
-
-        WDF_IO_QUEUE_CONFIG_INIT(&notificationsQueueConfig, WdfIoQueueDispatchManual);
-
-        status = WdfIoQueueCreate(hChild, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &ds4->PendingNotificationRequests);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
-            goto pdo_finished;
-        }
-
-#pragma endregion
-
-#pragma region Load/generate MAC address
-
-        // TODO: tidy up this region
-
-        WDFKEY keyParams, keyTargets, keyDS, keySerial;
-        UNICODE_STRING keyName, valueName;
-
-        status = WdfDriverOpenParametersRegistryKey(WdfGetDriver(), STANDARD_RIGHTS_ALL, WDF_NO_OBJECT_ATTRIBUTES, &keyParams);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfDriverOpenParametersRegistryKey failed 0x%x\n", status));
-            goto pdo_finished;
-        }
-
-        RtlUnicodeStringInit(&keyName, L"Targets");
-
-        status = WdfRegistryCreateKey(keyParams, &keyName,
-            KEY_ALL_ACCESS, REG_OPTION_NON_VOLATILE, NULL, WDF_NO_OBJECT_ATTRIBUTES, &keyTargets);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfRegistryCreateKey failed 0x%x\n", status));
-            goto pdo_finished;
-        }
-
-        RtlUnicodeStringInit(&keyName, L"DualShock");
-
-        status = WdfRegistryCreateKey(keyTargets, &keyName,
-            KEY_ALL_ACCESS, REG_OPTION_NON_VOLATILE, NULL, WDF_NO_OBJECT_ATTRIBUTES, &keyDS);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfRegistryCreateKey failed 0x%x\n", status));
-            goto pdo_finished;
-        }
-
-        DECLARE_UNICODE_STRING_SIZE(serialPath, 4);
-        RtlUnicodeStringPrintf(&serialPath, L"%04d", Description->SerialNo);
-
-        status = WdfRegistryCreateKey(keyDS, &serialPath,
-            KEY_ALL_ACCESS, REG_OPTION_NON_VOLATILE, NULL, WDF_NO_OBJECT_ATTRIBUTES, &keySerial);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfRegistryCreateKey failed 0x%x\n", status));
-            goto pdo_finished;
-        }
-
-        RtlUnicodeStringInit(&valueName, L"TargetMacAddress");
-
-        status = WdfRegistryQueryValue(keySerial, &valueName, sizeof(MAC_ADDRESS), &ds4->TargetMacAddress, NULL, NULL);
-
-        KdPrint(("MAC-Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
-            ds4->TargetMacAddress.Vendor0,
-            ds4->TargetMacAddress.Vendor1,
-            ds4->TargetMacAddress.Vendor2,
-            ds4->TargetMacAddress.Nic0,
-            ds4->TargetMacAddress.Nic1,
-            ds4->TargetMacAddress.Nic2));
-
-        if (status == STATUS_OBJECT_NAME_NOT_FOUND)
-        {
-            GenerateRandomMacAddress(&ds4->TargetMacAddress);
-
-            status = WdfRegistryAssignValue(keySerial, &valueName, REG_BINARY, sizeof(MAC_ADDRESS), (PVOID)&ds4->TargetMacAddress);
-            if (!NT_SUCCESS(status))
-            {
-                KdPrint(("WdfRegistryAssignValue failed 0x%x\n", status));
-                goto pdo_finished;
-            }
-        }
-        else if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfRegistryQueryValue failed 0x%x\n", status));
-            goto pdo_finished;
-        }
-
-        WdfRegistryClose(keySerial);
-        WdfRegistryClose(keyDS);
-        WdfRegistryClose(keyTargets);
-        WdfRegistryClose(keyParams);
-
-#pragma endregion
+    
+        status = Ds4_AssignPdoContext(hChild, Description);
 
         break;
-    }
+
     default:
         break;
     }
@@ -569,6 +397,12 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 
         if (!NT_SUCCESS(status))
             goto prepare_finished;
+
+        break;
+
+    case XboxOneWired:
+
+        status = STATUS_UNSUCCESSFUL;
 
         break;
 

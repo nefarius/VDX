@@ -53,7 +53,18 @@ int main()
         return 1;
     }
 
-    //goto skip;
+    //VIGEM_TARGET xbone;
+    //VIGEM_TARGET_INIT(&xbone);
+    //
+    //if (!VIGEM_SUCCESS(vigem_target_plugin(XboxOneWired, &xbone)))
+    //{
+    //    printf("Couldn't get target object\n");
+    //    getchar();
+    //    return 1;
+    //}
+    //
+    //printf("XBONE Success!");
+    //getchar();
 
     VIGEM_TARGET x360;
     VIGEM_TARGET_INIT(&x360);
@@ -71,8 +82,6 @@ int main()
 
     printf("X360 Success!");
     getchar();
-
-    skip:
 
     VIGEM_TARGET ds4;
     VIGEM_TARGET_INIT(&ds4);

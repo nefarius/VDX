@@ -172,3 +172,44 @@ NTSTATUS Xusb_AddQueryInterfaces(WDFDEVICE Device)
     return STATUS_SUCCESS;
 }
 
+NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION Description)
+{
+    NTSTATUS status;
+
+    KdPrint(("Initializing XUSB context...\n"));
+
+    PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
+
+    RtlZeroMemory(xusb, sizeof(XUSB_DEVICE_DATA));
+
+    // Is later overwritten by actual XInput slot
+    xusb->LedNumber = (UCHAR)Description->SerialNo;
+    // This value never changes
+    xusb->Report[1] = 0x14;
+
+    // I/O Queue for pending IRPs
+    WDF_IO_QUEUE_CONFIG usbInQueueConfig, notificationsQueueConfig;
+
+    // Create and assign queue for incoming interrupt transfer
+    WDF_IO_QUEUE_CONFIG_INIT(&usbInQueueConfig, WdfIoQueueDispatchManual);
+
+    status = WdfIoQueueCreate(Device, &usbInQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xusb->PendingUsbInRequests);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+        return status;
+    }
+
+    // Create and assign queue for user-land notification requests
+    WDF_IO_QUEUE_CONFIG_INIT(&notificationsQueueConfig, WdfIoQueueDispatchManual);
+
+    status = WdfIoQueueCreate(Device, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xusb->PendingNotificationRequests);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+        return status;
+    }
+
+    return STATUS_SUCCESS;
+}
+

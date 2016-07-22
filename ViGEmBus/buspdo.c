@@ -402,7 +402,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 
     case XboxOneWired:
 
-        status = STATUS_UNSUCCESSFUL;
+        status = Xusb_AddQueryInterfaces(Device);
 
         break;
 
@@ -413,11 +413,11 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 prepare_finished:
 
     // Notify creator that target was created successfully
-    if (!pdoData->Initialized)
-    {
-        WdfRequestComplete(pdoData->PlugInRequest, status);
-        pdoData->Initialized = TRUE;
-    }
+    //if (!pdoData->Initialized)
+    //{
+    //    WdfRequestComplete(pdoData->PlugInRequest, status);
+    //    pdoData->Initialized = TRUE;
+    //}
 
     return status;
 }

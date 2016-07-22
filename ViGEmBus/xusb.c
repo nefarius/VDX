@@ -53,3 +53,122 @@ NTSTATUS Xusb_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, P
     return STATUS_SUCCESS;
 }
 
+NTSTATUS Xusb_AddQueryInterfaces(WDFDEVICE Device)
+{
+    NTSTATUS status;
+    WDF_QUERY_INTERFACE_CONFIG ifaceCfg;
+
+    INTERFACE dummyIface;
+
+    dummyIface.Size = sizeof(INTERFACE);
+    dummyIface.Version = 1;
+    dummyIface.Context = (PVOID)Device;
+
+    dummyIface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
+    dummyIface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
+
+    /* XUSB.sys will query for the following three (unknown) interfaces
+    * BUT WONT USE IT so we just expose them to satisfy initialization. */
+
+    // Dummy 0
+
+    WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_0, NULL);
+
+    status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data1,
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data2,
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data3,
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[0],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[1],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[2],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[3],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[4],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[5],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[6],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[7],
+            status));
+
+        return status;
+    }
+
+    // Dummy 1
+
+    WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_1, NULL);
+
+    status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data1,
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data2,
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data3,
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[0],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[1],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[2],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[3],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[4],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[5],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[6],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[7],
+            status));
+
+        return status;
+    }
+
+    // Dummy 2
+
+    WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_2, NULL);
+
+    status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data1,
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data2,
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data3,
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[0],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[1],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[2],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[3],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[4],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[5],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[6],
+            GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[7],
+            status));
+
+        return status;
+    }
+
+    // Expose USB_BUS_INTERFACE_USBDI_GUID
+
+    // This interface actually IS used
+    USB_BUS_INTERFACE_USBDI_V1 xusbInterface;
+
+    xusbInterface.Size = sizeof(USB_BUS_INTERFACE_USBDI_V1);
+    xusbInterface.Version = USB_BUSIF_USBDI_VERSION_1;
+    xusbInterface.BusContext = (PVOID)Device;
+
+    xusbInterface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
+    xusbInterface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
+
+    xusbInterface.SubmitIsoOutUrb = UsbPdo_SubmitIsoOutUrb;
+    xusbInterface.GetUSBDIVersion = UsbPdo_GetUSBDIVersion;
+    xusbInterface.QueryBusTime = UsbPdo_QueryBusTime;
+    xusbInterface.QueryBusInformation = UsbPdo_QueryBusInformation;
+    xusbInterface.IsDeviceHighSpeed = UsbPdo_IsDeviceHighSpeed;
+
+    WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&xusbInterface, &USB_BUS_INTERFACE_USBDI_GUID, NULL);
+
+    status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("WdfDeviceAddQueryInterface failed status 0x%x\n", status));
+        return status;
+    }
+
+    return STATUS_SUCCESS;
+}
+

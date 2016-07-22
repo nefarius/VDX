@@ -540,7 +540,6 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 )
 {
     PPDO_DEVICE_DATA pdoData;
-    WDF_QUERY_INTERFACE_CONFIG ifaceCfg;
     NTSTATUS status = STATUS_UNSUCCESSFUL;
 
     PAGED_CODE();
@@ -556,173 +555,23 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
     {
         // Expose XUSB interfaces
     case Xbox360Wired:
-    {
-        INTERFACE dummyIface;
 
-        dummyIface.Size = sizeof(INTERFACE);
-        dummyIface.Version = 1;
-        dummyIface.Context = (PVOID)Device;
+        status = Xusb_AddQueryInterfaces(Device);
 
-        dummyIface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
-        dummyIface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
-
-        /* XUSB.sys will query for the following three (unknown) interfaces
-        * BUT WONT USE IT so we just expose them to satisfy initialization. */
-
-#pragma region Dummy 0
-
-        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_0, NULL);
-
-        status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
         if (!NT_SUCCESS(status))
-        {
-            KdPrint(("Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data1,
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data2,
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data3,
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[0],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[1],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[2],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[3],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[4],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[5],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[6],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data4[7],
-                status));
-
             goto prepare_finished;
-        }
-
-#pragma endregion
-
-#pragma region Dummy 1
-
-        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_1, NULL);
-
-        status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data1,
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data2,
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data3,
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[0],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[1],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[2],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[3],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[4],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[5],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[6],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data4[7],
-                status));
-
-            goto prepare_finished;
-        }
-
-#pragma endregion
-
-#pragma region Dummy 2
-
-        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&dummyIface, &GUID_DEVINTERFACE_XUSB_UNKNOWN_2, NULL);
-
-        status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data1,
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data2,
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data3,
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[0],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[1],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[2],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[3],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[4],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[5],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[6],
-                GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data4[7],
-                status));
-
-            goto prepare_finished;
-        }
-
-#pragma endregion
-
-#pragma region Expose USB_BUS_INTERFACE_USBDI_GUID
-
-        // This interface actually IS used
-        USB_BUS_INTERFACE_USBDI_V1 xusbInterface;
-
-        xusbInterface.Size = sizeof(USB_BUS_INTERFACE_USBDI_V1);
-        xusbInterface.Version = USB_BUSIF_USBDI_VERSION_1;
-        xusbInterface.BusContext = (PVOID)Device;
-
-        xusbInterface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
-        xusbInterface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
-
-        xusbInterface.SubmitIsoOutUrb = UsbPdo_SubmitIsoOutUrb;
-        xusbInterface.GetUSBDIVersion = UsbPdo_GetUSBDIVersion;
-        xusbInterface.QueryBusTime = UsbPdo_QueryBusTime;
-        xusbInterface.QueryBusInformation = UsbPdo_QueryBusInformation;
-        xusbInterface.IsDeviceHighSpeed = UsbPdo_IsDeviceHighSpeed;
-
-        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&xusbInterface, &USB_BUS_INTERFACE_USBDI_GUID, NULL);
-
-        status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfDeviceAddQueryInterface failed status 0x%x\n", status));
-            goto prepare_finished;
-        }
-
-#pragma endregion
 
         break;
-    }
+
     case DualShock4Wired:
-    {
-        INTERFACE devinterfaceHid;
 
-        devinterfaceHid.Size = sizeof(INTERFACE);
-        devinterfaceHid.Version = 1;
-        devinterfaceHid.Context = (PVOID)Device;
+        status = Ds4_AddQueryInterfaces(Device);
 
-        devinterfaceHid.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
-        devinterfaceHid.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
-
-        // Expose GUID_DEVINTERFACE_HID so HIDUSB can initialize
-        WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&devinterfaceHid, &GUID_DEVINTERFACE_HID, NULL);
-
-        status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
         if (!NT_SUCCESS(status))
-        {
-            KdPrint(("WdfDeviceAddQueryInterface failed status 0x%x\n", status));
             goto prepare_finished;
-        }
-
-        PDS4_DEVICE_DATA ds4Data = Ds4GetData(Device);
-
-        // Set default HID input report (everything zero`d)
-        UCHAR DefaultHidReport[DS4_HID_REPORT_SIZE] =
-        {
-            0x01, 0x82, 0x7F, 0x7E, 0x80, 0x08, 0x00, 0x58,
-            0x00, 0x00, 0xFD, 0x63, 0x06, 0x03, 0x00, 0xFE,
-            0xFF, 0xFC, 0xFF, 0x79, 0xFD, 0x1B, 0x14, 0xD1,
-            0xE9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1B, 0x00,
-            0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80,
-            0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00,
-            0x80, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00,
-            0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00
-        };
-
-        // Initialize HID reports to defaults
-        RtlCopyBytes(ds4Data->HidInputReport, DefaultHidReport, DS4_HID_REPORT_SIZE);
-        RtlZeroMemory(&ds4Data->OutputReport, sizeof(DS4_OUTPUT_REPORT));
-
-        // Start pending IRP queue flush timer
-        WdfTimerStart(ds4Data->PendingUsbInRequestsTimer, DS4_QUEUE_FLUSH_PERIOD);
 
         break;
-    }
+
     default:
         break;
     }

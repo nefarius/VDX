@@ -352,6 +352,7 @@ VOID GenerateRandomMacAddress(PMAC_ADDRESS Address);
 // XUSB-specific functions
 // 
 NTSTATUS Xusb_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
+NTSTATUS Xusb_AddQueryInterfaces(WDFDEVICE Device);
 
 //
 // XGIP-specific functions
@@ -362,4 +363,5 @@ NTSTATUS Xgip_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, P
 // DS4-specific functions
 // 
 NTSTATUS Ds4_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
+NTSTATUS Ds4_AddQueryInterfaces(WDFDEVICE Device);
 

@@ -61,5 +61,14 @@
     <ClCompile Include="util.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="xusb.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ds4hid.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xgip.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

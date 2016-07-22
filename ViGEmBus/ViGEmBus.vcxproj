@@ -375,8 +375,11 @@
   <ItemGroup>
     <ClCompile Include="busenum.c" />
     <ClCompile Include="buspdo.c" />
+    <ClCompile Include="ds4hid.c" />
     <ClCompile Include="usbpdo.c" />
     <ClCompile Include="util.c" />
+    <ClCompile Include="xgip.c" />
+    <ClCompile Include="xusb.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

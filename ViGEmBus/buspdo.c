@@ -132,123 +132,43 @@ NTSTATUS Bus_CreatePdo(
         // A Xbox 360 device was requested
         // 
     case Xbox360Wired:
-    {
-#pragma region Set device description
 
-        // prepare device description
-        status = RtlUnicodeStringInit(&deviceDescription, L"Virtual Xbox 360 Controller");
+        status = Xusb_PreparePdo(DeviceInit, &deviceId, &deviceDescription);
+
         if (!NT_SUCCESS(status))
             goto pdo_finished;
-
-#pragma endregion
-
-#pragma region Set hardware IDs
-
-        RtlUnicodeStringPrintf(&buffer, L"USB\\VID_045E&PID_028E&REV_0114");
-
-        RtlUnicodeStringCopy(&deviceId, &buffer);
-
-        status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
-        if (!NT_SUCCESS(status))
-            goto pdo_finished;
-
-        RtlUnicodeStringPrintf(&buffer, L"USB\\VID_045E&PID_028E");
-
-        status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
-        if (!NT_SUCCESS(status))
-            goto pdo_finished;
-
-#pragma endregion
-
-#pragma region Set compatible IDs
-
-        RtlUnicodeStringPrintf(&buffer, L"USB\\MS_COMP_XUSB10");
-
-        status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
-        if (!NT_SUCCESS(status))
-            goto pdo_finished;
-
-        RtlUnicodeStringPrintf(&buffer, L"USB\\Class_FF&SubClass_5D&Prot_01");
-
-        status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
-        if (!NT_SUCCESS(status))
-            goto pdo_finished;
-
-        RtlUnicodeStringPrintf(&buffer, L"USB\\Class_FF&SubClass_5D");
-
-        status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
-        if (!NT_SUCCESS(status))
-            goto pdo_finished;
-
-        RtlUnicodeStringPrintf(&buffer, L"USB\\Class_FF");
-
-        status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
-        if (!NT_SUCCESS(status))
-            goto pdo_finished;
-
-#pragma endregion
 
         break;
-    }
-    //
-    // A Sony DualShock 4 device was requested
-    // 
+
+        //
+        // A Sony DualShock 4 device was requested
+        // 
     case DualShock4Wired:
-    {
-#pragma region Set device description
 
-        // prepare device description
-        status = RtlUnicodeStringInit(&deviceDescription, L"Virtual DualShock 4 Controller");
+        status = Ds4_PreparePdo(DeviceInit, &deviceId, &deviceDescription);
+
         if (!NT_SUCCESS(status))
             goto pdo_finished;
-
-#pragma endregion
-
-#pragma region Set hardware IDs
-
-        RtlUnicodeStringPrintf(&buffer, L"USB\\VID_054C&PID_05C4&REV_0100");
-
-        status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
-        if (!NT_SUCCESS(status))
-            goto pdo_finished;
-
-        RtlUnicodeStringPrintf(&buffer, L"USB\\VID_054C&PID_05C4");
-        RtlUnicodeStringCopy(&deviceId, &buffer);
-
-        status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
-        if (!NT_SUCCESS(status))
-            goto pdo_finished;
-
-#pragma endregion
-
-#pragma region Set compatible IDs
-
-        RtlUnicodeStringPrintf(&buffer, L"USB\\Class_03&SubClass_00&Prot_00");
-
-        status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
-        if (!NT_SUCCESS(status))
-            goto pdo_finished;
-
-        RtlUnicodeStringPrintf(&buffer, L"USB\\Class_03&SubClass_00");
-
-        status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
-        if (!NT_SUCCESS(status))
-            goto pdo_finished;
-
-        RtlUnicodeStringPrintf(&buffer, L"USB\\Class_03");
-
-        status = WdfPdoInitAddCompatibleID(DeviceInit, &buffer);
-        if (!NT_SUCCESS(status))
-            goto pdo_finished;
-
-#pragma endregion
 
         break;
-    }
+
+        //
+        // A Xbox One device was requested
+        // 
+    case XboxOneWired:
+
+        status = Xgip_PreparePdo(DeviceInit, &deviceId, &deviceDescription);
+
+        if (!NT_SUCCESS(status))
+            goto pdo_finished;
+
+        break;
+
     default:
 
         KdPrint(("Unsupported target type\n"));
-        return STATUS_INVALID_PARAMETER;
+        status = STATUS_INVALID_PARAMETER;
+        goto pdo_finished;
 
         break;
     }
@@ -603,7 +523,7 @@ NTSTATUS Bus_CreatePdo(
 
                 if (!NT_SUCCESS(status))
                 {
-                    // PDO creation failed, somplete request with error code
+                    // PDO creation failed, complete request with error code
                     WdfRequestComplete(Description->PlugInRequest, status);
                 }
 

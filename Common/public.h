@@ -71,6 +71,10 @@ typedef enum _VIGEM_TARGET_TYPE
     // Microsoft Xbox 360 Controller (wired)
     // 
     Xbox360Wired,
+    // 
+    // Microsoft Xbox One Controller (wired)
+    // 
+    XboxOneWired,
     //
     // Sony DualShock 4 (wired)
     // 

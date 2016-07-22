@@ -348,3 +348,18 @@ NTSTATUS UsbPdo_GetDescriptorFromInterface(PURB urb, PPDO_DEVICE_DATA pCommon);
 VOID ReverseByteArray(PUCHAR Array, INT Length);
 VOID GenerateRandomMacAddress(PMAC_ADDRESS Address);
 
+//
+// XUSB-specific functions
+// 
+NTSTATUS Xusb_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
+
+//
+// XGIP-specific functions
+// 
+NTSTATUS Xgip_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
+
+//
+// DS4-specific functions
+// 
+NTSTATUS Ds4_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
+

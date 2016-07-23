@@ -105,6 +105,8 @@ NTSTATUS Bus_CreatePdo(
     // Bus is power policy owner
     WdfDeviceInitSetPowerPolicyOwnership(DeviceInit, FALSE);
 
+    WdfDeviceInitAssignWdmIrpPreprocessCallback(DeviceInit, Pdo_EvtDeviceWdmIrpPreprocess, IRP_MJ_PNP, NULL, 0);
+
 #pragma region Enter RAW device mode
 
     status = WdfPdoInitAssignRawDevice(DeviceInit, &GUID_DEVCLASS_VIGEM_RAWPDO);
@@ -680,5 +682,43 @@ VOID Ds4_PendingUsbRequestsTimerFunc(
         // Complete pending request
         WdfRequestComplete(usbRequest, status);
     }
+}
+
+NTSTATUS Pdo_EvtDeviceWdmIrpPreprocess(
+    _In_    WDFDEVICE Device,
+    _Inout_ PIRP      Irp
+)
+{
+    PIO_STACK_LOCATION irpStack = IoGetCurrentIrpStackLocation(Irp);
+    GUID * interfaceType;
+
+    switch (irpStack->MinorFunction)
+    {
+    case IRP_MN_QUERY_INTERFACE:
+    
+        KdPrint(("Pdo_EvtDeviceWdmIrpPreprocess: IRP_MN_QUERY_INTERFACE\n"));
+
+        interfaceType = (GUID *)irpStack->Parameters.QueryInterface.InterfaceType;
+
+        KdPrint(("Got queried for GUID: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n",
+            interfaceType->Data1,
+            interfaceType->Data2,
+            interfaceType->Data3,
+            interfaceType->Data4[0],
+            interfaceType->Data4[1],
+            interfaceType->Data4[2],
+            interfaceType->Data4[3],
+            interfaceType->Data4[4],
+            interfaceType->Data4[5],
+            interfaceType->Data4[6],
+            interfaceType->Data4[7]));
+    
+        break;
+    default:
+        break;
+    }
+
+    IoSkipCurrentIrpStackLocation(Irp);
+    return WdfDeviceWdmDispatchPreprocessedIrp(Device, Irp);
 }
 

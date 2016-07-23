@@ -481,7 +481,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
         case URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER:
 
-            // KdPrint((">> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
+            KdPrint((">> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
 
             status = UsbPdo_BulkOrInterruptTransfer(urb, hDevice, Request);
 
@@ -616,6 +616,8 @@ VOID Pdo_EvtIoInternalDeviceControl(
         break;
 
     case IOCTL_INTERNAL_USB_SUBMIT_IDLE_NOTIFICATION:
+
+        KdPrint((">> IOCTL_INTERNAL_USB_SUBMIT_IDLE_NOTIFICATION\n"));
 
         // TODO: implement
         // This happens if the I/O latency is too high so HIDUSB aborts communication.

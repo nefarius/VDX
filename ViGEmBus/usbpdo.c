@@ -163,11 +163,11 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
         pDescriptor->bcdUSB = 0x0200; // USB v2.0
         pDescriptor->bDeviceClass = 0xFF;
         pDescriptor->bDeviceSubClass = 0x47;
-        pDescriptor->bDeviceProtocol = 0xD0;
-        pDescriptor->bMaxPacketSize0 = 0x40;
-        pDescriptor->idVendor = 0x0E6F; // Logic3
-        pDescriptor->idProduct = 0x0139; // Xbox One Wired Controller
-        pDescriptor->bcdDevice = 0x0650;
+        pDescriptor->bDeviceProtocol = 0xFF;
+        pDescriptor->bMaxPacketSize0 = 0xFF;
+        pDescriptor->idVendor = 0x0F0D; // Hori Co., Ltd
+        pDescriptor->idProduct = 0x0083; // Xbox One Wired Controller
+        pDescriptor->bcdDevice = 0x0101;
         pDescriptor->iManufacturer = 0x01;
         pDescriptor->iProduct = 0x02;
         pDescriptor->iSerialNumber = 0x03;
@@ -370,74 +370,108 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommo
 
     UCHAR XgipDescriptorData[XGIP_DESCRIPTOR_SIZE] =
     {
-        0x09,        //   bLength
-        0x02,        //   bDescriptorType (Configuration)
-        0x40, 0x00,  //   wTotalLength 64
-        0x02,        //   bNumInterfaces 2
-        0x01,        //   bConfigurationValue
-        0x00,        //   iConfiguration (String Index)
-        0xA0,        //   bmAttributes Remote Wakeup
-        0xFA,        //   bMaxPower 500mA
+        0x09,        // bLength
+        0x02,        // bDescriptorType (Configuration)
+        0x60, 0x00,  // wTotalLength 96
+        0x03,        // bNumInterfaces 3
+        0x01,        // bConfigurationValue
+        0x00,        // iConfiguration (String Index)
+        0xA0,        // bmAttributes Remote Wakeup
+        0xFA,        // bMaxPower 500mA
 
-        0x09,        //   bLength
-        0x04,        //   bDescriptorType (Interface)
-        0x00,        //   bInterfaceNumber 0
-        0x00,        //   bAlternateSetting
-        0x02,        //   bNumEndpoints 2
-        0xFF,        //   bInterfaceClass
-        0x47,        //   bInterfaceSubClass
-        0xD0,        //   bInterfaceProtocol
-        0x00,        //   iInterface (String Index)
+        0x09,        // bLength
+        0x04,        // bDescriptorType (Interface)
+        0x00,        // bInterfaceNumber 0
+        0x00,        // bAlternateSetting
+        0x02,        // bNumEndpoints 2
+        0xFF,        // bInterfaceClass
+        0x47,        // bInterfaceSubClass
+        0xD0,        // bInterfaceProtocol
+        0x00,        // iInterface (String Index)
 
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x81,        //   bEndpointAddress (IN/D2H)
-        0x03,        //   bmAttributes (Interrupt)
-        0x40, 0x00,  //   wMaxPacketSize 64
-        0x04,        //   bInterval 4 (unit depends on device speed)
+        0x07,        // bLength
+        0x05,        // bDescriptorType (Endpoint)
+        0x01,        // bEndpointAddress (OUT/H2D)
+        0x03,        // bmAttributes (Interrupt)
+        0x40, 0x00,  // wMaxPacketSize 64
+        0x04,        // bInterval 4 (unit depends on device speed)
 
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x01,        //   bEndpointAddress (OUT/H2D)
-        0x03,        //   bmAttributes (Interrupt)
-        0x40, 0x00,  //   wMaxPacketSize 64
-        0x04,        //   bInterval 4 (unit depends on device speed)
+        0x07,        // bLength
+        0x05,        // bDescriptorType (Endpoint)
+        0x81,        // bEndpointAddress (IN/D2H)
+        0x03,        // bmAttributes (Interrupt)
+        0x40, 0x00,  // wMaxPacketSize 64
+        0x04,        // bInterval 4 (unit depends on device speed)
 
-        0x09,        //   bLength
-        0x04,        //   bDescriptorType (Interface)
-        0x01,        //   bInterfaceNumber 1
-        0x00,        //   bAlternateSetting
-        0x00,        //   bNumEndpoints 0
-        0xFF,        //   bInterfaceClass
-        0x47,        //   bInterfaceSubClass
-        0xD0,        //   bInterfaceProtocol
-        0x00,        //   iInterface (String Index)
+        0x09,        // bLength
+        0x04,        // bDescriptorType (Interface)
+        0x01,        // bInterfaceNumber 1
+        0x00,        // bAlternateSetting
+        0x00,        // bNumEndpoints 0
+        0xFF,        // bInterfaceClass
+        0x47,        // bInterfaceSubClass
+        0xD0,        // bInterfaceProtocol
+        0x00,        // iInterface (String Index)
 
-        0x09,        //   bLength
-        0x04,        //   bDescriptorType (Interface)
-        0x01,        //   bInterfaceNumber 1
-        0x01,        //   bAlternateSetting
-        0x02,        //   bNumEndpoints 2
-        0xFF,        //   bInterfaceClass
-        0x47,        //   bInterfaceSubClass
-        0xD0,        //   bInterfaceProtocol
-        0x00,        //   iInterface (String Index)
+        0x09,        // bLength
+        0x04,        // bDescriptorType (Interface)
+        0x01,        // bInterfaceNumber 1
+        0x01,        // bAlternateSetting
+        0x02,        // bNumEndpoints 2
+        0xFF,        // bInterfaceClass
+        0x47,        // bInterfaceSubClass
+        0xD0,        // bInterfaceProtocol
+        0x00,        // iInterface (String Index)
 
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x02,        //   bEndpointAddress (OUT/H2D)
-        0x01,        //   bmAttributes (Isochronous, No Sync, Data EP)
-        0xE0, 0x00,  //   wMaxPacketSize 224
-        0x01,        //   bInterval 1 (unit depends on device speed)
+        0x07,        // bLength
+        0x05,        // bDescriptorType (Endpoint)
+        0x08,        // bEndpointAddress (OUT/H2D)
+        0x01,        // bmAttributes (Isochronous, No Sync, Data EP)
+        0xE4, 0x00,  // wMaxPacketSize 228
+        0x01,        // bInterval 1 (unit depends on device speed)
 
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x83,        //   bEndpointAddress (IN/D2H)
-        0x01,        //   bmAttributes (Isochronous, No Sync, Data EP)
-        0x80, 0x00,  //   wMaxPacketSize 128
-        0x01,        //   bInterval 1 (unit depends on device speed)
+        0x07,        // bLength
+        0x05,        // bDescriptorType (Endpoint)
+        0x87,        // bEndpointAddress (IN/D2H)
+        0x01,        // bmAttributes (Isochronous, No Sync, Data EP)
+        0xE4, 0x00,  // wMaxPacketSize 228
+        0x01,        // bInterval 1 (unit depends on device speed)
 
-                     // 64 bytes
+        0x09,        // bLength
+        0x04,        // bDescriptorType (Interface)
+        0x02,        // bInterfaceNumber 2
+        0x00,        // bAlternateSetting
+        0x00,        // bNumEndpoints 0
+        0xFF,        // bInterfaceClass
+        0x47,        // bInterfaceSubClass
+        0xD0,        // bInterfaceProtocol
+        0x00,        // iInterface (String Index)
+
+        0x09,        // bLength
+        0x04,        // bDescriptorType (Interface)
+        0x02,        // bInterfaceNumber 2
+        0x01,        // bAlternateSetting
+        0x02,        // bNumEndpoints 2
+        0xFF,        // bInterfaceClass
+        0x47,        // bInterfaceSubClass
+        0xD0,        // bInterfaceProtocol
+        0x00,        // iInterface (String Index)
+
+        0x07,        // bLength
+        0x05,        // bDescriptorType (Endpoint)
+        0x03,        // bEndpointAddress (OUT/H2D)
+        0x02,        // bmAttributes (Bulk)
+        0x40, 0x00,  // wMaxPacketSize 64
+        0x00,        // bInterval 0 (unit depends on device speed)
+
+        0x07,        // bLength
+        0x05,        // bDescriptorType (Endpoint)
+        0x83,        // bEndpointAddress (IN/D2H)
+        0x02,        // bmAttributes (Bulk)
+        0x40, 0x00,  // wMaxPacketSize 64
+        0x00,        // bInterval 0 (unit depends on device speed)
+
+                     // 96 bytes
 
                      // best guess: USB Standard Descriptor
     };
@@ -824,7 +858,7 @@ NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon)
         pInfo->Pipes[0].MaximumPacketSize = 0x40;
         pInfo->Pipes[0].EndpointAddress = 0x81;
         pInfo->Pipes[0].Interval = 0x04;
-        pInfo->Pipes[0].PipeType = 0x03;
+        pInfo->Pipes[0].PipeType = UsbdPipeTypeInterrupt;
         pInfo->Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0081;
         pInfo->Pipes[0].PipeFlags = 0x00;
 
@@ -832,7 +866,7 @@ NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon)
         pInfo->Pipes[1].MaximumPacketSize = 0x40;
         pInfo->Pipes[1].EndpointAddress = 0x01;
         pInfo->Pipes[1].Interval = 0x08;
-        pInfo->Pipes[1].PipeType = 0x03;
+        pInfo->Pipes[1].PipeType = UsbdPipeTypeInterrupt;
         pInfo->Pipes[1].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0001;
         pInfo->Pipes[1].PipeFlags = 0x00;
 
@@ -850,8 +884,6 @@ NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon)
 
         pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
 
-        if (TRUE) goto skip_me;
-
         pInfo = (PUSBD_INTERFACE_INFORMATION)((PCHAR)pInfo + pInfo->Length);
 
         KdPrint((">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
@@ -860,32 +892,11 @@ NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon)
             (int)pInfo->AlternateSetting,
             pInfo->NumberOfPipes));
 
-        
-
         pInfo->Class = 0xFF;
         pInfo->SubClass = 0x47;
         pInfo->Protocol = 0xD0;
 
         pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
-
-        pInfo->Pipes[0].MaximumTransferSize = 0x00400000;
-        pInfo->Pipes[0].MaximumPacketSize = 0xE0;
-        pInfo->Pipes[0].EndpointAddress = 0x02;
-        pInfo->Pipes[0].Interval = 0x01;
-        pInfo->Pipes[0].PipeType = 0x03;
-        pInfo->Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0002;
-        pInfo->Pipes[0].PipeFlags = 0x00;
-
-        pInfo->Pipes[1].MaximumTransferSize = 0x00400000;
-        pInfo->Pipes[1].MaximumPacketSize = 0x80;
-        pInfo->Pipes[1].EndpointAddress = 0x83;
-        pInfo->Pipes[1].Interval = 0x01;
-        pInfo->Pipes[1].PipeType = 0x03;
-        pInfo->Pipes[1].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0083;
-        pInfo->Pipes[1].PipeFlags = 0x00;
-
-    skip_me:
-        return STATUS_UNSUCCESSFUL;
 
         break;
     }
@@ -1028,7 +1039,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         // Data coming FROM us TO higher driver
         if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
         {
-            // KdPrint((">> >> >> Incoming request, queuing...\n"));
+            KdPrint((">> >> >> Incoming request, queuing...\n"));
 
             /* This request is sent periodically and relies on data the "feeder"
             * has to supply, so we queue this request and return with STATUS_PENDING.
@@ -1039,10 +1050,10 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         }
 
         // Data coming FROM the higher driver TO us
-        // KdPrint((">> >> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER: Handle %p, Flags %X, Length %d\n",
-        //     pTransfer->PipeHandle,
-        //     pTransfer->TransferFlags,
-        //     pTransfer->TransferBufferLength));
+        KdPrint((">> >> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER: Handle %p, Flags %X, Length %d\n",
+            pTransfer->PipeHandle,
+            pTransfer->TransferFlags,
+            pTransfer->TransferBufferLength));
 
         if (pTransfer->TransferBufferLength == XUSB_LEDSET_SIZE) // Led
         {

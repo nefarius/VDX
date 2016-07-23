@@ -402,7 +402,11 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 
     case XboxOneWired:
 
-        status = Xusb_AddQueryInterfaces(Device);
+        //status = Xusb_AddQueryInterfaces(Device);
+        //
+        //if (!NT_SUCCESS(status))
+        //    goto prepare_finished;
+        status = STATUS_SUCCESS;
 
         break;
 

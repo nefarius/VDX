@@ -477,7 +477,7 @@ NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE Ta
 
     KdPrint(("Bus_PlugInDevice exiting with 0x%x\n", status));
 
-    // Request gets completet upon PDO finished creation
+    // Request gets completed upon PDO finished creation
     return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
 }
 

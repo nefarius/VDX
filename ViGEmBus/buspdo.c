@@ -465,7 +465,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
     {
     case IOCTL_INTERNAL_USB_SUBMIT_URB:
 
-        // KdPrint((">> IOCTL_INTERNAL_USB_SUBMIT_URB\n"));
+        KdPrint((">> IOCTL_INTERNAL_USB_SUBMIT_URB\n"));
 
         urb = (PURB)URB_FROM_IRP(irp);
 
@@ -476,6 +476,14 @@ VOID Pdo_EvtIoInternalDeviceControl(
             KdPrint((">> >> URB_FUNCTION_CONTROL_TRANSFER\n"));
 
             // Control transfer can safely be ignored
+            status = STATUS_UNSUCCESSFUL;
+
+            break;
+
+        case URB_FUNCTION_CONTROL_TRANSFER_EX:
+
+            KdPrint((">> >> URB_FUNCTION_CONTROL_TRANSFER_EX\n"));
+
             status = STATUS_UNSUCCESSFUL;
 
             break;

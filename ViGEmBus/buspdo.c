@@ -105,7 +105,7 @@ NTSTATUS Bus_CreatePdo(
     // Bus is power policy owner
     WdfDeviceInitSetPowerPolicyOwnership(DeviceInit, FALSE);
 
-    WdfDeviceInitAssignWdmIrpPreprocessCallback(DeviceInit, Pdo_EvtDeviceWdmIrpPreprocess, IRP_MJ_PNP, NULL, 0);
+    //WdfDeviceInitAssignWdmIrpPreprocessCallback(DeviceInit, Pdo_EvtDeviceWdmIrpPreprocess, IRP_MJ_PNP, NULL, 0);
 
 #pragma region Enter RAW device mode
 
@@ -404,11 +404,10 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 
     case XboxOneWired:
 
-        //status = Xusb_AddQueryInterfaces(Device);
-        //
-        //if (!NT_SUCCESS(status))
-        //    goto prepare_finished;
-        status = STATUS_SUCCESS;
+        status = Xgip_AddQueryInterfaces(Device);
+
+        if (!NT_SUCCESS(status))
+            goto prepare_finished;
 
         break;
 

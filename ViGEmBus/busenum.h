@@ -38,6 +38,7 @@ SOFTWARE.
 // For children emulating XUSB devices, the following dummy interfaces 
 // have to be exposed by the PDO or else the child devices won't start
 // 
+
 // {70211B0E-0AFB-47DB-AFC1-410BF842497A}
 DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_0,
     0x70211B0E, 0x0AFB, 0x47DB, 0xAF, 0xC1, 0x41, 0x0B, 0xF8, 0x42, 0x49, 0x7A);
@@ -50,6 +51,11 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_1,
 DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
     0x2AEB0243, 0x6A6E, 0x486B, 0x82, 0xFC, 0xD8, 0x15, 0xF6, 0xB9, 0x70, 0x06);
 
+
+// 
+// For children emulating XGIP devices, the following dummy interfaces 
+// have to be exposed by the PDO or else the child devices won't start
+// 
 
 // {70211B0E-0AFB-47DB-AFC1-410BF842497A}
 DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_0,

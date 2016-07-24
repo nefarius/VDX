@@ -258,7 +258,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_PlugInDevice(hDevice, plugIn->SerialNo, plugIn->TargetType, Request);
+            status = Bus_PlugInDevice(hDevice, plugIn->SerialNo, plugIn->TargetType);
         }
 
         break;
@@ -446,7 +446,7 @@ VOID Bus_EvtIoDefault(
 //
 // Simulates a device plug-in event.
 // 
-NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE TargetType, WDFREQUEST Request)
+NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE TargetType)
 {
     PDO_IDENTIFICATION_DESCRIPTION description;
     NTSTATUS status;
@@ -462,7 +462,6 @@ NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE Ta
     description.SerialNo = SerialNo;
     description.TargetType = TargetType;
     description.OwnerProcessId = CURRENT_PROCESS_ID();
-    description.PlugInRequest = Request;
 
     status = WdfChildListAddOrUpdateChildDescriptionAsPresent(WdfFdoGetDefaultChildList(Device), &description.Header, NULL);
 
@@ -477,8 +476,7 @@ NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE Ta
 
     KdPrint(("Bus_PlugInDevice exiting with 0x%x\n", status));
 
-    // Request gets completed upon PDO finished creation
-    return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
+    return status;
 }
 
 //

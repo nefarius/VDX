@@ -78,7 +78,7 @@ NTSTATUS Xusb_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, P
     return STATUS_SUCCESS;
 }
 
-NTSTATUS Xusb_AddQueryInterfaces(WDFDEVICE Device)
+NTSTATUS Xusb_PrepareHardware(WDFDEVICE Device)
 {
     NTSTATUS status;
     WDF_QUERY_INTERFACE_CONFIG ifaceCfg;

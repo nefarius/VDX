@@ -78,7 +78,7 @@ NTSTATUS Xgip_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, P
     return STATUS_SUCCESS;
 }
 
-NTSTATUS Xgip_AddQueryInterfaces(WDFDEVICE Device)
+NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device)
 {
     NTSTATUS status;
     WDF_QUERY_INTERFACE_CONFIG ifaceCfg;
@@ -242,6 +242,110 @@ NTSTATUS Xgip_AddQueryInterfaces(WDFDEVICE Device)
         return status;
     }
 
+    // Start pending IRP queue flush timer
+    WdfTimerStart(XgipGetData(Device)->PendingUsbInRequestsTimer, DS4_QUEUE_FLUSH_PERIOD);
+
     return STATUS_SUCCESS;
+}
+
+NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device)
+{
+    NTSTATUS status;
+
+    PXGIP_DEVICE_DATA xgip = XgipGetData(Device);
+
+    KdPrint(("Initializing XGIP context...\n"));
+
+    // I/O Queue for pending IRPs
+    WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig, notificationsQueueConfig;
+
+    // Create and assign queue for incoming interrupt transfer
+    WDF_IO_QUEUE_CONFIG_INIT(&pendingUsbQueueConfig, WdfIoQueueDispatchManual);
+
+    status = WdfIoQueueCreate(Device, &pendingUsbQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xgip->PendingUsbInRequests);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+        return status;
+    }
+
+    // Initialize periodic timer
+    WDF_TIMER_CONFIG timerConfig;
+    WDF_TIMER_CONFIG_INIT_PERIODIC(&timerConfig, Xgip_PendingUsbRequestsTimerFunc, DS4_QUEUE_FLUSH_PERIOD);
+
+    // Timer object attributes
+    WDF_OBJECT_ATTRIBUTES timerAttribs;
+    WDF_OBJECT_ATTRIBUTES_INIT(&timerAttribs);
+
+    // PDO is parent
+    timerAttribs.ParentObject = Device;
+
+    // Create timer
+    status = WdfTimerCreate(&timerConfig, &timerAttribs, &xgip->PendingUsbInRequestsTimer);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("WdfTimerCreate failed 0x%x\n", status));
+        return status;
+    }
+
+    // Create and assign queue for user-land notification requests
+    WDF_IO_QUEUE_CONFIG_INIT(&notificationsQueueConfig, WdfIoQueueDispatchManual);
+
+    status = WdfIoQueueCreate(Device, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xgip->PendingNotificationRequests);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+        return status;
+    }
+
+    return STATUS_SUCCESS;
+}
+
+VOID Xgip_PendingUsbRequestsTimerFunc(
+    _In_ WDFTIMER Timer
+)
+{
+    NTSTATUS status;
+    WDFREQUEST usbRequest;
+    WDFDEVICE hChild;
+    PXGIP_DEVICE_DATA xgipData;
+    PIRP pendingIrp;
+    PIO_STACK_LOCATION irpStack;
+
+    KdPrint(("Xgip_PendingUsbRequestsTimerFunc: Timer elapsed\n"));
+
+    hChild = WdfTimerGetParentObject(Timer);
+    xgipData = XgipGetData(hChild);
+
+    WdfObjectAcquireLock(xgipData->PendingUsbInRequests);
+
+    // Get pending USB request
+    status = WdfIoQueueRetrieveNextRequest(xgipData->PendingUsbInRequests, &usbRequest);
+
+    if (NT_SUCCESS(status))
+    {
+        // KdPrint(("Ds4_PendingUsbRequestsTimerFunc: pending IRP found\n"));
+
+        // Get pending IRP
+        pendingIrp = WdfRequestWdmGetIrp(usbRequest);
+        irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
+
+        // Get USB request block
+        PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
+
+        // Get transfer buffer
+        PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
+        UNREFERENCED_PARAMETER(Buffer);
+        // Set buffer length to report size
+        //urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_HID_REPORT_SIZE;
+
+        // Copy cached report to transfer buffer 
+        //RtlCopyBytes(Buffer, xgipData->HidInputReport, DS4_HID_REPORT_SIZE);
+
+        // Complete pending request
+        WdfRequestComplete(usbRequest, status);
+    }
+
+    WdfObjectReleaseLock(xgipData->PendingUsbInRequests);
 }
 

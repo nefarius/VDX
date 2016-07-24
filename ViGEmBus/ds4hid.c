@@ -73,7 +73,7 @@ NTSTATUS Ds4_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PU
     return STATUS_SUCCESS;
 }
 
-NTSTATUS Ds4_AddQueryInterfaces(WDFDEVICE Device)
+NTSTATUS Ds4_PrepareHardware(WDFDEVICE Device)
 {
     NTSTATUS status;
     WDF_QUERY_INTERFACE_CONFIG ifaceCfg;
@@ -251,5 +251,51 @@ NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION 
     WdfRegistryClose(keyParams);
 
     return STATUS_SUCCESS;
+}
+
+//
+// Completes pending I/O requests if feeder is too slow.
+// 
+VOID Ds4_PendingUsbRequestsTimerFunc(
+    _In_ WDFTIMER Timer
+)
+{
+    NTSTATUS status;
+    WDFREQUEST usbRequest;
+    WDFDEVICE hChild;
+    PDS4_DEVICE_DATA ds4Data;
+    PIRP pendingIrp;
+    PIO_STACK_LOCATION irpStack;
+
+    // KdPrint(("Ds4_PendingUsbRequestsTimerFunc: Timer elapsed\n"));
+
+    hChild = WdfTimerGetParentObject(Timer);
+    ds4Data = Ds4GetData(hChild);
+
+    // Get pending USB request
+    status = WdfIoQueueRetrieveNextRequest(ds4Data->PendingUsbInRequests, &usbRequest);
+
+    if (NT_SUCCESS(status))
+    {
+        // KdPrint(("Ds4_PendingUsbRequestsTimerFunc: pending IRP found\n"));
+
+        // Get pending IRP
+        pendingIrp = WdfRequestWdmGetIrp(usbRequest);
+        irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
+
+        // Get USB request block
+        PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
+
+        // Get transfer buffer
+        PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
+        // Set buffer length to report size
+        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_HID_REPORT_SIZE;
+
+        // Copy cached report to transfer buffer 
+        RtlCopyBytes(Buffer, ds4Data->HidInputReport, DS4_HID_REPORT_SIZE);
+
+        // Complete pending request
+        WdfRequestComplete(usbRequest, status);
+    }
 }
 

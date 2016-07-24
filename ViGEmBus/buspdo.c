@@ -252,6 +252,20 @@ NTSTATUS Bus_CreatePdo(
 
         break;
     }
+    case XboxOneWired:
+    {
+        PXGIP_DEVICE_DATA xgipData = NULL;
+        WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&pdoAttributes, XGIP_DEVICE_DATA);
+
+        status = WdfObjectAllocateContext(hChild, &pdoAttributes, (PVOID)&xgipData);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfObjectAllocateContext failed status 0x%x\n", status));
+            return status;
+        }
+
+        break;
+    }
     default:
         break;
     }
@@ -289,6 +303,12 @@ NTSTATUS Bus_CreatePdo(
     case DualShock4Wired:
 
         status = Ds4_AssignPdoContext(hChild, Description);
+
+        break;
+
+    case XboxOneWired:
+
+        status = Xgip_AssignPdoContext(hChild);
 
         break;
 
@@ -376,7 +396,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
         // Expose XUSB interfaces
     case Xbox360Wired:
 
-        status = Xusb_AddQueryInterfaces(Device);
+        status = Xusb_PrepareHardware(Device);
 
         if (!NT_SUCCESS(status))
             return status;
@@ -385,7 +405,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 
     case DualShock4Wired:
 
-        status = Ds4_AddQueryInterfaces(Device);
+        status = Ds4_PrepareHardware(Device);
 
         if (!NT_SUCCESS(status))
             return status;
@@ -394,7 +414,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
 
     case XboxOneWired:
 
-        status = Xgip_AddQueryInterfaces(Device);
+        status = Xgip_PrepareHardware(Device);
 
         if (!NT_SUCCESS(status))
             return status;
@@ -623,52 +643,6 @@ VOID Pdo_EvtIoInternalDeviceControl(
     if (status != STATUS_PENDING)
     {
         WdfRequestComplete(Request, status);
-    }
-}
-
-//
-// Completes pending I/O requests if feeder is too slow.
-// 
-VOID Ds4_PendingUsbRequestsTimerFunc(
-    _In_ WDFTIMER Timer
-)
-{
-    NTSTATUS status;
-    WDFREQUEST usbRequest;
-    WDFDEVICE hChild;
-    PDS4_DEVICE_DATA ds4Data;
-    PIRP pendingIrp;
-    PIO_STACK_LOCATION irpStack;
-
-    // KdPrint(("Ds4_PendingUsbRequestsTimerFunc: Timer elapsed\n"));
-
-    hChild = WdfTimerGetParentObject(Timer);
-    ds4Data = Ds4GetData(hChild);
-
-    // Get pending USB request
-    status = WdfIoQueueRetrieveNextRequest(ds4Data->PendingUsbInRequests, &usbRequest);
-
-    if (NT_SUCCESS(status))
-    {
-        // KdPrint(("Ds4_PendingUsbRequestsTimerFunc: pending IRP found\n"));
-
-        // Get pending IRP
-        pendingIrp = WdfRequestWdmGetIrp(usbRequest);
-        irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
-
-        // Get USB request block
-        PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
-
-        // Get transfer buffer
-        PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
-        // Set buffer length to report size
-        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_HID_REPORT_SIZE;
-
-        // Copy cached report to transfer buffer 
-        RtlCopyBytes(Buffer, ds4Data->HidInputReport, DS4_HID_REPORT_SIZE);
-
-        // Complete pending request
-        WdfRequestComplete(usbRequest, status);
     }
 }
 

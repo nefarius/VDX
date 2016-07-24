@@ -273,6 +273,26 @@ typedef struct _DS4_DEVICE_DATA
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DS4_DEVICE_DATA, Ds4GetData)
 
+typedef struct _XGIP_DEVICE_DATA
+{
+    //
+    // Queue for incoming interrupt transfer
+    //
+    WDFQUEUE PendingUsbInRequests;
+
+    //
+    // Timer for dispatching interrupt transfer
+    //
+    WDFTIMER PendingUsbInRequestsTimer;
+
+    //
+    // Queue for inverted calls
+    //
+    WDFQUEUE PendingNotificationRequests;
+} XGIP_DEVICE_DATA, *PXGIP_DEVICE_DATA;
+
+WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XGIP_DEVICE_DATA, XgipGetData)
+
 
 //
 // Prototypes of functions
@@ -297,6 +317,7 @@ EVT_WDF_DEVICE_PREPARE_HARDWARE Bus_EvtDevicePrepareHardware;
 EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Pdo_EvtIoInternalDeviceControl;
 
 EVT_WDF_TIMER Ds4_PendingUsbRequestsTimerFunc;
+EVT_WDF_TIMER Xgip_PendingUsbRequestsTimerFunc;
 
 EVT_WDFDEVICE_WDM_IRP_PREPROCESS Pdo_EvtDeviceWdmIrpPreprocess;
 
@@ -377,19 +398,20 @@ VOID GenerateRandomMacAddress(PMAC_ADDRESS Address);
 // XUSB-specific functions
 // 
 NTSTATUS Xusb_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
-NTSTATUS Xusb_AddQueryInterfaces(WDFDEVICE Device);
+NTSTATUS Xusb_PrepareHardware(WDFDEVICE Device);
 NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION Description);
 
 //
 // XGIP-specific functions
 // 
 NTSTATUS Xgip_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
-NTSTATUS Xgip_AddQueryInterfaces(WDFDEVICE Device);
+NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device);
+NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device);
 
 //
 // DS4-specific functions
 // 
 NTSTATUS Ds4_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
-NTSTATUS Ds4_AddQueryInterfaces(WDFDEVICE Device);
+NTSTATUS Ds4_PrepareHardware(WDFDEVICE Device);
 NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION Description);
 

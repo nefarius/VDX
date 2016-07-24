@@ -1120,6 +1120,25 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 
         break;
     }
+    case XboxOneWired:
+    {
+        PXGIP_DEVICE_DATA xgipData = XgipGetData(Device);
+
+        // Data coming FROM us TO higher driver
+        if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
+        {
+            KdPrint((">> >> >> Incoming request, queuing...\n"));
+
+            /* This request is sent periodically and relies on data the "feeder"
+            has to supply, so we queue this request and return with STATUS_PENDING.
+            The request gets completed as soon as the "feeder" sent an update. */
+            status = WdfRequestForwardToIoQueue(Request, xgipData->PendingUsbInRequests);
+
+            return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
+        }
+
+        break;
+    }
     default:
         break;
     }

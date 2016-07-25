@@ -34,6 +34,8 @@ SOFTWARE.
 #include <usb.h>
 #include <usbbusif.h>
 
+#pragma region GUID definitions
+
 // 
 // For children emulating XUSB devices, the following dummy interfaces 
 // have to be exposed by the PDO or else the child devices won't start
@@ -77,12 +79,12 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_3,
 DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
     0xDEEE98EA, 0xC0A1, 0x42C3, 0x97, 0x38, 0xA0, 0x46, 0x06, 0xC8, 0x4E, 0x93);
 
+#pragma endregion
+
 #pragma once
 
 
-//
-// Static information
-// 
+#pragma region Macros
 
 #define MAX_INSTANCE_ID_LEN             80
 #define XUSB_DESCRIPTOR_SIZE	        0x0099
@@ -118,9 +120,9 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 
 #define VIGEM_POOL_TAG                  0x45476956 // "EGiV"
 
-//
-// Helpers
-// 
+#pragma endregion
+
+#pragma region Helpers
 
 //
 // Returns the current caller process id.
@@ -139,6 +141,7 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 //
 #define HID_GET_REPORT_TYPE(_req_) ((_req_->Value >> 8) & 0xFF)
 
+#pragma endregion
 
 //
 // Used to identify children in the device list of the bus.
@@ -294,9 +297,7 @@ typedef struct _XGIP_DEVICE_DATA
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XGIP_DEVICE_DATA, XgipGetData)
 
 
-//
-// Prototypes of functions
-//
+#pragma region WDF callback prototypes
 
 DRIVER_INITIALIZE DriverEntry;
 
@@ -321,10 +322,9 @@ EVT_WDF_TIMER Xgip_PendingUsbRequestsTimerFunc;
 
 EVT_WDFDEVICE_WDM_IRP_PREPROCESS Pdo_EvtDeviceWdmIrpPreprocess;
 
+#pragma endregion
 
-//
-// Bus enumeration-specific functions
-// 
+#pragma region Bus enumeration-specific functions
 
 NTSTATUS
 Bus_PlugInDevice(
@@ -367,10 +367,9 @@ Bus_Ds4SubmitReport(
     PDS4_SUBMIT_REPORT Report
 );
 
+#pragma endregion
 
-//
-// USB-specific functions
-// 
+#pragma region USB-specific functions
 
 BOOLEAN USB_BUSIFFN UsbPdo_IsDeviceHighSpeed(IN PVOID BusContext);
 NTSTATUS USB_BUSIFFN UsbPdo_QueryBusInformation(IN PVOID BusContext, IN ULONG Level, IN OUT PVOID BusInformationBuffer, IN OUT PULONG BusInformationBufferLength, OUT PULONG BusInformationActualLength);
@@ -386,6 +385,8 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device);
 NTSTATUS UsbPdo_ClassInterface(PURB urb, WDFDEVICE Device, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_GetDescriptorFromInterface(PURB urb, PPDO_DEVICE_DATA pCommon);
+
+#pragma endregion
 
 //
 // Utility functions

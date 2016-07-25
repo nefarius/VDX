@@ -44,7 +44,7 @@ VOID my_xusb_notification(
     UCHAR SmallMotor,
     UCHAR LedNumber)
 {
-    printf("Serial: %d, LM: %d, SM: %d, LED: %d\n",
+    printf("X360 Response - Serial: %d, LM: %d, SM: %d, LED: %d\n",
         Target.SerialNo,
         LargeMotor,
         SmallMotor,
@@ -57,7 +57,7 @@ VOID my_ds4_notification(
     UCHAR SmallMotor,
     DS4_LIGHTBAR_COLOR LightbarColor)
 {
-    printf("Serial: %d, LM: %d, SM: %d, R: %d, G: %d, B: %d\n",
+    printf("DS4 Response - Serial: %d, LM: %d, SM: %d, R: %d, G: %d, B: %d\n",
         Target.SerialNo,
         LargeMotor,
         SmallMotor,
@@ -105,7 +105,7 @@ int main()
         (VIGEM_XUSB_NOTIFICATION)my_xusb_notification,
         x360);
 
-    printf("X360 Success!");
+    printf("X360 Success!\n\n");
     getchar();
 
     VIGEM_TARGET ds4;
@@ -122,7 +122,7 @@ int main()
         (VIGEM_DS4_NOTIFICATION)my_ds4_notification,
         ds4);
 
-    printf("DS4 Success!");
+    printf("DS4 Success!\n\n");
     getchar();
 
     XUSB_REPORT r = { 0 };

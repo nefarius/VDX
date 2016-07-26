@@ -256,6 +256,11 @@ NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device)
 
     KdPrint(("Initializing XGIP context...\n"));
 
+    RtlZeroMemory(xgip, sizeof(XGIP_DEVICE_DATA));
+
+    // Set fixed report id
+    xgip->Report[0] = 0x20;
+
     // I/O Queue for pending IRPs
     WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig, notificationsQueueConfig;
 

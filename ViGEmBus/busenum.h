@@ -105,6 +105,7 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 #endif
 
 #define XGIP_CONFIGURATION_SIZE         0x88
+#define XGIP_REPORT_SIZE                0x12
 
 #define XUSB_REPORT_SIZE                20
 #define XUSB_RUMBLE_SIZE                8
@@ -195,27 +196,27 @@ typedef struct _XUSB_DEVICE_DATA
     //
     // Rumble buffer
     //
-    UCHAR		Rumble[XUSB_RUMBLE_SIZE];
+    UCHAR Rumble[XUSB_RUMBLE_SIZE];
 
     //
     // LED number (represents XInput slot index)
     //
-    UCHAR		LedNumber;
+    UCHAR LedNumber;
 
     //
     // Report buffer
     //
-    UCHAR		Report[XUSB_REPORT_SIZE];
+    UCHAR Report[XUSB_REPORT_SIZE];
 
     //
     // Queue for incoming interrupt transfer
     //
-    WDFQUEUE    PendingUsbInRequests;
+    WDFQUEUE PendingUsbInRequests;
 
     //
     // Queue for inverted calls
     //
-    WDFQUEUE    PendingNotificationRequests;
+    WDFQUEUE PendingNotificationRequests;
 } XUSB_DEVICE_DATA, *PXUSB_DEVICE_DATA;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XUSB_DEVICE_DATA, XusbGetData)
@@ -278,6 +279,8 @@ WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DS4_DEVICE_DATA, Ds4GetData)
 
 typedef struct _XGIP_DEVICE_DATA
 {
+    UCHAR Report[XGIP_REPORT_SIZE];
+
     //
     // Queue for incoming interrupt transfer
     //

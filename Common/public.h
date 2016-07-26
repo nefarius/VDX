@@ -427,3 +427,15 @@ VOID FORCEINLINE DS4_SUBMIT_REPORT_INIT(
     DS4_SET_DPAD(Report, Ds4DpadNone);
 }
 
+typedef struct _XGIP_REPORT
+{
+    UCHAR Buttons1;
+    UCHAR Buttons2;
+    SHORT LeftTrigger;
+    SHORT RightTrigger;
+    SHORT ThumbLX;
+    SHORT ThumbLY;
+    SHORT ThumbRX;
+    SHORT ThumbRY;
+} XGIP_REPORT, *PXGIP_REPORT;
+

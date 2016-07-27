@@ -78,18 +78,18 @@ int main()
         return 1;
     }
 
-    //VIGEM_TARGET xbone;
-    //VIGEM_TARGET_INIT(&xbone);
-    //
-    //if (!VIGEM_SUCCESS(vigem_target_plugin(XboxOneWired, &xbone)))
-    //{
-    //    printf("Couldn't get target object\n");
-    //    getchar();
-    //    return 1;
-    //}
-    //
-    //printf("XBONE Success!");
-    //getchar();
+    VIGEM_TARGET xbone;
+    VIGEM_TARGET_INIT(&xbone);
+
+    if (!VIGEM_SUCCESS(vigem_target_plugin(XboxOneWired, &xbone)))
+    {
+        printf("Couldn't get target object\n");
+        getchar();
+        return 1;
+    }
+
+    printf("XBONE Success!");
+    getchar();
 
     VIGEM_TARGET x360;
     VIGEM_TARGET_INIT(&x360);
@@ -127,6 +127,7 @@ int main()
 
     XUSB_REPORT r = { 0 };
     DS4_REPORT ds4r = { 0 };
+    DS4_REPORT_INIT(&ds4r);
 
     while (getchar() != 'a')
     {

@@ -398,13 +398,26 @@ typedef struct _DS4_SUBMIT_REPORT
 // Sets the current state of the D-PAD on a DualShock 4 report.
 // 
 VOID FORCEINLINE DS4_SET_DPAD(
-    _Out_ PDS4_SUBMIT_REPORT Report,
+    _Out_ PDS4_REPORT Report,
     _In_ DS4_DPAD_DIRECTIONS Dpad
 )
 {
-    Report->Report.wButtons &= ~0xF;
-    Report->Report.wButtons |= (WORD)Dpad;
+    Report->wButtons &= ~0xF;
+    Report->wButtons |= (WORD)Dpad;
 }
+
+VOID FORCEINLINE DS4_REPORT_INIT(
+    _Out_ PDS4_REPORT Report
+)
+{
+    Report->bThumbLX = 0x80;
+    Report->bThumbLY = 0x80;
+    Report->bThumbRX = 0x80;
+    Report->bThumbRY = 0x80;
+
+    DS4_SET_DPAD(Report, Ds4DpadNone);
+}
+
 
 //
 // Initializes a DualShock 4 report.
@@ -419,12 +432,7 @@ VOID FORCEINLINE DS4_SUBMIT_REPORT_INIT(
     Report->Size = sizeof(DS4_SUBMIT_REPORT);
     Report->SerialNo = SerialNo;
 
-    Report->Report.bThumbLX = 0x80;
-    Report->Report.bThumbLY = 0x80;
-    Report->Report.bThumbRX = 0x80;
-    Report->Report.bThumbRY = 0x80;
-
-    DS4_SET_DPAD(Report, Ds4DpadNone);
+    DS4_REPORT_INIT(&Report->Report);
 }
 
 typedef struct _XGIP_REPORT

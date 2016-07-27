@@ -340,12 +340,14 @@ VOID Xgip_PendingUsbRequestsTimerFunc(
 
         // Get transfer buffer
         PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
-        UNREFERENCED_PARAMETER(Buffer);
-        // Set buffer length to report size
-        //urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_HID_REPORT_SIZE;
 
-        // Copy cached report to transfer buffer 
-        //RtlCopyBytes(Buffer, xgipData->HidInputReport, DS4_HID_REPORT_SIZE);
+        // Set buffer length to report size
+        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = XGIP_REPORT_SIZE;
+
+        // Increase event counter on every call (can roll-over)
+        xgipData->Report[2]++;
+
+        RtlCopyBytes(Buffer, xgipData->Report, XGIP_REPORT_SIZE);
 
         // Complete pending request
         WdfRequestComplete(usbRequest, status);

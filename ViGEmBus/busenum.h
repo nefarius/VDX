@@ -89,7 +89,6 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 #define MAX_INSTANCE_ID_LEN             80
 #define XUSB_DESCRIPTOR_SIZE	        0x0099
 #define DS4_DESCRIPTOR_SIZE	            0x0029
-#define XGIP_DESCRIPTOR_SIZE	        0x0040
 #define DS4_CONFIGURATION_SIZE          0x0070
 #define DS4_HID_REPORT_DESCRIPTOR_SIZE  0x01D3
 #define HID_LANGUAGE_ID_LENGTH          0x04
@@ -104,6 +103,7 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 #define XUSB_CONFIGURATION_SIZE              0x0130
 #endif
 
+#define XGIP_DESCRIPTOR_SIZE	        0x0040
 #define XGIP_CONFIGURATION_SIZE         0x88
 #define XGIP_REPORT_SIZE                0x12
 
@@ -112,7 +112,7 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 #define XUSB_LEDSET_SIZE                3
 #define XUSB_LEDNUM_SIZE                1
 
-#define DS4_HID_REPORT_SIZE             64
+#define DS4_REPORT_SIZE                 64
 #define DS4_QUEUE_FLUSH_PERIOD          5
 
 #define HID_REQUEST_GET_REPORT          0x01
@@ -242,7 +242,7 @@ typedef struct _DS4_DEVICE_DATA
     //
     // HID Input Report buffer
     //
-    UCHAR HidInputReport[DS4_HID_REPORT_SIZE];
+    UCHAR Report[DS4_REPORT_SIZE];
 
     //
     // Output report cache
@@ -369,6 +369,21 @@ Bus_Ds4SubmitReport(
     ULONG SerialNo,
     PDS4_SUBMIT_REPORT Report
 );
+
+NTSTATUS
+Bus_XgipSubmitReport(
+    WDFDEVICE Device,
+    ULONG SerialNo,
+    PXGIP_SUBMIT_REPORT Report
+);
+
+NTSTATUS
+Bus_SubmitReport(
+    WDFDEVICE Device,
+    ULONG SerialNo,
+    PVOID Report
+);
+
 
 #pragma endregion
 

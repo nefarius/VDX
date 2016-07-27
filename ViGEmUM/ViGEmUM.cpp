@@ -286,7 +286,7 @@ VIGEM_API VIGEM_ERROR vigem_ds4_submit_report(VIGEM_TARGET Target, DS4_REPORT Re
     DS4_SUBMIT_REPORT report;
     DS4_SUBMIT_REPORT_INIT(&report, Target.SerialNo);
 
-    report.HidReport = Report;
+    report.Report = Report;
 
     DeviceIoControl(g_hViGEmBus, IOCTL_DS4_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, &lOverlapped);
 

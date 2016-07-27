@@ -99,7 +99,7 @@ NTSTATUS Ds4_PrepareHardware(WDFDEVICE Device)
     PDS4_DEVICE_DATA ds4Data = Ds4GetData(Device);
 
     // Set default HID input report (everything zero`d)
-    UCHAR DefaultHidReport[DS4_HID_REPORT_SIZE] =
+    UCHAR DefaultHidReport[DS4_REPORT_SIZE] =
     {
         0x01, 0x82, 0x7F, 0x7E, 0x80, 0x08, 0x00, 0x58,
         0x00, 0x00, 0xFD, 0x63, 0x06, 0x03, 0x00, 0xFE,
@@ -112,7 +112,7 @@ NTSTATUS Ds4_PrepareHardware(WDFDEVICE Device)
     };
 
     // Initialize HID reports to defaults
-    RtlCopyBytes(ds4Data->HidInputReport, DefaultHidReport, DS4_HID_REPORT_SIZE);
+    RtlCopyBytes(ds4Data->Report, DefaultHidReport, DS4_REPORT_SIZE);
     RtlZeroMemory(&ds4Data->OutputReport, sizeof(DS4_OUTPUT_REPORT));
 
     // Start pending IRP queue flush timer
@@ -289,10 +289,10 @@ VOID Ds4_PendingUsbRequestsTimerFunc(
         // Get transfer buffer
         PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
         // Set buffer length to report size
-        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_HID_REPORT_SIZE;
+        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_REPORT_SIZE;
 
         // Copy cached report to transfer buffer 
-        RtlCopyBytes(Buffer, ds4Data->HidInputReport, DS4_HID_REPORT_SIZE);
+        RtlCopyBytes(Buffer, ds4Data->Report, DS4_REPORT_SIZE);
 
         // Complete pending request
         WdfRequestComplete(usbRequest, status);

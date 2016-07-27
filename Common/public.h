@@ -391,7 +391,7 @@ typedef struct _DS4_SUBMIT_REPORT
     //
     // HID Input report
     // 
-    DS4_REPORT HidReport;
+    DS4_REPORT Report;
 } DS4_SUBMIT_REPORT, *PDS4_SUBMIT_REPORT;
 
 //
@@ -402,8 +402,8 @@ VOID FORCEINLINE DS4_SET_DPAD(
     _In_ DS4_DPAD_DIRECTIONS Dpad
 )
 {
-    Report->HidReport.wButtons &= ~0xF;
-    Report->HidReport.wButtons |= (WORD)Dpad;
+    Report->Report.wButtons &= ~0xF;
+    Report->Report.wButtons |= (WORD)Dpad;
 }
 
 //
@@ -419,10 +419,10 @@ VOID FORCEINLINE DS4_SUBMIT_REPORT_INIT(
     Report->Size = sizeof(DS4_SUBMIT_REPORT);
     Report->SerialNo = SerialNo;
 
-    Report->HidReport.bThumbLX = 0x80;
-    Report->HidReport.bThumbLY = 0x80;
-    Report->HidReport.bThumbRX = 0x80;
-    Report->HidReport.bThumbRY = 0x80;
+    Report->Report.bThumbLX = 0x80;
+    Report->Report.bThumbLY = 0x80;
+    Report->Report.bThumbRX = 0x80;
+    Report->Report.bThumbRY = 0x80;
 
     DS4_SET_DPAD(Report, Ds4DpadNone);
 }
@@ -438,4 +438,25 @@ typedef struct _XGIP_REPORT
     SHORT ThumbRX;
     SHORT ThumbRY;
 } XGIP_REPORT, *PXGIP_REPORT;
+
+//
+// DualShock 4 request data
+// 
+typedef struct _XGIP_SUBMIT_REPORT
+{
+    //
+    // sizeof(struct _XGIP_SUBMIT_REPORT)
+    // 
+    ULONG Size;
+
+    //
+    // Serial number of target device.
+    // 
+    ULONG SerialNo;
+
+    //
+    // HID Input report
+    // 
+    XGIP_REPORT Report;
+} XGIP_SUBMIT_REPORT, *PXGIP_SUBMIT_REPORT;
 

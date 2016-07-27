@@ -544,104 +544,7 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
 // 
 NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REPORT Report)
 {
-    NTSTATUS status = STATUS_SUCCESS;
-    WDFCHILDLIST list;
-    WDF_CHILD_RETRIEVE_INFO info;
-    WDFDEVICE hChild;
-    PPDO_DEVICE_DATA pdoData;
-    PXUSB_DEVICE_DATA xusbData;
-    WDFREQUEST usbRequest;
-    PIRP pendingIrp;
-    PIO_STACK_LOCATION irpStack;
-    BOOLEAN changed;
-
-
-    KdPrint(("Entered Bus_XusbSubmitReport\n"));
-
-#pragma region Get PDO from child list
-
-    list = WdfFdoGetDefaultChildList(Device);
-
-    PDO_IDENTIFICATION_DESCRIPTION description;
-
-    WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
-
-    description.SerialNo = SerialNo;
-
-    WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
-
-    hChild = WdfChildListRetrievePdo(list, &info);
-
-#pragma endregion
-
-    // Validate child
-    if (hChild == NULL)
-    {
-        KdPrint(("Bus_XusbSubmitReport: PDO with serial %d not found\n", SerialNo));
-        return STATUS_NO_SUCH_DEVICE;
-    }
-
-    // Check common context
-    pdoData = PdoGetData(hChild);
-    if (pdoData == NULL)
-    {
-        KdPrint(("Bus_XusbSubmitReport: PDO context not found\n"));
-        return STATUS_INVALID_PARAMETER;
-    }
-
-    // Check XUSB context
-    xusbData = XusbGetData(hChild);
-    if (xusbData == NULL)
-    {
-        KdPrint(("Bus_XusbSubmitReport: XUSB context not found\n"));
-        return STATUS_INVALID_PARAMETER;
-    }
-
-    // Check if caller owns this PDO
-    if (!IS_OWNER(pdoData))
-    {
-        KdPrint(("Bus_XusbSubmitReport: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
-        return STATUS_ACCESS_DENIED;
-    }
-
-    // Check if input is different from previous value
-    changed = (RtlCompareMemory(xusbData->Report, &Report->Report, sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
-
-    // Don't waste pending IRP if input hasn't changed
-    if (changed)
-    {
-        KdPrint(("Bus_XusbSubmitReport: received new report\n"));
-
-        // Get pending USB request
-        status = WdfIoQueueRetrieveNextRequest(xusbData->PendingUsbInRequests, &usbRequest);
-
-        if (NT_SUCCESS(status))
-        {
-            KdPrint(("Bus_XusbSubmitReport: pending IRP found\n"));
-
-            // Get pending IRP
-            pendingIrp = WdfRequestWdmGetIrp(usbRequest);
-            irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
-
-            // Get USB request block
-            PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
-
-            // Get transfer buffer
-            PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
-            // Set buffer length to report size
-            urb->UrbBulkOrInterruptTransfer.TransferBufferLength = XUSB_REPORT_SIZE;
-
-            /* Copy report to cache and transfer buffer
-             * The first two bytes are always the same, so we skip them */
-            RtlCopyBytes(xusbData->Report + 2, &Report->Report, sizeof(XUSB_REPORT));
-            RtlCopyBytes(Buffer, xusbData->Report, XUSB_REPORT_SIZE);
-
-            // Complete pending request
-            WdfRequestComplete(usbRequest, status);
-        }
-    }
-
-    return status;
+    return Bus_SubmitReport(Device, SerialNo, Report);
 }
 
 //
@@ -734,18 +637,27 @@ NTSTATUS Bus_QueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Requ
 // 
 NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPORT Report)
 {
+    return Bus_SubmitReport(Device, SerialNo, Report);
+}
+
+NTSTATUS Bus_XgipSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXGIP_SUBMIT_REPORT Report)
+{
+    return Bus_SubmitReport(Device, SerialNo, Report);
+}
+
+NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
+{
     NTSTATUS status = STATUS_SUCCESS;
     WDFCHILDLIST list;
     WDF_CHILD_RETRIEVE_INFO info;
     WDFDEVICE hChild;
     PPDO_DEVICE_DATA pdoData;
-    PDS4_DEVICE_DATA ds4Data;
     WDFREQUEST usbRequest;
     PIRP pendingIrp;
-    PIO_STACK_LOCATION irpStack;
+    BOOLEAN changed;
 
 
-    KdPrint(("Entered Bus_Ds4SubmitReport\n"));
+    KdPrint(("Entered Bus_SubmitReport\n"));
 
 #pragma region Get PDO from child list
 
@@ -766,7 +678,7 @@ NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPOR
     // Validate child
     if (hChild == NULL)
     {
-        KdPrint(("Bus_Ds4SubmitReport: PDO with serial %d not found\n", SerialNo));
+        KdPrint(("Bus_SubmitReport: PDO with serial %d not found\n", SerialNo));
         return STATUS_NO_SUCH_DEVICE;
     }
 
@@ -774,52 +686,129 @@ NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPOR
     pdoData = PdoGetData(hChild);
     if (pdoData == NULL)
     {
-        KdPrint(("Bus_Ds4SubmitReport: PDO context not found\n"));
-        return STATUS_INVALID_PARAMETER;
-    }
-
-    // Check XUSB context
-    ds4Data = Ds4GetData(hChild);
-    if (ds4Data == NULL)
-    {
-        KdPrint(("Bus_Ds4SubmitReport: DS4 context not found\n"));
+        KdPrint(("Bus_SubmitReport: PDO context not found\n"));
         return STATUS_INVALID_PARAMETER;
     }
 
     // Check if caller owns this PDO
     if (!IS_OWNER(pdoData))
     {
-        KdPrint(("Bus_Ds4SubmitReport: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
+        KdPrint(("Bus_SubmitReport: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
         return STATUS_ACCESS_DENIED;
     }
 
-    // Get pending USB request
-    status = WdfIoQueueRetrieveNextRequest(ds4Data->PendingUsbInRequests, &usbRequest);
-
-    if (NT_SUCCESS(status))
+    // Check if input is different from previous value
+    switch (pdoData->TargetType)
     {
-        KdPrint(("Bus_Ds4SubmitReport: pending IRP found\n"));
+    case Xbox360Wired:
 
-        // Get pending IRP
-        pendingIrp = WdfRequestWdmGetIrp(usbRequest);
-        irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
+        changed = (RtlCompareMemory(XusbGetData(hChild)->Report, 
+            &((PXUSB_SUBMIT_REPORT)Report)->Report, 
+            sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
 
-        // Get USB request block
-        PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
+        break;
+    case DualShock4Wired:
 
-        // Get transfer buffer
-        PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
-        // Set buffer length to report size
-        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_HID_REPORT_SIZE;
+        changed = TRUE;
+
+        break;
+    case XboxOneWired:
+
+        // TODO: necessary?
+        changed = TRUE;
+
+        break;
+    default:
+
+        changed = FALSE;
+
+        break;
+    }
+
+    // Don't waste pending IRP if input hasn't changed
+    if (!changed)
+        return status;
+
+    KdPrint(("Bus_SubmitReport: received new report\n"));
+
+    // Get pending USB request
+    switch (pdoData->TargetType)
+    {
+    case Xbox360Wired:
+
+        status = WdfIoQueueRetrieveNextRequest(XusbGetData(hChild)->PendingUsbInRequests, &usbRequest);
+
+        break;
+    case DualShock4Wired:
+
+        status = WdfIoQueueRetrieveNextRequest(Ds4GetData(hChild)->PendingUsbInRequests, &usbRequest);
+
+        break;
+    case XboxOneWired:
+
+        status = WdfIoQueueRetrieveNextRequest(XgipGetData(hChild)->PendingUsbInRequests, &usbRequest);
+
+        break;
+    default:
+
+        return STATUS_NOT_SUPPORTED;
+    }
+
+    if (!NT_SUCCESS(status))
+        return status;
+
+    KdPrint(("Bus_SubmitReport: pending IRP found\n"));
+
+    // Get pending IRP
+    pendingIrp = WdfRequestWdmGetIrp(usbRequest);
+
+    // Get USB request block
+    PURB urb = (PURB)URB_FROM_IRP(pendingIrp);
+
+    // Get transfer buffer
+    PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
+    
+    switch (pdoData->TargetType)
+    {
+    case Xbox360Wired:
+
+        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = XUSB_REPORT_SIZE;
+
+        /* Copy report to cache and transfer buffer
+         * The first two bytes are always the same, so we skip them */
+        RtlCopyBytes(XusbGetData(hChild)->Report + 2, &((PXUSB_SUBMIT_REPORT)Report)->Report, sizeof(XUSB_REPORT));
+        RtlCopyBytes(Buffer, XusbGetData(hChild)->Report, XUSB_REPORT_SIZE);
+
+        break;
+    case DualShock4Wired:
+
+        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = DS4_REPORT_SIZE;
 
         /* Copy report to cache and transfer buffer
          * Skip first byte as it contains the never changing report id */
-        RtlCopyBytes(ds4Data->HidInputReport + 1, &Report->HidReport, Report->Size);
-        RtlCopyBytes(Buffer + 1, &Report->HidReport, Report->Size);
+        RtlCopyBytes(Ds4GetData(hChild)->Report + 1, &((PDS4_SUBMIT_REPORT)Report)->Report, sizeof(DS4_REPORT));
+        RtlCopyBytes(Buffer, Ds4GetData(hChild)->Report, DS4_REPORT_SIZE);
 
-        // Complete pending request
-        WdfRequestComplete(usbRequest, status);
+        break;
+    case XboxOneWired:
+
+        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = XGIP_REPORT_SIZE;
+
+        // Increase event counter on every call (can roll-over)
+        XgipGetData(hChild)->Report[2]++;
+
+        /* Copy report to cache and transfer buffer
+         * Skip first four bytes as they are not part of the report */
+        RtlCopyBytes(XgipGetData(hChild)->Report + 4, &((PXGIP_SUBMIT_REPORT)Report)->Report, sizeof(XGIP_REPORT));
+        RtlCopyBytes(Buffer, XgipGetData(hChild)->Report, XGIP_REPORT_SIZE);
+
+        break;
+    default:
+        break;
     }
+
+    // Complete pending request
+    WdfRequestComplete(usbRequest, status);
 
     return status;
 }

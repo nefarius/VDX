@@ -264,6 +264,7 @@ NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device)
 
     // Set fixed report id
     xgip->Report[0] = 0x20;
+    xgip->Report[3] = 0x0E;
 
     // I/O Queue for pending IRPs
     WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig, notificationsQueueConfig;

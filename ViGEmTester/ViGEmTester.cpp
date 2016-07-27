@@ -91,51 +91,55 @@ int main()
     printf("XBONE Success!");
     getchar();
 
-    VIGEM_TARGET x360;
-    VIGEM_TARGET_INIT(&x360);
-
-    if (!VIGEM_SUCCESS(vigem_target_plugin(Xbox360Wired, &x360)))
-    {
-        printf("Couldn't get target object\n");
-        getchar();
-        return 1;
-    }
-
-    vigem_register_xusb_notification(
-        (VIGEM_XUSB_NOTIFICATION)my_xusb_notification,
-        x360);
-
-    printf("X360 Success!\n\n");
-    getchar();
-
-    VIGEM_TARGET ds4;
-    VIGEM_TARGET_INIT(&ds4);
-
-    if (!VIGEM_SUCCESS(vigem_target_plugin(DualShock4Wired, &ds4)))
-    {
-        printf("Couldn't get target object\n");
-        getchar();
-        return 1;
-    }
-
-    vigem_register_ds4_notification(
-        (VIGEM_DS4_NOTIFICATION)my_ds4_notification,
-        ds4);
-
-    printf("DS4 Success!\n\n");
-    getchar();
-
-    XUSB_REPORT r = { 0 };
-    DS4_REPORT ds4r = { 0 };
-    DS4_REPORT_INIT(&ds4r);
+    //VIGEM_TARGET x360;
+    //VIGEM_TARGET_INIT(&x360);
+    //
+    //if (!VIGEM_SUCCESS(vigem_target_plugin(Xbox360Wired, &x360)))
+    //{
+    //    printf("Couldn't get target object\n");
+    //    getchar();
+    //    return 1;
+    //}
+    //
+    //vigem_register_xusb_notification(
+    //    (VIGEM_XUSB_NOTIFICATION)my_xusb_notification,
+    //    x360);
+    //
+    //printf("X360 Success!\n\n");
+    //getchar();
+    //
+    //VIGEM_TARGET ds4;
+    //VIGEM_TARGET_INIT(&ds4);
+    //
+    //if (!VIGEM_SUCCESS(vigem_target_plugin(DualShock4Wired, &ds4)))
+    //{
+    //    printf("Couldn't get target object\n");
+    //    getchar();
+    //    return 1;
+    //}
+    //
+    //vigem_register_ds4_notification(
+    //    (VIGEM_DS4_NOTIFICATION)my_ds4_notification,
+    //    ds4);
+    //
+    //printf("DS4 Success!\n\n");
+    //getchar();
+    //
+    //XUSB_REPORT r = { 0 };
+    //DS4_REPORT ds4r = { 0 };
+    //DS4_REPORT_INIT(&ds4r);
+    XGIP_REPORT xgipr = { 0 };
 
     while (getchar() != 'a')
     {
-        r.bLeftTrigger++;
-        ds4r.bTriggerL++;
+        //r.bLeftTrigger++;
+        //ds4r.bTriggerL++;
+        xgipr.LeftTrigger++;
+        xgipr.RightTrigger--;
 
-        vigem_xusb_submit_report(x360, r);
-        vigem_ds4_submit_report(ds4, ds4r);
+        //vigem_xusb_submit_report(x360, r);
+        //vigem_ds4_submit_report(ds4, ds4r);
+        vigem_xgip_submit_report(xbone, xgipr);
     }
 
     getchar();

@@ -55,6 +55,7 @@ DEFINE_GUID(GUID_DEVCLASS_VIGEM_RAWPDO,
 #define IOCTL_XUSB_SUBMIT_REPORT        BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x201)
 #define IOCTL_DS4_SUBMIT_REPORT         BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x202)
 #define IOCTL_DS4_REQUEST_NOTIFICATION  BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x203)
+#define IOCTL_XGIP_SUBMIT_REPORT        BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x204)
 
 #define VIGEM_COMMON_VERSION 0x01
 
@@ -418,7 +419,6 @@ VOID FORCEINLINE DS4_REPORT_INIT(
     DS4_SET_DPAD(Report, Ds4DpadNone);
 }
 
-
 //
 // Initializes a DualShock 4 report.
 // 
@@ -467,4 +467,19 @@ typedef struct _XGIP_SUBMIT_REPORT
     // 
     XGIP_REPORT Report;
 } XGIP_SUBMIT_REPORT, *PXGIP_SUBMIT_REPORT;
+
+//
+// Initializes an Xbox One report.
+// 
+VOID FORCEINLINE XGIP_SUBMIT_REPORT_INIT(
+    _Out_ PXGIP_SUBMIT_REPORT Report,
+    _In_ ULONG SerialNo
+)
+{
+    RtlZeroMemory(Report, sizeof(XGIP_SUBMIT_REPORT));
+
+    Report->Size = sizeof(XGIP_SUBMIT_REPORT);
+    Report->SerialNo = SerialNo;
+}
+
 

@@ -94,8 +94,8 @@ VIGEM_API VOID vigem_shutdown()
 }
 
 VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
-    IN VIGEM_XUSB_NOTIFICATION Notification,
-    IN VIGEM_TARGET Target)
+    VIGEM_XUSB_NOTIFICATION Notification,
+    VIGEM_TARGET Target)
 {
     if (g_hViGEmBus == nullptr)
     {
@@ -142,7 +142,9 @@ VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
     return VIGEM_ERROR_NONE;
 }
 
-VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(VIGEM_DS4_NOTIFICATION Notification, VIGEM_TARGET Target)
+VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
+    VIGEM_DS4_NOTIFICATION Notification, 
+    VIGEM_TARGET Target)
 {
     // TODO: de-duplicate this section
 
@@ -289,6 +291,48 @@ VIGEM_API VIGEM_ERROR vigem_ds4_submit_report(VIGEM_TARGET Target, DS4_REPORT Re
     report.Report = Report;
 
     DeviceIoControl(g_hViGEmBus, IOCTL_DS4_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, &lOverlapped);
+
+    if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) == 0)
+    {
+        CloseHandle(lOverlapped.hEvent);
+
+        switch (GetLastError())
+        {
+        case ERROR_ACCESS_DENIED:
+            return VIGEM_ERROR_INVALID_TARGET;
+            break;
+        default:
+            break;
+        }
+    }
+
+    CloseHandle(lOverlapped.hEvent);
+
+    return VIGEM_ERROR_NONE;
+}
+
+VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT Report)
+{
+    if (g_hViGEmBus == nullptr)
+    {
+        return VIGEM_ERROR_BUS_NOT_FOUND;
+    }
+
+    if (Target.SerialNo == 0)
+    {
+        return VIGEM_ERROR_INVALID_TARGET;
+    }
+
+    DWORD transfered = 0;
+    OVERLAPPED lOverlapped = { 0 };
+    lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+    XGIP_SUBMIT_REPORT report;
+    XGIP_SUBMIT_REPORT_INIT(&report, Target.SerialNo);
+
+    report.Report = Report;
+
+    DeviceIoControl(g_hViGEmBus, IOCTL_XGIP_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, &lOverlapped);
 
     if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) == 0)
     {

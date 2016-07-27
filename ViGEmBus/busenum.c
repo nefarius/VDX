@@ -416,6 +416,35 @@ VOID Bus_EvtIoDeviceControl(
         break;
     }
 
+    case IOCTL_XGIP_SUBMIT_REPORT:
+    {
+        PXGIP_SUBMIT_REPORT xgipSubmit = NULL;
+
+        KdPrint(("IOCTL_XGIP_SUBMIT_REPORT\n"));
+
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(XGIP_SUBMIT_REPORT), (PVOID)&xgipSubmit, &length);
+
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            break;
+        }
+
+        if ((sizeof(XGIP_SUBMIT_REPORT) == xgipSubmit->Size) && (length == InputBufferLength))
+        {
+            // This request only supports a single PDO at a time
+            if (xgipSubmit->SerialNo == 0)
+            {
+                status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            status = Bus_XgipSubmitReport(hDevice, xgipSubmit->SerialNo, xgipSubmit);
+        }
+
+        break;
+    }
+
     default:
         KdPrint(("UNKNOWN IOCTL CODE 0x%x\n", IoControlCode));
         break; // default status is STATUS_INVALID_PARAMETER

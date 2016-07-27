@@ -88,12 +88,12 @@ VIGEM_API VIGEM_ERROR vigem_init();
 VIGEM_API VOID vigem_shutdown();
 
 VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
-    IN VIGEM_XUSB_NOTIFICATION Notification, 
-    IN VIGEM_TARGET Target);
+    _In_ VIGEM_XUSB_NOTIFICATION Notification, 
+    _In_ VIGEM_TARGET Target);
 
 VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
-    IN VIGEM_DS4_NOTIFICATION Notification,
-    IN VIGEM_TARGET Target);
+    _In_ VIGEM_DS4_NOTIFICATION Notification,
+    _In_ VIGEM_TARGET Target);
 
 VIGEM_API VIGEM_ERROR vigem_target_plugin(
     _In_ VIGEM_TARGET_TYPE Type,
@@ -106,4 +106,8 @@ VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
 VIGEM_API VIGEM_ERROR vigem_ds4_submit_report(
     _In_ VIGEM_TARGET Target,
     _In_ DS4_REPORT Report);
+
+VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(
+    _In_ VIGEM_TARGET Target,
+    _In_ XGIP_REPORT Report);
 

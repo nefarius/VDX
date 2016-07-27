@@ -684,3 +684,30 @@ NTSTATUS Pdo_EvtDeviceWdmIrpPreprocess(
     return WdfDeviceWdmDispatchPreprocessedIrp(Device, Irp);
 }
 
+NTSTATUS Pdo_EvtDeviceProcessQueryInterfaceRequest(
+    _In_    WDFDEVICE  Device,
+    _In_    LPGUID     InterfaceType,
+    _Inout_ PINTERFACE ExposedInterface,
+    _Inout_ PVOID      ExposedInterfaceSpecificData
+) 
+{
+    UNREFERENCED_PARAMETER(Device);
+    UNREFERENCED_PARAMETER(ExposedInterfaceSpecificData);
+
+    KdPrint(("Pdo_EvtDeviceProcessQueryInterfaceRequest GUID: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X (version 0x%x)\n",
+        InterfaceType->Data1,
+        InterfaceType->Data2,
+        InterfaceType->Data3,
+        InterfaceType->Data4[0],
+        InterfaceType->Data4[1],
+        InterfaceType->Data4[2],
+        InterfaceType->Data4[3],
+        InterfaceType->Data4[4],
+        InterfaceType->Data4[5],
+        InterfaceType->Data4[6],
+        InterfaceType->Data4[7],
+        ExposedInterface->Version));
+
+    return STATUS_SUCCESS;
+}
+

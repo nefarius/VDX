@@ -325,6 +325,8 @@ EVT_WDF_TIMER Xgip_PendingUsbRequestsTimerFunc;
 
 EVT_WDFDEVICE_WDM_IRP_PREPROCESS Pdo_EvtDeviceWdmIrpPreprocess;
 
+EVT_WDF_DEVICE_PROCESS_QUERY_INTERFACE_REQUEST Pdo_EvtDeviceProcessQueryInterfaceRequest;
+
 #pragma endregion
 
 #pragma region Bus enumeration-specific functions

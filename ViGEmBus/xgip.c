@@ -222,22 +222,22 @@ NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device)
     // Expose USB_BUS_INTERFACE_USBDI_GUID
 
     // This interface actually IS used
-    USB_BUS_INTERFACE_USBDI_V1 xusbInterface;
+    USB_BUS_INTERFACE_USBDI_V1 xgipInterface;
 
-    xusbInterface.Size = sizeof(USB_BUS_INTERFACE_USBDI_V1);
-    xusbInterface.Version = USB_BUSIF_USBDI_VERSION_1;
-    xusbInterface.BusContext = (PVOID)Device;
+    xgipInterface.Size = sizeof(USB_BUS_INTERFACE_USBDI_V1);
+    xgipInterface.Version = USB_BUSIF_USBDI_VERSION_1;
+    xgipInterface.BusContext = (PVOID)Device;
 
-    xusbInterface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
-    xusbInterface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
+    xgipInterface.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
+    xgipInterface.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
 
-    xusbInterface.SubmitIsoOutUrb = UsbPdo_SubmitIsoOutUrb;
-    xusbInterface.GetUSBDIVersion = UsbPdo_GetUSBDIVersion;
-    xusbInterface.QueryBusTime = UsbPdo_QueryBusTime;
-    xusbInterface.QueryBusInformation = UsbPdo_QueryBusInformation;
-    xusbInterface.IsDeviceHighSpeed = UsbPdo_IsDeviceHighSpeed;
+    xgipInterface.SubmitIsoOutUrb = UsbPdo_SubmitIsoOutUrb;
+    xgipInterface.GetUSBDIVersion = UsbPdo_GetUSBDIVersion;
+    xgipInterface.QueryBusTime = UsbPdo_QueryBusTime;
+    xgipInterface.QueryBusInformation = UsbPdo_QueryBusInformation;
+    xgipInterface.IsDeviceHighSpeed = UsbPdo_IsDeviceHighSpeed;
 
-    WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&xusbInterface, &USB_BUS_INTERFACE_USBDI_GUID, NULL);
+    WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&xgipInterface, &USB_BUS_INTERFACE_USBDI_GUID, Pdo_EvtDeviceProcessQueryInterfaceRequest);
 
     status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
     if (!NT_SUCCESS(status))

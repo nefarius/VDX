@@ -83,6 +83,8 @@ NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device)
     NTSTATUS status;
     WDF_QUERY_INTERFACE_CONFIG ifaceCfg;
 
+#ifdef NOPE
+
     INTERFACE dummyIface;
 
     dummyIface.Size = sizeof(INTERFACE);
@@ -215,6 +217,8 @@ NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device)
         return status;
     }
 
+#endif
+
     // Expose USB_BUS_INTERFACE_USBDI_GUID
 
     // This interface actually IS used
@@ -243,7 +247,7 @@ NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device)
     }
 
     // Start pending IRP queue flush timer
-    WdfTimerStart(XgipGetData(Device)->PendingUsbInRequestsTimer, DS4_QUEUE_FLUSH_PERIOD);
+    // WdfTimerStart(XgipGetData(Device)->PendingUsbInRequestsTimer, DS4_QUEUE_FLUSH_PERIOD);
 
     return STATUS_SUCCESS;
 }

@@ -165,8 +165,8 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
         pDescriptor->bDeviceSubClass = 0x47;
         pDescriptor->bDeviceProtocol = 0xD0;
         pDescriptor->bMaxPacketSize0 = 0x40;
-        pDescriptor->idVendor = 0x0E6F; // Hori Co., Ltd
-        pDescriptor->idProduct = 0x0139; // Xbox One Wired Controller
+        pDescriptor->idVendor = 0x045E; // Microsoft Corp.
+        pDescriptor->idProduct = 0x02D1; // Xbox One Wired Controller
         pDescriptor->bcdDevice = 0x0650;
         pDescriptor->iManufacturer = 0x01;
         pDescriptor->iProduct = 0x02;

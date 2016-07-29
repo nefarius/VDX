@@ -36,7 +36,7 @@ NTSTATUS Xgip_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, P
         return status;
 
     // Set hardware IDs
-    RtlUnicodeStringInit(&buffer, L"USB\\VID_0E6F&PID_0139&REV_0650");
+    RtlUnicodeStringInit(&buffer, L"USB\\VID_045E&PID_02D1&REV_0650");
 
     status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
     if (!NT_SUCCESS(status))
@@ -44,7 +44,7 @@ NTSTATUS Xgip_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, P
 
     RtlUnicodeStringCopy(DeviceId, &buffer);
 
-    RtlUnicodeStringInit(&buffer, L"USB\\VID_0E6F&PID_0139");
+    RtlUnicodeStringInit(&buffer, L"USB\\VID_045E&PID_02D1");
 
     status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
     if (!NT_SUCCESS(status))

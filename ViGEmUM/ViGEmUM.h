@@ -71,37 +71,37 @@ typedef struct _VIGEM_TARGET
     IN VIGEM_TARGET_STATE State;
 } VIGEM_TARGET, *PVIGEM_TARGET;
 
+//
+// Initializes a virtual gamepad object.
+// 
+VOID FORCEINLINE VIGEM_TARGET_INIT(
+    _Out_ PVIGEM_TARGET Target
+)
+{
+    RtlZeroMemory(Target, sizeof(VIGEM_TARGET));
+
+    Target->Size = sizeof(VIGEM_TARGET);
+    Target->Version = VIGEM_COMMON_VERSION;
+    Target->State = VigemTargetInitialized;
+}
+
+typedef VOID(CALLBACK* VIGEM_XUSB_NOTIFICATION)(
+    VIGEM_TARGET Target,
+    UCHAR LargeMotor,
+    UCHAR SmallMotor,
+    UCHAR LedNumber);
+
+typedef VOID(CALLBACK* VIGEM_DS4_NOTIFICATION)(
+    VIGEM_TARGET Target,
+    UCHAR LargeMotor,
+    UCHAR SmallMotor,
+    DS4_LIGHTBAR_COLOR LightbarColor);
+
 #ifdef __cplusplus
 extern "C"
 { // only need to export C interface if
   // used by C++ source code
 #endif
-
-    //
-    // Initializes a virtual gamepad object.
-    // 
-    VOID FORCEINLINE VIGEM_TARGET_INIT(
-        _Out_ PVIGEM_TARGET Target
-    )
-    {
-        RtlZeroMemory(Target, sizeof(VIGEM_TARGET));
-
-        Target->Size = sizeof(VIGEM_TARGET);
-        Target->Version = VIGEM_COMMON_VERSION;
-        Target->State = VigemTargetInitialized;
-    }
-
-    typedef VOID(CALLBACK* VIGEM_XUSB_NOTIFICATION)(
-        VIGEM_TARGET Target,
-        UCHAR LargeMotor,
-        UCHAR SmallMotor,
-        UCHAR LedNumber);
-
-    typedef VOID(CALLBACK* VIGEM_DS4_NOTIFICATION)(
-        VIGEM_TARGET Target,
-        UCHAR LargeMotor,
-        UCHAR SmallMotor,
-        DS4_LIGHTBAR_COLOR LightbarColor);
 
     VIGEM_API VIGEM_ERROR vigem_init();
 

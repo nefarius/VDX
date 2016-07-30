@@ -148,57 +148,6 @@ VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
     return VIGEM_ERROR_NONE;
 }
 
-VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
-    VIGEM_DS4_NOTIFICATION Notification,
-    VIGEM_TARGET Target)
-{
-    // TODO: de-duplicate this section
-
-    if (g_hViGEmBus == nullptr)
-    {
-        return VIGEM_ERROR_BUS_NOT_FOUND;
-    }
-
-    if (Target.SerialNo == 0 || Notification == nullptr)
-    {
-        return VIGEM_ERROR_INVALID_TARGET;
-    }
-
-    std::thread _async{ [](
-        VIGEM_DS4_NOTIFICATION _Notification,
-        VIGEM_TARGET _Target)
-    {
-        DWORD error = ERROR_SUCCESS;
-        DWORD transfered = 0;
-        OVERLAPPED lOverlapped = { 0 };
-        lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-
-        DS4_REQUEST_NOTIFICATION notify;
-        DS4_REQUEST_NOTIFICATION_INIT(&notify, _Target.SerialNo);
-
-        do
-        {
-            DeviceIoControl(g_hViGEmBus, IOCTL_DS4_REQUEST_NOTIFICATION, &notify, notify.Size, &notify, notify.Size, &transfered, &lOverlapped);
-
-            if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
-            {
-                _Notification(_Target, notify.Report.LargeMotor, notify.Report.SmallMotor, notify.Report.LightbarColor);
-            }
-            else
-            {
-                error = GetLastError();
-            }
-        } while (error != ERROR_OPERATION_ABORTED && error != ERROR_ACCESS_DENIED);
-
-        CloseHandle(lOverlapped.hEvent);
-
-    }, Notification, Target };
-
-    _async.detach();
-
-    return VIGEM_ERROR_NONE;
-}
-
 VIGEM_API VIGEM_ERROR vigem_target_plugin(
     VIGEM_TARGET_TYPE Type,
     PVIGEM_TARGET Target)
@@ -278,6 +227,57 @@ VIGEM_API VIGEM_ERROR vigem_target_unplug(PVIGEM_TARGET Target)
     CloseHandle(lOverlapped.hEvent);
 
     return VIGEM_ERROR_REMOVAL_FAILED;
+}
+
+VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
+    VIGEM_DS4_NOTIFICATION Notification,
+    VIGEM_TARGET Target)
+{
+    // TODO: de-duplicate this section
+
+    if (g_hViGEmBus == nullptr)
+    {
+        return VIGEM_ERROR_BUS_NOT_FOUND;
+    }
+
+    if (Target.SerialNo == 0 || Notification == nullptr)
+    {
+        return VIGEM_ERROR_INVALID_TARGET;
+    }
+
+    std::thread _async{ [](
+        VIGEM_DS4_NOTIFICATION _Notification,
+        VIGEM_TARGET _Target)
+    {
+        DWORD error = ERROR_SUCCESS;
+        DWORD transfered = 0;
+        OVERLAPPED lOverlapped = { 0 };
+        lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+        DS4_REQUEST_NOTIFICATION notify;
+        DS4_REQUEST_NOTIFICATION_INIT(&notify, _Target.SerialNo);
+
+        do
+        {
+            DeviceIoControl(g_hViGEmBus, IOCTL_DS4_REQUEST_NOTIFICATION, &notify, notify.Size, &notify, notify.Size, &transfered, &lOverlapped);
+
+            if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
+            {
+                _Notification(_Target, notify.Report.LargeMotor, notify.Report.SmallMotor, notify.Report.LightbarColor);
+            }
+            else
+            {
+                error = GetLastError();
+            }
+        } while (error != ERROR_OPERATION_ABORTED && error != ERROR_ACCESS_DENIED);
+
+        CloseHandle(lOverlapped.hEvent);
+
+    }, Notification, Target };
+
+    _async.detach();
+
+    return VIGEM_ERROR_NONE;
 }
 
 VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(

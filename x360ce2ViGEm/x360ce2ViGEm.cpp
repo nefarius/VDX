@@ -97,7 +97,7 @@ int main()
         auto end = high_resolution_clock::now();
         auto dur = end - begin;
         auto ns = duration_cast<nanoseconds>(dur);
-        auto delay = milliseconds(7) - ns;
+        auto delay = milliseconds(5) - ns;
 
         sleep_for(delay);
 

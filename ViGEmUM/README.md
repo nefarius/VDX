@@ -108,7 +108,25 @@ VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
 #### Summary
 Registers a callback function for notifications reported by the virtual Xbox 360 Controller.
 #### Remarks
-Feedback data like vibration state and LED index are reported by the callback function.
+Feedback data like vibration state and LED index are reported to the callback function.
+#### Parameters
+Name | Description
+--- | ---
+`Notification` | A pointer to a notification callback function.
+`Target` | A  `VIGEM_TARGET` object representing the target device to send the report to.
+#### Returns
+`VIGEM_ERROR_NONE` on success or corresponding `_VIGEM_ERRORS` error code on failure.
+
+### Register callback for DS4 notifications
+```c
+VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
+        _In_ PVIGEM_XUSB_NOTIFICATION Notification,
+        _In_ VIGEM_TARGET Target);
+```
+#### Summary
+Registers a callback function for notifications reported by the virtual DualShock 4 Controller.
+#### Remarks
+Feedback data like vibration state and lightbar color are reported to the callback function.
 #### Parameters
 Name | Description
 --- | ---

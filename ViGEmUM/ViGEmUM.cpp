@@ -64,6 +64,11 @@ VIGEM_API VIGEM_ERROR vigem_init()
             continue;
         }
 
+        if (g_hViGEmBus != INVALID_HANDLE_VALUE)
+        {
+            CloseHandle(g_hViGEmBus);
+        }
+
         // bus found, open it
         g_hViGEmBus = CreateFile(detailDataBuffer->DevicePath,
             GENERIC_READ | GENERIC_WRITE,
@@ -87,9 +92,10 @@ VIGEM_API VIGEM_ERROR vigem_init()
 
 VIGEM_API VOID vigem_shutdown()
 {
-    if (g_hViGEmBus != nullptr)
+    if (g_hViGEmBus != INVALID_HANDLE_VALUE)
     {
         CloseHandle(g_hViGEmBus);
+        g_hViGEmBus = INVALID_HANDLE_VALUE;
     }
 }
 

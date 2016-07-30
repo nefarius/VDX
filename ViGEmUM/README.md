@@ -16,7 +16,7 @@ None.
 #### Returns
 `VIGEM_ERROR_NONE` on success or corresponding `_VIGEM_ERRORS` error code on failure.
 
-### Shuts down library
+### Shut down library
 ```c
 VIGEM_API VOID vigem_shutdown();
 ```
@@ -36,13 +36,13 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
     _Out_ PVIGEM_TARGET Target);
 ```
 #### Summary
-Frees all used resources and disconnects all owned target devices.
+Requests a desired target device to be added to the system.
 #### Remarks
-Optional, gets called automatically on process termination.
+This function will try to acquire a free slot on the bus driver and request a new target device to be spawned.
 #### Parameters
 Name | Description
 --- | ---
 `Type` | The `VIGEM_TARGET` type this target device should emulate.
 `Target` | A pointer to a `VIGEM_TARGET` object representing the plugged in target device.
 #### Returns
-Nothing.
+`VIGEM_ERROR_NONE` on success or corresponding `_VIGEM_ERRORS` error code on failure.

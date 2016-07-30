@@ -666,6 +666,8 @@ NTSTATUS Pdo_EvtDeviceWdmIrpPreprocess(
     PIO_STACK_LOCATION irpStack = IoGetCurrentIrpStackLocation(Irp);
     GUID * interfaceType;
 
+    UNREFERENCED_PARAMETER(interfaceType);
+
     switch (irpStack->MinorFunction)
     {
     case IRP_MN_QUERY_INTERFACE:
@@ -704,7 +706,9 @@ NTSTATUS Pdo_EvtDeviceProcessQueryInterfaceRequest(
 ) 
 {
     UNREFERENCED_PARAMETER(Device);
+    UNREFERENCED_PARAMETER(ExposedInterface);
     UNREFERENCED_PARAMETER(ExposedInterfaceSpecificData);
+    UNREFERENCED_PARAMETER(InterfaceType);
 
     KdPrint(("Pdo_EvtDeviceProcessQueryInterfaceRequest GUID: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X (version 0x%x)\n",
         InterfaceType->Data1,

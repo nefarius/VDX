@@ -49,7 +49,10 @@ int main()
 
             if (result == ERROR_SUCCESS)
             {
-                vigem_target_plugin(Xbox360Wired, &targets[i]);
+                if (VIGEM_SUCCESS(vigem_target_plugin(Xbox360Wired, &targets[i])))
+                {
+                    printf("Plugged in controller %d\n", targets[i].SerialNo);
+                }
 
                 RtlCopyMemory(&xReport, &state.Gamepad, sizeof(XUSB_REPORT));
 
@@ -57,20 +60,23 @@ int main()
             }
             else
             {
-                vigem_target_unplug(&targets[i]);
+                if (VIGEM_SUCCESS(vigem_target_unplug(&targets[i])))
+                {
+                    printf("Unplugged in controller %d\n", targets[i].SerialNo);
+                }
             }
         }
 
         auto end = high_resolution_clock::now();
         auto dur = end - begin;
         auto ns = duration_cast<nanoseconds>(dur);
-        auto delay = milliseconds(16) - ns;
+        auto delay = milliseconds(7) - ns;
 
         sleep_for(delay);
 
         auto finished = high_resolution_clock::now();
 
-        printf("Polling delay: %2d ms (Frequency: %3.2f Hz)\r",
+        printf("Polling delay: %1d ms (Frequency: %3.2f Hz)\r",
             duration_cast<milliseconds>(delay).count(),
             (1.0 / duration_cast<milliseconds>(finished - begin).count()) * 1000);
     }

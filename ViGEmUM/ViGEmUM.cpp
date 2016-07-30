@@ -248,6 +248,11 @@ VIGEM_API VIGEM_ERROR vigem_target_unplug(PVIGEM_TARGET Target)
         return VIGEM_ERROR_TARGET_UNINITIALIZED;
     }
 
+    if (Target->State != VigemTargetConnected)
+    {
+        return VIGEM_ERROR_TARGET_NOT_PLUGGED_IN;
+    }
+
     DWORD transfered = 0;
     VIGEM_UNPLUG_TARGET unplug;
     OVERLAPPED lOverlapped = { 0 };

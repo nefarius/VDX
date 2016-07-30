@@ -53,7 +53,7 @@ int main()
             {
                 if (VIGEM_SUCCESS(vigem_target_plugin(Xbox360Wired, &targets[i])))
                 {
-                    printf("Plugged in controller %d\n", targets[i].SerialNo);
+                    printf("Plugged in controller %d\t\t\t\t\n", targets[i].SerialNo);
                 }
 
                 RtlCopyMemory(&xReport, &state.Gamepad, sizeof(XUSB_REPORT));
@@ -64,7 +64,7 @@ int main()
             {
                 if (VIGEM_SUCCESS(vigem_target_unplug(&targets[i])))
                 {
-                    printf("Unplugged in controller %d\n", targets[i].SerialNo);
+                    printf("Unplugged controller %d\t\t\t\t\n", targets[i].SerialNo);
                 }
             }
         }

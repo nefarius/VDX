@@ -202,7 +202,7 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
         return VIGEM_ERROR_BUS_NOT_FOUND;
     }
 
-    if (Target->State < VigemTargetInitialized)
+    if (Target->State == VigemTargetNew)
     {
         return VIGEM_ERROR_TARGET_UNINITIALIZED;
     }
@@ -243,7 +243,7 @@ VIGEM_API VIGEM_ERROR vigem_target_unplug(PVIGEM_TARGET Target)
         return VIGEM_ERROR_BUS_NOT_FOUND;
     }
 
-    if (Target->State < VigemTargetInitialized)
+    if (Target->State == VigemTargetNew)
     {
         return VIGEM_ERROR_TARGET_UNINITIALIZED;
     }

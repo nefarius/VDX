@@ -240,7 +240,7 @@ VOID Bus_EvtIoDeviceControl(
     {
         PVIGEM_PLUGIN_TARGET plugIn = NULL;
 
-        KdPrint(("IOCTL_BUSENUM_PLUGIN_HARDWARE\n"));
+        KdPrint(("IOCTL_VIGEM_PLUGIN_TARGET\n"));
 
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(VIGEM_PLUGIN_TARGET), (PVOID)&plugIn, &length);
 
@@ -268,7 +268,7 @@ VOID Bus_EvtIoDeviceControl(
     {
         PVIGEM_UNPLUG_TARGET unPlug = NULL;
 
-        KdPrint(("IOCTL_BUSENUM_UNPLUG_HARDWARE\n"));
+        KdPrint(("IOCTL_VIGEM_UNPLUG_TARGET\n"));
 
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(VIGEM_UNPLUG_TARGET), (PVOID)&unPlug, &length);
 
@@ -565,7 +565,7 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
 
     WdfChildListEndIteration(list, &iterator);
 
-    return status;
+    return STATUS_SUCCESS;
 }
 
 //

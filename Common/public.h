@@ -144,9 +144,9 @@ VOID FORCEINLINE VIGEM_UNPLUG_TARGET_INIT(
     _In_ ULONG SerialNo
 )
 {
-    RtlZeroMemory(UnPlug, sizeof(VIGEM_PLUGIN_TARGET));
+    RtlZeroMemory(UnPlug, sizeof(VIGEM_UNPLUG_TARGET));
 
-    UnPlug->Size = sizeof(VIGEM_PLUGIN_TARGET);
+    UnPlug->Size = sizeof(VIGEM_UNPLUG_TARGET);
     UnPlug->SerialNo = SerialNo;
 }
 

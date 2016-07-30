@@ -10,7 +10,7 @@ VIGEM_API VIGEM_ERROR vigem_init();
 #### Summary
 Checks if the necessary drivers are accessible and initializes the libraries internals.
 #### Remarks
-Call this once before using any other API functions.
+Call this once before using any other API functions. All owned target devices get removed before every call of this function.
 #### Parameters
 None.
 #### Returns

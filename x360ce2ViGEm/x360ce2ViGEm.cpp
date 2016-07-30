@@ -4,10 +4,15 @@
 #include "stdafx.h"
 #include <Xinput.h>
 #include <ViGEmUM.h>
+#include <chrono>
+#include <thread>
 
 
 int main()
 {
+    using namespace std::this_thread; // sleep_for, sleep_until
+    using namespace std::chrono; // nanoseconds, system_clock, seconds
+
     printf("Initializing emulation driver\n");
 
     if (!VIGEM_SUCCESS(vigem_init())) {
@@ -30,17 +35,11 @@ int main()
     XINPUT_STATE state;
     XUSB_REPORT xReport;
 
-    LARGE_INTEGER frequency;        // ticks per second
-    LARGE_INTEGER t1, t2;           // ticks
-    double elapsedTime;
-
-    QueryPerformanceFrequency(&frequency);
-
     printf("Starting translation, close window to exit...\n");
 
     while (true)
     {
-        QueryPerformanceCounter(&t1);
+        auto begin = high_resolution_clock::now();
 
         for (int i = 0; i < XUSER_MAX_COUNT; i++)
         {
@@ -62,13 +61,18 @@ int main()
             }
         }
 
-        Sleep(8);
+        auto end = high_resolution_clock::now();
+        auto dur = end - begin;
+        auto ns = duration_cast<nanoseconds>(dur);
+        auto delay = milliseconds(16) - ns;
 
-        QueryPerformanceCounter(&t2);
+        sleep_for(delay);
 
-        elapsedTime = (t2.QuadPart - t1.QuadPart) * 1000.0 / frequency.QuadPart;
+        auto finished = high_resolution_clock::now();
 
-        printf("Polling frequency: %3.2f Hz\r", (1.0 / elapsedTime) * 1000);
+        printf("Polling delay: %2d ms (Frequency: %3.2f Hz)\r",
+            duration_cast<milliseconds>(delay).count(),
+            (1.0 / duration_cast<milliseconds>(finished - begin).count()) * 1000);
     }
 
     return 0;

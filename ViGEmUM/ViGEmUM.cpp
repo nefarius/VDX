@@ -100,7 +100,7 @@ VIGEM_API VOID vigem_shutdown()
 }
 
 VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
-    VIGEM_XUSB_NOTIFICATION Notification,
+    PVIGEM_XUSB_NOTIFICATION Notification,
     VIGEM_TARGET Target)
 {
     if (g_hViGEmBus == nullptr)
@@ -114,7 +114,7 @@ VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
     }
 
     std::thread _async{ [](
-        VIGEM_XUSB_NOTIFICATION _Notification,
+        PVIGEM_XUSB_NOTIFICATION _Notification,
         VIGEM_TARGET _Target)
     {
         DWORD error = ERROR_SUCCESS;
@@ -230,7 +230,7 @@ VIGEM_API VIGEM_ERROR vigem_target_unplug(PVIGEM_TARGET Target)
 }
 
 VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
-    VIGEM_DS4_NOTIFICATION Notification,
+    PVIGEM_DS4_NOTIFICATION Notification,
     VIGEM_TARGET Target)
 {
     // TODO: de-duplicate this section
@@ -246,7 +246,7 @@ VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
     }
 
     std::thread _async{ [](
-        VIGEM_DS4_NOTIFICATION _Notification,
+        PVIGEM_DS4_NOTIFICATION _Notification,
         VIGEM_TARGET _Target)
     {
         DWORD error = ERROR_SUCCESS;

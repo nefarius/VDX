@@ -102,7 +102,7 @@ int main()
     }
 
     vigem_register_xusb_notification(
-        (VIGEM_XUSB_NOTIFICATION)my_xusb_notification,
+        (PVIGEM_XUSB_NOTIFICATION)my_xusb_notification,
         x360);
 
     printf("X360 Success!\n\n");
@@ -119,7 +119,7 @@ int main()
     }
 
     vigem_register_ds4_notification(
-        (VIGEM_DS4_NOTIFICATION)my_ds4_notification,
+        (PVIGEM_DS4_NOTIFICATION)my_ds4_notification,
         ds4);
 
     printf("DS4 Success!\n\n");

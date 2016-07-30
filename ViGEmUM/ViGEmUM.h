@@ -85,13 +85,13 @@ VOID FORCEINLINE VIGEM_TARGET_INIT(
     Target->State = VigemTargetInitialized;
 }
 
-typedef VOID(CALLBACK* VIGEM_XUSB_NOTIFICATION)(
+typedef VOID(CALLBACK* PVIGEM_XUSB_NOTIFICATION)(
     VIGEM_TARGET Target,
     UCHAR LargeMotor,
     UCHAR SmallMotor,
     UCHAR LedNumber);
 
-typedef VOID(CALLBACK* VIGEM_DS4_NOTIFICATION)(
+typedef VOID(CALLBACK* PVIGEM_DS4_NOTIFICATION)(
     VIGEM_TARGET Target,
     UCHAR LargeMotor,
     UCHAR SmallMotor,
@@ -115,11 +115,11 @@ extern "C"
         _Out_ PVIGEM_TARGET Target);
 
     VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
-        _In_ VIGEM_XUSB_NOTIFICATION Notification,
+        _In_ PVIGEM_XUSB_NOTIFICATION Notification,
         _In_ VIGEM_TARGET Target);
 
     VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
-        _In_ VIGEM_DS4_NOTIFICATION Notification,
+        _In_ PVIGEM_DS4_NOTIFICATION Notification,
         _In_ VIGEM_TARGET Target);
 
     VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(

@@ -43,10 +43,21 @@ typedef enum _VIGEM_ERRORS
     VIGEM_ERROR_NONE = 0x0000,
     VIGEM_ERROR_BUS_NOT_FOUND,
     VIGEM_ERROR_NO_FREE_SLOT,
-    VIGEM_ERROR_INVALID_TARGET
+    VIGEM_ERROR_INVALID_TARGET,
+    VIGEM_ERROR_REMOVAL_FAILED,
+    VIGEM_ERROR_ALREADY_CONNECTED,
+    VIGEM_ERROR_TARGET_UNINITIALIZED
 } VIGEM_ERROR;
 
 #define VIGEM_SUCCESS(_val_) (_val_ == VIGEM_ERROR_NONE)
+
+typedef enum _VIGEM_TARGET_STATE
+{
+    VigemTargetNew,
+    VigemTargetInitialized,
+    VigemTargetConnected,
+    VigemTargetDisconnected
+} VIGEM_TARGET_STATE, *PVIGEM_TARGET_STATE;
 
 //
 // Represents a virtual gamepad object.
@@ -56,6 +67,7 @@ typedef struct _VIGEM_TARGET
     IN ULONG Size;
     IN USHORT Version;
     IN ULONG SerialNo;
+    IN VIGEM_TARGET_STATE State;
 } VIGEM_TARGET, *PVIGEM_TARGET;
 
 //
@@ -69,6 +81,7 @@ VOID FORCEINLINE VIGEM_TARGET_INIT(
 
     Target->Size = sizeof(VIGEM_TARGET);
     Target->Version = VIGEM_COMMON_VERSION;
+    Target->State = VigemTargetInitialized;
 }
 
 typedef VOID(CALLBACK* VIGEM_XUSB_NOTIFICATION)(
@@ -97,6 +110,9 @@ VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
 
 VIGEM_API VIGEM_ERROR vigem_target_plugin(
     _In_ VIGEM_TARGET_TYPE Type,
+    _Out_ PVIGEM_TARGET Target);
+
+VIGEM_API VIGEM_ERROR vigem_target_unplug(
     _Out_ PVIGEM_TARGET Target);
 
 VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(

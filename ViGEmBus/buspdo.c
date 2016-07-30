@@ -212,6 +212,18 @@ NTSTATUS Bus_CreatePdo(
     // NOTE: not utilized at the moment
     WdfPdoInitAllowForwardingRequestToParent(DeviceInit);
 
+#pragma region PDO event callbacks
+
+    WDF_PDO_EVENT_CALLBACKS pdoEvents;
+    WDF_PDO_EVENT_CALLBACKS_INIT(&pdoEvents);
+
+    pdoEvents.EvtDeviceEnableWakeAtBus = Pdo_EvtDeviceEnableWakeAtBus;
+    pdoEvents.EvtDeviceDisableWakeAtBus = Pdo_EvtDeviceDisableWakeAtBus;
+
+    WdfPdoInitSetEventCallbacks(DeviceInit, &pdoEvents);
+
+#pragma endregion
+
 #pragma region Create PDO
 
     // Add common device data context
@@ -709,5 +721,27 @@ NTSTATUS Pdo_EvtDeviceProcessQueryInterfaceRequest(
         ExposedInterface->Version));
 
     return STATUS_SUCCESS;
+}
+
+NTSTATUS Pdo_EvtDeviceEnableWakeAtBus(
+    _In_ WDFDEVICE          Device,
+    _In_ SYSTEM_POWER_STATE PowerState
+)
+{
+    UNREFERENCED_PARAMETER(Device);
+    UNREFERENCED_PARAMETER(PowerState);
+
+    KdPrint(("Pdo_EvtDeviceEnableWakeAtBus called\n"));
+
+    return STATUS_SUCCESS;
+}
+
+VOID Pdo_EvtDeviceDisableWakeAtBus(
+    _In_ WDFDEVICE Device
+)
+{
+    UNREFERENCED_PARAMETER(Device);
+
+    KdPrint(("Pdo_EvtDeviceDisableWakeAtBus called\n"));
 }
 

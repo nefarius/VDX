@@ -143,7 +143,7 @@ VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
 }
 
 VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
-    VIGEM_DS4_NOTIFICATION Notification, 
+    VIGEM_DS4_NOTIFICATION Notification,
     VIGEM_TARGET Target)
 {
     // TODO: de-duplicate this section
@@ -202,6 +202,16 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
         return VIGEM_ERROR_BUS_NOT_FOUND;
     }
 
+    if (Target->State < VigemTargetInitialized)
+    {
+        return VIGEM_ERROR_TARGET_UNINITIALIZED;
+    }
+
+    if (Target->State == VigemTargetConnected)
+    {
+        return VIGEM_ERROR_ALREADY_CONNECTED;
+    }
+
     DWORD transfered = 0;
     VIGEM_PLUGIN_TARGET plugin;
     OVERLAPPED lOverlapped = { 0 };
@@ -215,6 +225,7 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
 
         if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
         {
+            Target->State = VigemTargetConnected;
             CloseHandle(lOverlapped.hEvent);
             return VIGEM_ERROR_NONE;
         }
@@ -223,6 +234,39 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
     CloseHandle(lOverlapped.hEvent);
 
     return VIGEM_ERROR_NO_FREE_SLOT;
+}
+
+VIGEM_API VIGEM_ERROR vigem_target_unplug(PVIGEM_TARGET Target)
+{
+    if (g_hViGEmBus == nullptr)
+    {
+        return VIGEM_ERROR_BUS_NOT_FOUND;
+    }
+
+    if (Target->State < VigemTargetInitialized)
+    {
+        return VIGEM_ERROR_TARGET_UNINITIALIZED;
+    }
+
+    DWORD transfered = 0;
+    VIGEM_UNPLUG_TARGET unplug;
+    OVERLAPPED lOverlapped = { 0 };
+    lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+    VIGEM_UNPLUG_TARGET_INIT(&unplug, Target->SerialNo);
+
+    DeviceIoControl(g_hViGEmBus, IOCTL_VIGEM_UNPLUG_TARGET, &unplug, unplug.Size, nullptr, 0, &transfered, &lOverlapped);
+
+    if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
+    {
+        Target->State = VigemTargetDisconnected;
+        CloseHandle(lOverlapped.hEvent);
+        return VIGEM_ERROR_NONE;
+    }
+
+    CloseHandle(lOverlapped.hEvent);
+
+    return VIGEM_ERROR_REMOVAL_FAILED;
 }
 
 VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(

@@ -327,6 +327,10 @@ EVT_WDFDEVICE_WDM_IRP_PREPROCESS Pdo_EvtDeviceWdmIrpPreprocess;
 
 EVT_WDF_DEVICE_PROCESS_QUERY_INTERFACE_REQUEST Pdo_EvtDeviceProcessQueryInterfaceRequest;
 
+EVT_WDF_DEVICE_ENABLE_WAKE_AT_BUS Pdo_EvtDeviceEnableWakeAtBus;
+EVT_WDF_DEVICE_DISABLE_WAKE_AT_BUS Pdo_EvtDeviceDisableWakeAtBus;
+
+
 #pragma endregion
 
 #pragma region Bus enumeration-specific functions

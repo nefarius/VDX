@@ -376,7 +376,7 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommo
         0x03,        // bNumInterfaces 3
         0x01,        // bConfigurationValue
         0x00,        // iConfiguration (String Index)
-        0xA0,        // bmAttributes Remote Wakeup
+        0xC0,        // bmAttributes Self Powered
         0xFA,        // bMaxPower 500mA
 
         0x09,        // bLength
@@ -517,7 +517,7 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommo
             pDescriptor->bNumInterfaces = 0x03;
             pDescriptor->bConfigurationValue = 0x01;
             pDescriptor->iConfiguration = 0x00;
-            pDescriptor->bmAttributes = 0xA0;
+            pDescriptor->bmAttributes = 0xC0;
             pDescriptor->MaxPower = 0xFA; // 500mA
 
             break;

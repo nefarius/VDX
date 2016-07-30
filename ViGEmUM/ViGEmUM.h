@@ -71,60 +71,69 @@ typedef struct _VIGEM_TARGET
     IN VIGEM_TARGET_STATE State;
 } VIGEM_TARGET, *PVIGEM_TARGET;
 
-//
-// Initializes a virtual gamepad object.
-// 
-VOID FORCEINLINE VIGEM_TARGET_INIT(
-    _Out_ PVIGEM_TARGET Target
-)
-{
-    RtlZeroMemory(Target, sizeof(VIGEM_TARGET));
+#ifdef __cplusplus
+extern "C"
+{ // only need to export C interface if
+  // used by C++ source code
+#endif
 
-    Target->Size = sizeof(VIGEM_TARGET);
-    Target->Version = VIGEM_COMMON_VERSION;
-    Target->State = VigemTargetInitialized;
+    //
+    // Initializes a virtual gamepad object.
+    // 
+    VOID FORCEINLINE VIGEM_TARGET_INIT(
+        _Out_ PVIGEM_TARGET Target
+    )
+    {
+        RtlZeroMemory(Target, sizeof(VIGEM_TARGET));
+
+        Target->Size = sizeof(VIGEM_TARGET);
+        Target->Version = VIGEM_COMMON_VERSION;
+        Target->State = VigemTargetInitialized;
+    }
+
+    typedef VOID(CALLBACK* VIGEM_XUSB_NOTIFICATION)(
+        VIGEM_TARGET Target,
+        UCHAR LargeMotor,
+        UCHAR SmallMotor,
+        UCHAR LedNumber);
+
+    typedef VOID(CALLBACK* VIGEM_DS4_NOTIFICATION)(
+        VIGEM_TARGET Target,
+        UCHAR LargeMotor,
+        UCHAR SmallMotor,
+        DS4_LIGHTBAR_COLOR LightbarColor);
+
+    VIGEM_API VIGEM_ERROR vigem_init();
+
+    VIGEM_API VOID vigem_shutdown();
+
+    VIGEM_API VIGEM_ERROR vigem_target_plugin(
+        _In_ VIGEM_TARGET_TYPE Type,
+        _Out_ PVIGEM_TARGET Target);
+
+    VIGEM_API VIGEM_ERROR vigem_target_unplug(
+        _Out_ PVIGEM_TARGET Target);
+
+    VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
+        _In_ VIGEM_XUSB_NOTIFICATION Notification,
+        _In_ VIGEM_TARGET Target);
+
+    VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
+        _In_ VIGEM_DS4_NOTIFICATION Notification,
+        _In_ VIGEM_TARGET Target);
+
+    VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
+        _In_ VIGEM_TARGET Target,
+        _In_ XUSB_REPORT Report);
+
+    VIGEM_API VIGEM_ERROR vigem_ds4_submit_report(
+        _In_ VIGEM_TARGET Target,
+        _In_ DS4_REPORT Report);
+
+    VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(
+        _In_ VIGEM_TARGET Target,
+        _In_ XGIP_REPORT Report);
+
+#ifdef __cplusplus
 }
-
-typedef VOID(CALLBACK* VIGEM_XUSB_NOTIFICATION)(
-    VIGEM_TARGET Target, 
-    UCHAR LargeMotor,
-    UCHAR SmallMotor,
-    UCHAR LedNumber);
-
-typedef VOID(CALLBACK* VIGEM_DS4_NOTIFICATION)(
-    VIGEM_TARGET Target,
-    UCHAR LargeMotor,
-    UCHAR SmallMotor,
-    DS4_LIGHTBAR_COLOR LightbarColor);
-
-VIGEM_API VIGEM_ERROR vigem_init();
-
-VIGEM_API VOID vigem_shutdown();
-
-VIGEM_API VIGEM_ERROR vigem_target_plugin(
-    _In_ VIGEM_TARGET_TYPE Type,
-    _Out_ PVIGEM_TARGET Target);
-
-VIGEM_API VIGEM_ERROR vigem_target_unplug(
-    _Out_ PVIGEM_TARGET Target);
-
-VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
-    _In_ VIGEM_XUSB_NOTIFICATION Notification, 
-    _In_ VIGEM_TARGET Target);
-
-VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
-    _In_ VIGEM_DS4_NOTIFICATION Notification,
-    _In_ VIGEM_TARGET Target);
-
-VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
-    _In_ VIGEM_TARGET Target,
-    _In_ XUSB_REPORT Report);
-
-VIGEM_API VIGEM_ERROR vigem_ds4_submit_report(
-    _In_ VIGEM_TARGET Target,
-    _In_ DS4_REPORT Report);
-
-VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(
-    _In_ VIGEM_TARGET Target,
-    _In_ XGIP_REPORT Report);
-
+#endif

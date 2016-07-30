@@ -108,7 +108,7 @@ VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
 #### Summary
 Registers a callback function for notifications reported by the virtual Xbox 360 Controller.
 #### Remarks
-Feedback data like vibration state and LED index is reported by the callback function.
+Feedback data like vibration state and LED index are reported by the callback function.
 #### Parameters
 Name | Description
 --- | ---

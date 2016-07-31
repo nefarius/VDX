@@ -1175,6 +1175,24 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         // Data coming FROM us TO higher driver
         if (pTransfer->TransferFlags & USBD_TRANSFER_DIRECTION_IN)
         {
+            static BOOLEAN initialized = FALSE;
+            UCHAR Response[32] =
+            {
+                0x02, 0x20, 0x01, 0x1c, 0xb9, 0x06, 0xcf, 0xcf,
+                0x27, 0x97, 0x00, 0x00, 0x6f, 0x0e, 0x39, 0x01,
+                0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00,
+                0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00
+            };
+
+            if (!initialized)
+            {
+                pTransfer->TransferBufferLength = 32;
+                RtlCopyBytes(pTransfer->TransferBuffer, Response, 32);
+
+                initialized = TRUE;
+                return STATUS_SUCCESS;
+            }
+
             KdPrint((">> >> >> Incoming request, queuing...\n"));
 
             /* This request is sent periodically and relies on data the "feeder"
@@ -1184,6 +1202,8 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 
             return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
         }
+        
+        KdPrint(("INTERRUPT OUT length: 0x%X\n", pTransfer->TransferBufferLength));
 
         break;
     }

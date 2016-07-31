@@ -237,7 +237,7 @@ NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device)
     xgipInterface.QueryBusInformation = UsbPdo_QueryBusInformation;
     xgipInterface.IsDeviceHighSpeed = UsbPdo_IsDeviceHighSpeed;
 
-    WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&xgipInterface, &USB_BUS_INTERFACE_USBDI_GUID, Pdo_EvtDeviceProcessQueryInterfaceRequest);
+    WDF_QUERY_INTERFACE_CONFIG_INIT(&ifaceCfg, (PINTERFACE)&xgipInterface, &USB_BUS_INTERFACE_USBDI_GUID, NULL);
 
     status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
     if (!NT_SUCCESS(status))

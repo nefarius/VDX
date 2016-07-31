@@ -145,6 +145,8 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 
 #pragma endregion
 
+#pragma region Context & request data types
+
 //
 // Used to identify children in the device list of the bus.
 // 
@@ -300,6 +302,7 @@ typedef struct _XGIP_DEVICE_DATA
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XGIP_DEVICE_DATA, XgipGetData)
 
+#pragma endregion
 
 #pragma region WDF callback prototypes
 
@@ -323,14 +326,6 @@ EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Pdo_EvtIoInternalDeviceControl;
 
 EVT_WDF_TIMER Ds4_PendingUsbRequestsTimerFunc;
 EVT_WDF_TIMER Xgip_PendingUsbRequestsTimerFunc;
-
-EVT_WDFDEVICE_WDM_IRP_PREPROCESS Pdo_EvtDeviceWdmIrpPreprocess;
-
-EVT_WDF_DEVICE_PROCESS_QUERY_INTERFACE_REQUEST Pdo_EvtDeviceProcessQueryInterfaceRequest;
-
-EVT_WDF_DEVICE_ENABLE_WAKE_AT_BUS Pdo_EvtDeviceEnableWakeAtBus;
-EVT_WDF_DEVICE_DISABLE_WAKE_AT_BUS Pdo_EvtDeviceDisableWakeAtBus;
-
 
 #pragma endregion
 

@@ -212,18 +212,6 @@ NTSTATUS Bus_CreatePdo(
     // NOTE: not utilized at the moment
     WdfPdoInitAllowForwardingRequestToParent(DeviceInit);
 
-#pragma region PDO event callbacks
-
-    WDF_PDO_EVENT_CALLBACKS pdoEvents;
-    WDF_PDO_EVENT_CALLBACKS_INIT(&pdoEvents);
-
-    pdoEvents.EvtDeviceEnableWakeAtBus = Pdo_EvtDeviceEnableWakeAtBus;
-    pdoEvents.EvtDeviceDisableWakeAtBus = Pdo_EvtDeviceDisableWakeAtBus;
-
-    WdfPdoInitSetEventCallbacks(DeviceInit, &pdoEvents);
-
-#pragma endregion
-
 #pragma region Create PDO
 
     // Add common device data context
@@ -489,7 +477,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
             KdPrint((">> >> URB_FUNCTION_CONTROL_TRANSFER\n"));
 
             // Control transfer can safely be ignored
-            status = STATUS_UNSUCCESSFUL;
+            status = STATUS_SUCCESS;
 
             break;
 
@@ -656,96 +644,5 @@ VOID Pdo_EvtIoInternalDeviceControl(
     {
         WdfRequestComplete(Request, status);
     }
-}
-
-NTSTATUS Pdo_EvtDeviceWdmIrpPreprocess(
-    _In_    WDFDEVICE Device,
-    _Inout_ PIRP      Irp
-)
-{
-    PIO_STACK_LOCATION irpStack = IoGetCurrentIrpStackLocation(Irp);
-    GUID * interfaceType;
-
-    UNREFERENCED_PARAMETER(interfaceType);
-
-    switch (irpStack->MinorFunction)
-    {
-    case IRP_MN_QUERY_INTERFACE:
-
-        KdPrint(("Pdo_EvtDeviceWdmIrpPreprocess: IRP_MN_QUERY_INTERFACE\n"));
-
-        interfaceType = (GUID *)irpStack->Parameters.QueryInterface.InterfaceType;
-
-        KdPrint(("Got queried for GUID: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n",
-            interfaceType->Data1,
-            interfaceType->Data2,
-            interfaceType->Data3,
-            interfaceType->Data4[0],
-            interfaceType->Data4[1],
-            interfaceType->Data4[2],
-            interfaceType->Data4[3],
-            interfaceType->Data4[4],
-            interfaceType->Data4[5],
-            interfaceType->Data4[6],
-            interfaceType->Data4[7]));
-
-        break;
-    default:
-        break;
-    }
-
-    IoSkipCurrentIrpStackLocation(Irp);
-    return WdfDeviceWdmDispatchPreprocessedIrp(Device, Irp);
-}
-
-NTSTATUS Pdo_EvtDeviceProcessQueryInterfaceRequest(
-    _In_    WDFDEVICE  Device,
-    _In_    LPGUID     InterfaceType,
-    _Inout_ PINTERFACE ExposedInterface,
-    _Inout_ PVOID      ExposedInterfaceSpecificData
-) 
-{
-    UNREFERENCED_PARAMETER(Device);
-    UNREFERENCED_PARAMETER(ExposedInterface);
-    UNREFERENCED_PARAMETER(ExposedInterfaceSpecificData);
-    UNREFERENCED_PARAMETER(InterfaceType);
-
-    KdPrint(("Pdo_EvtDeviceProcessQueryInterfaceRequest GUID: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X (version 0x%x)\n",
-        InterfaceType->Data1,
-        InterfaceType->Data2,
-        InterfaceType->Data3,
-        InterfaceType->Data4[0],
-        InterfaceType->Data4[1],
-        InterfaceType->Data4[2],
-        InterfaceType->Data4[3],
-        InterfaceType->Data4[4],
-        InterfaceType->Data4[5],
-        InterfaceType->Data4[6],
-        InterfaceType->Data4[7],
-        ExposedInterface->Version));
-
-    return STATUS_SUCCESS;
-}
-
-NTSTATUS Pdo_EvtDeviceEnableWakeAtBus(
-    _In_ WDFDEVICE          Device,
-    _In_ SYSTEM_POWER_STATE PowerState
-)
-{
-    UNREFERENCED_PARAMETER(Device);
-    UNREFERENCED_PARAMETER(PowerState);
-
-    KdPrint(("Pdo_EvtDeviceEnableWakeAtBus called\n"));
-
-    return STATUS_SUCCESS;
-}
-
-VOID Pdo_EvtDeviceDisableWakeAtBus(
-    _In_ WDFDEVICE Device
-)
-{
-    UNREFERENCED_PARAMETER(Device);
-
-    KdPrint(("Pdo_EvtDeviceDisableWakeAtBus called\n"));
 }
 

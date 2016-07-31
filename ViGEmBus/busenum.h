@@ -106,6 +106,7 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 #define XGIP_DESCRIPTOR_SIZE	        0x0060
 #define XGIP_CONFIGURATION_SIZE         0x88
 #define XGIP_REPORT_SIZE                0x12
+#define XGIP_QUEUE_FLUSH_PERIOD         0x03E8
 
 #define XUSB_REPORT_SIZE                20
 #define XUSB_RUMBLE_SIZE                8

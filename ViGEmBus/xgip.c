@@ -247,7 +247,16 @@ NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device)
     }
 
     // Start pending IRP queue flush timer
-    // WdfTimerStart(XgipGetData(Device)->PendingUsbInRequestsTimer, DS4_QUEUE_FLUSH_PERIOD);
+    WdfTimerStart(XgipGetData(Device)->PendingUsbInRequestsTimer, XGIP_QUEUE_FLUSH_PERIOD);
+    
+    UCHAR DefaultReport[XGIP_REPORT_SIZE] =
+    {
+        0x20, 0x00, 0x10, 0x0e, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0xa3, 0xfd, 0xed, 0x05, 0x5b, 0x03,
+        0x6f, 0x02
+    };
+
+    RtlCopyBytes(XgipGetData(Device)->Report, DefaultReport, XGIP_REPORT_SIZE);
 
     return STATUS_SUCCESS;
 }

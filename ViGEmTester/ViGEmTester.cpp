@@ -35,9 +35,14 @@ SOFTWARE.
 #include <time.h>
 #include <ViGEmUM.h>
 
+//#define VIGEM_TEST_XUSB
+//#define VIGEM_TEST_DS4
+#define VIGEM_TEST_XGIP
+
 HANDLE bus;
 int serial = 0;
 
+#ifdef VIGEM_TEST_XUSB
 VOID my_xusb_notification(
     VIGEM_TARGET Target,
     UCHAR LargeMotor,
@@ -50,7 +55,9 @@ VOID my_xusb_notification(
         SmallMotor,
         LedNumber);
 }
+#endif
 
+#ifdef VIGEM_TEST_DS4
 VOID my_ds4_notification(
     VIGEM_TARGET Target,
     UCHAR LargeMotor,
@@ -65,7 +72,7 @@ VOID my_ds4_notification(
         LightbarColor.Green,
         LightbarColor.Blue);
 }
-
+#endif
 
 int main()
 {
@@ -78,8 +85,10 @@ int main()
         return 1;
     }
 
+#ifdef VIGEM_TEST_XGIP
     VIGEM_TARGET xbone;
     VIGEM_TARGET_INIT(&xbone);
+    XGIP_REPORT xgipr = { 0 };
 
     if (!VIGEM_SUCCESS(vigem_target_plugin(XboxOneWired, &xbone)))
     {
@@ -90,9 +99,12 @@ int main()
 
     printf("XBONE Success!");
     getchar();
+#endif
 
+#ifdef VIGEM_TEST_XUSB
     VIGEM_TARGET x360;
     VIGEM_TARGET_INIT(&x360);
+    XUSB_REPORT r = { 0 };
 
     if (!VIGEM_SUCCESS(vigem_target_plugin(Xbox360Wired, &x360)))
     {
@@ -107,9 +119,13 @@ int main()
 
     printf("X360 Success!\n\n");
     getchar();
+#endif
 
+#ifdef VIGEM_TEST_DS4
     VIGEM_TARGET ds4;
     VIGEM_TARGET_INIT(&ds4);
+    DS4_REPORT ds4r;
+    DS4_REPORT_INIT(&ds4r);
 
     if (!VIGEM_SUCCESS(vigem_target_plugin(DualShock4Wired, &ds4)))
     {
@@ -124,22 +140,25 @@ int main()
 
     printf("DS4 Success!\n\n");
     getchar();
-
-    XUSB_REPORT r = { 0 };
-    DS4_REPORT ds4r = { 0 };
-    DS4_REPORT_INIT(&ds4r);
-    XGIP_REPORT xgipr = { 0 };
+#endif
 
     while (getchar() != 'a')
     {
+#ifdef VIGEM_TEST_XUSB
         r.bLeftTrigger++;
+        vigem_xusb_submit_report(x360, r);
+#endif
+
+#ifdef VIGEM_TEST_DS4
         ds4r.bTriggerL++;
+        vigem_ds4_submit_report(ds4, ds4r);
+#endif
+
+#ifdef VIGEM_TEST_XGIP
         xgipr.LeftTrigger++;
         xgipr.RightTrigger--;
-
-        vigem_xusb_submit_report(x360, r);
-        vigem_ds4_submit_report(ds4, ds4r);
         vigem_xgip_submit_report(xbone, xgipr);
+#endif
     }
 
     getchar();

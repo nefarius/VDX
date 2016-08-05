@@ -8,7 +8,11 @@ namespace Nefarius.ViGEm
 
         static ViGEmTarget()
         {
-            ViGemUm.vigem_init();
+            var error = ViGemUm.vigem_init();
+
+            if (error == ViGemUm.VigemError.VigemErrorNone) return;
+            
+            throw new Exception($"Init error: {error}");
         }
 
         protected ViGEmTarget()
@@ -23,7 +27,7 @@ namespace Nefarius.ViGEm
 
         protected void PlugIn(VigemTargetType type)
         {
-            ViGemUm.vigem_target_plugin(type, ref _target);
+            var error = ViGemUm.vigem_target_plugin(type, ref _target);
 
             switch (type)
             {

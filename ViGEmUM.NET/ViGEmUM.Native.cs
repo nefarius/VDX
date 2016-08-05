@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace Nefarius.ViGEm
 {
@@ -40,9 +41,9 @@ namespace Nefarius.ViGEm
         [StructLayout(LayoutKind.Sequential)]
         public struct VigemTarget
         {
-            public ulong Size;
+            public uint Size;
             public ushort Version;
-            public ulong SerialNo;
+            public uint SerialNo;
             public VigemTargetState State;
         }
 
@@ -96,7 +97,7 @@ namespace Nefarius.ViGEm
         public static void VIGEM_TARGET_INIT(
             [In, Out] ref VigemTarget target)
         {
-            target.Size = (ulong)Marshal.SizeOf(typeof(VigemTarget));
+            target.Size = (uint)Marshal.SizeOf(typeof(VigemTarget));
             target.Version = 1;
             target.State = VigemTargetState.VigemTargetInitialized;
         }

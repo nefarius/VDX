@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Nefarius.ViGEm.Targets;
 
 namespace ViGEmTester.NET
 {
@@ -10,6 +7,15 @@ namespace ViGEmTester.NET
     {
         static void Main(string[] args)
         {
+            var x360 = new Xbox360Controller();
+            x360.PlugIn();
+
+            Console.ReadKey();
+            
+            var ds4 = new DualShock4Controller();
+            ds4.PlugIn();
+
+            Console.ReadKey();
         }
     }
 }

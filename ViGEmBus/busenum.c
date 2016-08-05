@@ -855,26 +855,36 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
         break;
     case XboxOneWired:
 
-#ifdef NOPE
-        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = XGIP_REPORT_SIZE;
+        // Request is input report
+        if (((PXGIP_SUBMIT_REPORT)Report)->Size == sizeof(XGIP_SUBMIT_REPORT))
+        {
+            urb->UrbBulkOrInterruptTransfer.TransferBufferLength = XGIP_REPORT_SIZE;
 
-        // Increase event counter on every call (can roll-over)
-        XgipGetData(hChild)->Report[2]++;
+            // Increase event counter on every call (can roll-over)
+            XgipGetData(hChild)->Report[2]++;
 
-        /* Copy report to cache and transfer buffer
-         * Skip first four bytes as they are not part of the report */
-        RtlCopyBytes(XgipGetData(hChild)->Report + 4, &((PXGIP_SUBMIT_REPORT)Report)->Report, sizeof(XGIP_REPORT));
-        RtlCopyBytes(Buffer, XgipGetData(hChild)->Report, XGIP_REPORT_SIZE);
-#endif
+            /* Copy report to cache and transfer buffer
+             * Skip first four bytes as they are not part of the report */
+            RtlCopyBytes(XgipGetData(hChild)->Report + 4, &((PXGIP_SUBMIT_REPORT)Report)->Report, sizeof(XGIP_REPORT));
+            RtlCopyBytes(Buffer, XgipGetData(hChild)->Report, XGIP_REPORT_SIZE);
+
+            break;
+        }
+
+        // Request is control data
+        if(((PXGIP_SUBMIT_INTERRUPT)Report)->Size == sizeof(XGIP_SUBMIT_INTERRUPT))
         {
             PXGIP_SUBMIT_INTERRUPT interrupt = (PXGIP_SUBMIT_INTERRUPT)Report;
 
             urb->UrbBulkOrInterruptTransfer.TransferBufferLength = interrupt->InterruptLength;
             RtlCopyBytes(Buffer, interrupt->Interrupt, interrupt->InterruptLength);
+
+            break;
         }
 
         break;
     default:
+        status = STATUS_INVALID_PARAMETER;
         break;
     }
 

@@ -379,10 +379,51 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
         return VIGEM_ERROR_INVALID_TARGET;
     }
 
-    using namespace std;
+    DWORD transfered = 0;
+    OVERLAPPED lOverlapped = { 0 };
+    lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
-    vector<vector<unsigned char>> packets;
+    XGIP_SUBMIT_REPORT report;
+    XGIP_SUBMIT_REPORT_INIT(&report, Target.SerialNo);
 
+    report.Report = Report;
+
+    DeviceIoControl(g_hViGEmBus, IOCTL_XGIP_SUBMIT_REPORT, &report, report.Size, nullptr, 0, &transfered, &lOverlapped);
+
+    if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) == 0)
+    {
+        CloseHandle(lOverlapped.hEvent);
+
+        switch (GetLastError())
+        {
+        case ERROR_ACCESS_DENIED:
+            return VIGEM_ERROR_INVALID_TARGET;
+            break;
+        default:
+            break;
+        }
+    }
+
+    CloseHandle(lOverlapped.hEvent);
+
+    return VIGEM_ERROR_NONE;
+}
+
+VIGEM_API VIGEM_ERROR vigem_xgip_init_xboxgip(VIGEM_TARGET Target)
+{
+    if (g_hViGEmBus == nullptr)
+    {
+        return VIGEM_ERROR_BUS_NOT_FOUND;
+    }
+
+    if (Target.SerialNo == 0)
+    {
+        return VIGEM_ERROR_INVALID_TARGET;
+    }
+
+    std::vector<std::vector<unsigned char>> packets;
+
+    // Waiting connection packet
     packets.push_back(
     {
         0x02, 0x20, 0x01, 0x1C, 0xB9, 0x06, 0xCF, 0xCF,
@@ -391,6 +432,7 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
         0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00
     });
 
+    // Controller identification
     packets.push_back(
     {
         0x04, 0xF0, 0x02, 0x3A, 0x94, 0x02, 0x10, 0x00,
@@ -403,6 +445,7 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
         0x02, 0x03, 0x04, 0x06, 0x07, 0x05, 0x01, 0x04
     });
 
+    // Controller identification
     packets.push_back(
     {
         0x04, 0xA0, 0x02, 0xBA, 0x00, 0x3A, 0x05, 0x06,
@@ -415,6 +458,7 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
         0x2E, 0x41, 0x66, 0x74, 0x65, 0x72, 0x67, 0x6C
     });
 
+    // Controller identification
     packets.push_back(
     {
         0x04, 0xA0, 0x02, 0xBA, 0x00, 0x74, 0x6F, 0x77,
@@ -427,6 +471,7 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
         0xB7, 0xA9, 0x0F, 0x7E, 0xDB, 0x5A, 0x96, 0xBC
     });
 
+    // Controller identification
     packets.push_back(
     {
         0x04, 0xA0, 0x02, 0x3A, 0xAE, 0x01, 0x44, 0x9C,
@@ -439,6 +484,7 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, 0x00
     });
 
+    // Controller identification
     packets.push_back(
     {
         0x04, 0xB0, 0x02, 0x2C, 0xE8, 0x01, 0x21, 0x3C,
@@ -450,22 +496,26 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
         0x00, 0x00
     });
 
+    // Unknown
     packets.push_back(
     {
         0x04, 0xA0, 0x02, 0x00, 0x94, 0x02
     });
 
+    // Unknown
     packets.push_back(
     {
         0x01, 0x20, 0x02, 0x09, 0x02, 0x05, 0x20, 0x00,
         0x00, 0x00, 0x00, 0x09, 0x00
     });
 
+    // Heartbeat
     packets.push_back(
     {
         0x03, 0x20, 0x03, 0x04, 0x80, 0x00, 0x00, 0x00
     });
 
+    // Button report
     packets.push_back(
     {
         0x20, 0x00, 0x04, 0x0e, 0x00, 0x00, 0x00, 0x00,
@@ -473,6 +523,7 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
         0xcf, 0x00
     });
 
+    // Button report
     packets.push_back(
     {
         0x20, 0x00, 0x05, 0x0e, 0x00, 0x00, 0x00, 0x00,
@@ -480,6 +531,7 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
         0x64, 0x01
     });
 
+    // Button report
     packets.push_back(
     {
         0x20, 0x00, 0x06, 0x0e, 0x00, 0x00, 0x00, 0x00,
@@ -487,6 +539,7 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
         0xbd, 0x01
     });
 
+    // Button report
     packets.push_back(
     {
         0x20, 0x00, 0x07, 0x0e, 0x00, 0x00, 0x00, 0x00,
@@ -494,12 +547,14 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
         0xf8, 0x01
     });
 
+    // Unknown
     packets.push_back(
     {
         0x01, 0x20, 0x01, 0x09, 0x00, 0x06, 0x30, 0x3a,
         0x00, 0x00, 0x00, 0x00, 0x00
     });
 
+    // Unknown
     packets.push_back(
     {
         0x06, 0x30, 0x02, 0x06, 0x00, 0xc1, 0x00, 0x01,
@@ -535,6 +590,7 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
             }
         }
 
+        // TODO: improve
         Sleep(5);
     }
 

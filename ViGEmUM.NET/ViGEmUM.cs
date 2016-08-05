@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Nefarius.ViGEm
 {
-    public partial class ViGEmUM
+    internal static partial class ViGemUm
     {
     }
 }

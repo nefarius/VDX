@@ -2,30 +2,30 @@
 
 namespace Nefarius.ViGEm
 {
-    public partial class ViGEmUM
+    public enum VigemTargetType
+    {
+        Xbox360Wired,
+        XboxOneWired,
+        DualShock4Wired
+    }
+
+    internal static partial class ViGemUm
     {
         #region Enums
 
-        private enum VIGEM_ERROR
+        public enum VigemError
         {
-            VIGEM_ERROR_NONE = 0x0000,
-            VIGEM_ERROR_BUS_NOT_FOUND,
-            VIGEM_ERROR_NO_FREE_SLOT,
-            VIGEM_ERROR_INVALID_TARGET,
-            VIGEM_ERROR_REMOVAL_FAILED,
-            VIGEM_ERROR_ALREADY_CONNECTED,
-            VIGEM_ERROR_TARGET_UNINITIALIZED,
-            VIGEM_ERROR_TARGET_NOT_PLUGGED_IN
+            VigemErrorNone = 0x0000,
+            VigemErrorBusNotFound,
+            VigemErrorNoFreeSlot,
+            VigemErrorInvalidTarget,
+            VigemErrorRemovalFailed,
+            VigemErrorAlreadyConnected,
+            VigemErrorTargetUninitialized,
+            VigemErrorTargetNotPluggedIn
         }
 
-        private enum VIGEM_TARGET_TYPE
-        {
-            Xbox360Wired,
-            XboxOneWired,
-            DualShock4Wired
-        }
-
-        private enum VIGEM_TARGET_STATE
+        public enum VigemTargetState
         {
             VigemTargetNew,
             VigemTargetInitialized,
@@ -38,36 +38,36 @@ namespace Nefarius.ViGEm
         #region Structs
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct VIGEM_TARGET
+        public struct VigemTarget
         {
-            ulong Size;
-            ushort Version;
-            ulong SerialNo;
-            VIGEM_TARGET_STATE State;
+            public ulong Size;
+            public ushort Version;
+            public ulong SerialNo;
+            public VigemTargetState State;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        struct DS4_LIGHTBAR_COLOR
+        public struct Ds4LightbarColor
         {
-            byte Red;
-            byte Green;
-            byte Blue;
+            public byte Red;
+            public byte Green;
+            public byte Blue;
         };
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct XUSB_REPORT
+        public struct XusbReport
         {
-            ushort wButtons;
-            byte bLeftTrigger;
-            byte bRightTrigger;
-            short sThumbLX;
-            short sThumbLY;
-            short sThumbRX;
-            short sThumbRY;
+            public ushort wButtons;
+            public byte bLeftTrigger;
+            public byte bRightTrigger;
+            public short sThumbLX;
+            public short sThumbLY;
+            public short sThumbRX;
+            public short sThumbRY;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        struct DS4_REPORT
+        public struct Ds4Report
         {
             byte bThumbLX;
             byte bThumbLY;
@@ -81,51 +81,59 @@ namespace Nefarius.ViGEm
 
         #endregion
 
-        private delegate void VIGEM_XUSB_NOTIFICATION(
-            VIGEM_TARGET Target,
-            byte LargeMotor,
-            byte SmallMotor,
-            byte LedNumber);
+        public delegate void VigemXusbNotification(
+            VigemTarget target,
+            byte largeMotor,
+            byte smallMotor,
+            byte ledNumber);
 
-        private delegate void VIGEM_DS4_NOTIFICATION(
-            VIGEM_TARGET Target,
-            byte LargeMotor,
-            byte SmallMotor,
-            DS4_LIGHTBAR_COLOR LightbarColor);
+        public delegate void VigemDs4Notification(
+            VigemTarget target,
+            byte largeMotor,
+            byte smallMotor,
+            Ds4LightbarColor lightbarColor);
 
-        [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern VIGEM_ERROR vigem_init();
-
-        [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern void vigem_shutdown();
-
-        [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern VIGEM_ERROR vigem_target_plugin(
-            [In] VIGEM_TARGET_TYPE Type,
-            [In, Out] ref VIGEM_TARGET Target);
+        public static void VIGEM_TARGET_INIT(
+            [In, Out] ref VigemTarget target)
+        {
+            target.Size = (ulong)Marshal.SizeOf(typeof(VigemTarget));
+            target.Version = 1;
+            target.State = VigemTargetState.VigemTargetInitialized;
+        }
 
         [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern void vigem_target_unplug(
-            [In, Out] ref VIGEM_TARGET Target);
+        public static extern VigemError vigem_init();
 
         [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern VIGEM_ERROR vigem_register_xusb_notification(
-            [In, MarshalAs(UnmanagedType.FunctionPtr)] VIGEM_XUSB_NOTIFICATION Notification,
-            [In] VIGEM_TARGET Target);
+        public static extern void vigem_shutdown();
 
         [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern VIGEM_ERROR vigem_register_ds4_notification(
-            [In, MarshalAs(UnmanagedType.FunctionPtr)] VIGEM_DS4_NOTIFICATION Notification,
-            [In] VIGEM_TARGET Target);
+        public static extern VigemError vigem_target_plugin(
+            [In] VigemTargetType type,
+            [In, Out] ref VigemTarget target);
 
         [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern VIGEM_ERROR vigem_xusb_submit_report(
-            [In] VIGEM_TARGET Target,
-            [In] XUSB_REPORT Report);
+        public static extern void vigem_target_unplug(
+            [In, Out] ref VigemTarget target);
 
         [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern VIGEM_ERROR vigem_ds4_submit_report(
-            [In] VIGEM_TARGET Target,
-            [In] DS4_REPORT Report);
+        public static extern VigemError vigem_register_xusb_notification(
+            [In, MarshalAs(UnmanagedType.FunctionPtr)] VigemXusbNotification notification,
+            [In] VigemTarget target);
+
+        [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern VigemError vigem_register_ds4_notification(
+            [In, MarshalAs(UnmanagedType.FunctionPtr)] VigemDs4Notification notification,
+            [In] VigemTarget target);
+
+        [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern VigemError vigem_xusb_submit_report(
+            [In] VigemTarget target,
+            [In] XusbReport report);
+
+        [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern VigemError vigem_ds4_submit_report(
+            [In] VigemTarget target,
+            [In] Ds4Report report);
     }
 }

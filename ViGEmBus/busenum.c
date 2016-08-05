@@ -449,9 +449,9 @@ VOID Bus_EvtIoDeviceControl(
     {
         PXGIP_SUBMIT_INTERRUPT xgipSubmit = NULL;
 
-        KdPrint(("IOCTL_XGIP_SUBMIT_REPORT\n"));
+        KdPrint(("IOCTL_XGIP_SUBMIT_INTERRUPT\n"));
 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(PXGIP_SUBMIT_INTERRUPT), (PVOID)&xgipSubmit, &length);
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(XGIP_SUBMIT_INTERRUPT), (PVOID)&xgipSubmit, &length);
 
         if (!NT_SUCCESS(status))
         {
@@ -459,7 +459,7 @@ VOID Bus_EvtIoDeviceControl(
             break;
         }
 
-        if ((sizeof(PXGIP_SUBMIT_INTERRUPT) == xgipSubmit->Size) && (length == InputBufferLength))
+        if ((sizeof(XGIP_SUBMIT_INTERRUPT) == xgipSubmit->Size) && (length == InputBufferLength))
         {
             // This request only supports a single PDO at a time
             if (xgipSubmit->SerialNo == 0)

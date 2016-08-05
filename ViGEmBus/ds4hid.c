@@ -278,7 +278,7 @@ VOID Ds4_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length)
 
         0x09,        // bLength
         0x21,        // bDescriptorType (HID)
-        0x11, 0x01,  // bcdHID 1.17
+        0x11, 0x01,  // bcdHID 1.11
         0x00,        // bCountryCode
         0x01,        // bNumDescriptors
         0x22,        // bDescriptorType[0] (HID)
@@ -297,6 +297,10 @@ VOID Ds4_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length)
         0x03,        // bmAttributes (Interrupt)
         0x40, 0x00,  // wMaxPacketSize 64
         0x05,        // bInterval 5 (unit depends on device speed)
+
+                     // 41 bytes
+
+                     // best guess: USB Standard Descriptor
     };
 
     RtlCopyBytes(Buffer, Ds4DescriptorData, Length);

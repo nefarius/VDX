@@ -445,6 +445,35 @@ VOID Bus_EvtIoDeviceControl(
         break;
     }
 
+    case IOCTL_XGIP_SUBMIT_INTERRUPT:
+    {
+        PXGIP_SUBMIT_INTERRUPT xgipSubmit = NULL;
+
+        KdPrint(("IOCTL_XGIP_SUBMIT_REPORT\n"));
+
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(PXGIP_SUBMIT_INTERRUPT), (PVOID)&xgipSubmit, &length);
+
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            break;
+        }
+
+        if ((sizeof(PXGIP_SUBMIT_INTERRUPT) == xgipSubmit->Size) && (length == InputBufferLength))
+        {
+            // This request only supports a single PDO at a time
+            if (xgipSubmit->SerialNo == 0)
+            {
+                status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            status = Bus_XgipSubmitInterrupt(hDevice, xgipSubmit->SerialNo, xgipSubmit);
+        }
+
+        break;
+    }
+
     default:
         KdPrint(("UNKNOWN IOCTL CODE 0x%x\n", IoControlCode));
         break; // default status is STATUS_INVALID_PARAMETER
@@ -674,6 +703,11 @@ NTSTATUS Bus_XgipSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXGIP_SUBMIT_REP
     return Bus_SubmitReport(Device, SerialNo, Report);
 }
 
+NTSTATUS Bus_XgipSubmitInterrupt(WDFDEVICE Device, ULONG SerialNo, PXGIP_SUBMIT_INTERRUPT Report)
+{
+    return Bus_SubmitReport(Device, SerialNo, Report);
+}
+
 NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
 {
     NTSTATUS status = STATUS_SUCCESS;
@@ -821,6 +855,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
         break;
     case XboxOneWired:
 
+#ifdef NOPE
         urb->UrbBulkOrInterruptTransfer.TransferBufferLength = XGIP_REPORT_SIZE;
 
         // Increase event counter on every call (can roll-over)
@@ -830,6 +865,13 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
          * Skip first four bytes as they are not part of the report */
         RtlCopyBytes(XgipGetData(hChild)->Report + 4, &((PXGIP_SUBMIT_REPORT)Report)->Report, sizeof(XGIP_REPORT));
         RtlCopyBytes(Buffer, XgipGetData(hChild)->Report, XGIP_REPORT_SIZE);
+#endif
+        {
+            PXGIP_SUBMIT_INTERRUPT interrupt = (PXGIP_SUBMIT_INTERRUPT)Report;
+
+            urb->UrbBulkOrInterruptTransfer.TransferBufferLength = interrupt->InterruptLength;
+            RtlCopyBytes(Buffer, interrupt->Interrupt, interrupt->InterruptLength);
+        }
 
         break;
     default:

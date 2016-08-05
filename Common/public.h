@@ -56,6 +56,7 @@ DEFINE_GUID(GUID_DEVCLASS_VIGEM_RAWPDO,
 #define IOCTL_DS4_SUBMIT_REPORT         BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x202)
 #define IOCTL_DS4_REQUEST_NOTIFICATION  BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x203)
 #define IOCTL_XGIP_SUBMIT_REPORT        BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x204)
+#define IOCTL_XGIP_SUBMIT_INTERRUPT     BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x205)
 
 #define VIGEM_COMMON_VERSION 0x01
 
@@ -448,7 +449,7 @@ typedef struct _XGIP_REPORT
 } XGIP_REPORT, *PXGIP_REPORT;
 
 //
-// DualShock 4 request data
+// Xbox One request data
 // 
 typedef struct _XGIP_SUBMIT_REPORT
 {
@@ -479,6 +480,46 @@ VOID FORCEINLINE XGIP_SUBMIT_REPORT_INIT(
     RtlZeroMemory(Report, sizeof(XGIP_SUBMIT_REPORT));
 
     Report->Size = sizeof(XGIP_SUBMIT_REPORT);
+    Report->SerialNo = SerialNo;
+}
+
+//
+// Xbox One interrupt data
+// 
+typedef struct _XGIP_SUBMIT_INTERRUPT
+{
+    //
+    // sizeof(struct _XGIP_SUBMIT_INTERRUPT)
+    // 
+    ULONG Size;
+
+    //
+    // Serial number of target device.
+    // 
+    ULONG SerialNo;
+
+    //
+    // Interrupt buffer.
+    // 
+    UCHAR Interrupt[64];
+
+    //
+    // Length of interrupt buffer.
+    // 
+    ULONG InterruptLength;
+} XGIP_SUBMIT_INTERRUPT, *PXGIP_SUBMIT_INTERRUPT;
+
+//
+// Initializes an Xbox One interrupt.
+// 
+VOID FORCEINLINE XGIP_SUBMIT_INTERRUPT_INIT(
+    _Out_ PXGIP_SUBMIT_INTERRUPT Report,
+    _In_ ULONG SerialNo
+)
+{
+    RtlZeroMemory(Report, sizeof(XGIP_SUBMIT_INTERRUPT));
+
+    Report->Size = sizeof(XGIP_SUBMIT_INTERRUPT);
     Report->SerialNo = SerialNo;
 }
 

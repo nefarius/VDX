@@ -379,6 +379,13 @@ Bus_XgipSubmitReport(
 );
 
 NTSTATUS
+Bus_XgipSubmitInterrupt(
+    WDFDEVICE Device,
+    ULONG SerialNo,
+    PXGIP_SUBMIT_INTERRUPT Report
+);
+
+NTSTATUS
 Bus_SubmitReport(
     WDFDEVICE Device,
     ULONG SerialNo,

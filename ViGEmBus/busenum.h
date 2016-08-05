@@ -325,7 +325,6 @@ EVT_WDF_DEVICE_PREPARE_HARDWARE Bus_EvtDevicePrepareHardware;
 EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Pdo_EvtIoInternalDeviceControl;
 
 EVT_WDF_TIMER Ds4_PendingUsbRequestsTimerFunc;
-EVT_WDF_TIMER Xgip_PendingUsbRequestsTimerFunc;
 
 #pragma endregion
 

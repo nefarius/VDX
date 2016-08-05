@@ -288,25 +288,6 @@ NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device)
         return status;
     }
 
-    // Initialize periodic timer
-    WDF_TIMER_CONFIG timerConfig;
-    WDF_TIMER_CONFIG_INIT_PERIODIC(&timerConfig, Xgip_PendingUsbRequestsTimerFunc, DS4_QUEUE_FLUSH_PERIOD);
-
-    // Timer object attributes
-    WDF_OBJECT_ATTRIBUTES timerAttribs;
-    WDF_OBJECT_ATTRIBUTES_INIT(&timerAttribs);
-
-    // PDO is parent
-    timerAttribs.ParentObject = Device;
-
-    // Create timer
-    status = WdfTimerCreate(&timerConfig, &timerAttribs, &xgip->PendingUsbInRequestsTimer);
-    if (!NT_SUCCESS(status))
-    {
-        KdPrint(("WdfTimerCreate failed 0x%x\n", status));
-        return status;
-    }
-
     // Create and assign queue for user-land notification requests
     WDF_IO_QUEUE_CONFIG_INIT(&notificationsQueueConfig, WdfIoQueueDispatchManual);
 
@@ -397,55 +378,5 @@ VOID Xgip_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length)
     };
 
     RtlCopyBytes(Buffer, XgipDescriptorData, Length);
-}
-
-VOID Xgip_PendingUsbRequestsTimerFunc(
-    _In_ WDFTIMER Timer
-)
-{
-    NTSTATUS status;
-    WDFREQUEST usbRequest;
-    WDFDEVICE hChild;
-    PXGIP_DEVICE_DATA xgipData;
-    PIRP pendingIrp;
-    PIO_STACK_LOCATION irpStack;
-
-    KdPrint(("Xgip_PendingUsbRequestsTimerFunc: Timer elapsed\n"));
-
-    hChild = WdfTimerGetParentObject(Timer);
-    xgipData = XgipGetData(hChild);
-
-    WdfObjectAcquireLock(xgipData->PendingUsbInRequests);
-
-    // Get pending USB request
-    status = WdfIoQueueRetrieveNextRequest(xgipData->PendingUsbInRequests, &usbRequest);
-
-    if (NT_SUCCESS(status))
-    {
-        // KdPrint(("Ds4_PendingUsbRequestsTimerFunc: pending IRP found\n"));
-
-        // Get pending IRP
-        pendingIrp = WdfRequestWdmGetIrp(usbRequest);
-        irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
-
-        // Get USB request block
-        PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
-
-        // Get transfer buffer
-        PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
-
-        // Set buffer length to report size
-        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = XGIP_REPORT_SIZE;
-
-        // Increase event counter on every call (can roll-over)
-        xgipData->Report[2]++;
-
-        RtlCopyBytes(Buffer, xgipData->Report, XGIP_REPORT_SIZE);
-
-        // Complete pending request
-        WdfRequestComplete(usbRequest, status);
-    }
-
-    WdfObjectReleaseLock(xgipData->PendingUsbInRequests);
 }
 

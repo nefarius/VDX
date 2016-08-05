@@ -421,13 +421,7 @@ VOID GenerateRandomMacAddress(PMAC_ADDRESS Address);
 NTSTATUS Xusb_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
 NTSTATUS Xusb_PrepareHardware(WDFDEVICE Device);
 NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION Description);
-
-//
-// XGIP-specific functions
-// 
-NTSTATUS Xgip_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
-NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device);
-NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device);
+VOID Xusb_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);
 
 //
 // DS4-specific functions
@@ -435,4 +429,13 @@ NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device);
 NTSTATUS Ds4_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
 NTSTATUS Ds4_PrepareHardware(WDFDEVICE Device);
 NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION Description);
+VOID Ds4_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);
+
+//
+// XGIP-specific functions
+// 
+NTSTATUS Xgip_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
+NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device);
+NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device);
+VOID Xgip_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);
 

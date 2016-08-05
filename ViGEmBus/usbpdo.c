@@ -183,346 +183,68 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
 }
 
 //
-// Set configuration descriptor to identify as HID and exposed endpoints.
+// Set configuration descriptor, expose interfaces and endpoints.
 // 
 NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
 {
-    UCHAR XusbDescriptorData[XUSB_DESCRIPTOR_SIZE] =
-    {
-        0x09,        //   bLength
-        0x02,        //   bDescriptorType (Configuration)
-        0x99, 0x00,  //   wTotalLength 153
-        0x04,        //   bNumInterfaces 4
-        0x01,        //   bConfigurationValue
-        0x00,        //   iConfiguration (String Index)
-        0xA0,        //   bmAttributes Remote Wakeup
-        0xFA,        //   bMaxPower 500mA
-
-        0x09,        //   bLength
-        0x04,        //   bDescriptorType (Interface)
-        0x00,        //   bInterfaceNumber 0
-        0x00,        //   bAlternateSetting
-        0x02,        //   bNumEndpoints 2
-        0xFF,        //   bInterfaceClass
-        0x5D,        //   bInterfaceSubClass
-        0x01,        //   bInterfaceProtocol
-        0x00,        //   iInterface (String Index)
-
-        0x11,        //   bLength
-        0x21,        //   bDescriptorType (HID)
-        0x00, 0x01,  //   bcdHID 1.00
-        0x01,        //   bCountryCode
-        0x25,        //   bNumDescriptors
-        0x81,        //   bDescriptorType[0] (Unknown 0x81)
-        0x14, 0x00,  //   wDescriptorLength[0] 20
-        0x00,        //   bDescriptorType[1] (Unknown 0x00)
-        0x00, 0x00,  //   wDescriptorLength[1] 0
-        0x13,        //   bDescriptorType[2] (Unknown 0x13)
-        0x01, 0x08,  //   wDescriptorLength[2] 2049
-        0x00,        //   bDescriptorType[3] (Unknown 0x00)
-        0x00,
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x81,        //   bEndpointAddress (IN/D2H)
-        0x03,        //   bmAttributes (Interrupt)
-        0x20, 0x00,  //   wMaxPacketSize 32
-        0x04,        //   bInterval 4 (unit depends on device speed)
-
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x01,        //   bEndpointAddress (OUT/H2D)
-        0x03,        //   bmAttributes (Interrupt)
-        0x20, 0x00,  //   wMaxPacketSize 32
-        0x08,        //   bInterval 8 (unit depends on device speed)
-
-        0x09,        //   bLength
-        0x04,        //   bDescriptorType (Interface)
-        0x01,        //   bInterfaceNumber 1
-        0x00,        //   bAlternateSetting
-        0x04,        //   bNumEndpoints 4
-        0xFF,        //   bInterfaceClass
-        0x5D,        //   bInterfaceSubClass
-        0x03,        //   bInterfaceProtocol
-        0x00,        //   iInterface (String Index)
-
-        0x1B,        //   bLength
-        0x21,        //   bDescriptorType (HID)
-        0x00, 0x01,  //   bcdHID 1.00
-        0x01,        //   bCountryCode
-        0x01,        //   bNumDescriptors
-        0x82,        //   bDescriptorType[0] (Unknown 0x82)
-        0x40, 0x01,  //   wDescriptorLength[0] 320
-        0x02, 0x20, 0x16, 0x83, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x82,        //   bEndpointAddress (IN/D2H)
-        0x03,        //   bmAttributes (Interrupt)
-        0x20, 0x00,  //   wMaxPacketSize 32
-        0x02,        //   bInterval 2 (unit depends on device speed)
-
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x02,        //   bEndpointAddress (OUT/H2D)
-        0x03,        //   bmAttributes (Interrupt)
-        0x20, 0x00,  //   wMaxPacketSize 32
-        0x04,        //   bInterval 4 (unit depends on device speed)
-
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x83,        //   bEndpointAddress (IN/D2H)
-        0x03,        //   bmAttributes (Interrupt)
-        0x20, 0x00,  //   wMaxPacketSize 32
-        0x40,        //   bInterval 64 (unit depends on device speed)
-
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x03,        //   bEndpointAddress (OUT/H2D)
-        0x03,        //   bmAttributes (Interrupt)
-        0x20, 0x00,  //   wMaxPacketSize 32
-        0x10,        //   bInterval 16 (unit depends on device speed)
-
-        0x09,        //   bLength
-        0x04,        //   bDescriptorType (Interface)
-        0x02,        //   bInterfaceNumber 2
-        0x00,        //   bAlternateSetting
-        0x01,        //   bNumEndpoints 1
-        0xFF,        //   bInterfaceClass
-        0x5D,        //   bInterfaceSubClass
-        0x02,        //   bInterfaceProtocol
-        0x00,        //   iInterface (String Index)
-
-        0x09,        //   bLength
-        0x21,        //   bDescriptorType (HID)
-        0x00, 0x01,  //   bcdHID 1.00
-        0x01,        //   bCountryCode
-        0x22,        //   bNumDescriptors
-        0x84,        //   bDescriptorType[0] (Unknown 0x84)
-        0x07, 0x00,  //   wDescriptorLength[0] 7
-
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x84,        //   bEndpointAddress (IN/D2H)
-        0x03,        //   bmAttributes (Interrupt)
-        0x20, 0x00,  //   wMaxPacketSize 32
-        0x10,        //   bInterval 16 (unit depends on device speed)
-
-        0x09,        //   bLength
-        0x04,        //   bDescriptorType (Interface)
-        0x03,        //   bInterfaceNumber 3
-        0x00,        //   bAlternateSetting
-        0x00,        //   bNumEndpoints 0
-        0xFF,        //   bInterfaceClass
-        0xFD,        //   bInterfaceSubClass
-        0x13,        //   bInterfaceProtocol
-        0x04,        //   iInterface (String Index)
-
-        0x06,        //   bLength
-        0x41,        //   bDescriptorType (Unknown)
-        0x00, 0x01, 0x01, 0x03,
-        // 153 bytes
-
-        // best guess: USB Standard Descriptor
-    };
-
-    UCHAR Ds4DescriptorData[DS4_DESCRIPTOR_SIZE] =
-    {
-        0x09,        // bLength
-        0x02,        // bDescriptorType (Configuration)
-        0x29, 0x00,  // wTotalLength 41
-        0x01,        // bNumInterfaces 1
-        0x01,        // bConfigurationValue
-        0x00,        // iConfiguration (String Index)
-        0xC0,        // bmAttributes Self Powered
-        0xFA,        // bMaxPower 500mA
-
-        0x09,        // bLength
-        0x04,        // bDescriptorType (Interface)
-        0x00,        // bInterfaceNumber 0
-        0x00,        // bAlternateSetting
-        0x02,        // bNumEndpoints 2
-        0x03,        // bInterfaceClass
-        0x00,        // bInterfaceSubClass
-        0x00,        // bInterfaceProtocol
-        0x00,        // iInterface (String Index)
-
-        0x09,        // bLength
-        0x21,        // bDescriptorType (HID)
-        0x11, 0x01,  // bcdHID 1.17
-        0x00,        // bCountryCode
-        0x01,        // bNumDescriptors
-        0x22,        // bDescriptorType[0] (HID)
-        0xD3, 0x01,  // wDescriptorLength[0] 467
-
-        0x07,        // bLength
-        0x05,        // bDescriptorType (Endpoint)
-        0x84,        // bEndpointAddress (IN/D2H)
-        0x03,        // bmAttributes (Interrupt)
-        0x40, 0x00,  // wMaxPacketSize 64
-        0x05,        // bInterval 5 (unit depends on device speed)
-
-        0x07,        // bLength
-        0x05,        // bDescriptorType (Endpoint)
-        0x03,        // bEndpointAddress (OUT/H2D)
-        0x03,        // bmAttributes (Interrupt)
-        0x40, 0x00,  // wMaxPacketSize 64
-        0x05,        // bInterval 5 (unit depends on device speed)
-    };
-
-    UCHAR XgipDescriptorData[XGIP_DESCRIPTOR_SIZE] =
-    {
-        0x09,        //   bLength
-        0x02,        //   bDescriptorType (Configuration)
-        0x40, 0x00,  //   wTotalLength 64
-        0x02,        //   bNumInterfaces 2
-        0x01,        //   bConfigurationValue
-        0x00,        //   iConfiguration (String Index)
-        0xC0,        //   bmAttributes
-        0xFA,        //   bMaxPower 500mA
-
-        0x09,        //   bLength
-        0x04,        //   bDescriptorType (Interface)
-        0x00,        //   bInterfaceNumber 0
-        0x00,        //   bAlternateSetting
-        0x02,        //   bNumEndpoints 2
-        0xFF,        //   bInterfaceClass
-        0x47,        //   bInterfaceSubClass
-        0xD0,        //   bInterfaceProtocol
-        0x00,        //   iInterface (String Index)
-
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x81,        //   bEndpointAddress (IN/D2H)
-        0x03,        //   bmAttributes (Interrupt)
-        0x40, 0x00,  //   wMaxPacketSize 64
-        0x04,        //   bInterval 4 (unit depends on device speed)
-
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x01,        //   bEndpointAddress (OUT/H2D)
-        0x03,        //   bmAttributes (Interrupt)
-        0x40, 0x00,  //   wMaxPacketSize 64
-        0x04,        //   bInterval 4 (unit depends on device speed)
-
-        0x09,        //   bLength
-        0x04,        //   bDescriptorType (Interface)
-        0x01,        //   bInterfaceNumber 1
-        0x00,        //   bAlternateSetting
-        0x00,        //   bNumEndpoints 0
-        0xFF,        //   bInterfaceClass
-        0x47,        //   bInterfaceSubClass
-        0xD0,        //   bInterfaceProtocol
-        0x00,        //   iInterface (String Index)
-
-        0x09,        //   bLength
-        0x04,        //   bDescriptorType (Interface)
-        0x01,        //   bInterfaceNumber 1
-        0x01,        //   bAlternateSetting
-        0x02,        //   bNumEndpoints 2
-        0xFF,        //   bInterfaceClass
-        0x47,        //   bInterfaceSubClass
-        0xD0,        //   bInterfaceProtocol
-        0x00,        //   iInterface (String Index)
-
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x02,        //   bEndpointAddress (OUT/H2D)
-        0x01,        //   bmAttributes (Isochronous, No Sync, Data EP)
-        0xE0, 0x00,  //   wMaxPacketSize 224
-        0x01,        //   bInterval 1 (unit depends on device speed)
-
-        0x07,        //   bLength
-        0x05,        //   bDescriptorType (Endpoint)
-        0x83,        //   bEndpointAddress (IN/D2H)
-        0x01,        //   bmAttributes (Isochronous, No Sync, Data EP)
-        0x80, 0x00,  //   wMaxPacketSize 128
-        0x01,        //   bInterval 1 (unit depends on device speed)
-
-                     // 64 bytes
-
-                     // best guess: USB Standard Descriptor
-    };
+    PUCHAR Buffer = (PUCHAR)urb->UrbControlDescriptorRequest.TransferBuffer;
 
     // First request just gets required buffer size back
     if (urb->UrbControlDescriptorRequest.TransferBufferLength == sizeof(USB_CONFIGURATION_DESCRIPTOR))
     {
-        PUSB_CONFIGURATION_DESCRIPTOR pDescriptor = (PUSB_CONFIGURATION_DESCRIPTOR)urb->UrbControlDescriptorRequest.TransferBuffer;
+        ULONG length = sizeof(USB_CONFIGURATION_DESCRIPTOR);
 
         switch (pCommon->TargetType)
         {
         case Xbox360Wired:
-        {
-            pDescriptor->bLength = 0x09;
-            pDescriptor->bDescriptorType = USB_CONFIGURATION_DESCRIPTOR_TYPE;
-            pDescriptor->wTotalLength = XUSB_DESCRIPTOR_SIZE;
-            pDescriptor->bNumInterfaces = 0x04;
-            pDescriptor->bConfigurationValue = 0x01;
-            pDescriptor->iConfiguration = 0x00;
-            pDescriptor->bmAttributes = 0xA0;
-            pDescriptor->MaxPower = 0xFA;
+
+            Xusb_GetConfigurationDescriptorType(Buffer, length);
 
             break;
-        }
         case DualShock4Wired:
-        {
-            pDescriptor->bLength = 0x09;
-            pDescriptor->bDescriptorType = USB_CONFIGURATION_DESCRIPTOR_TYPE;
-            pDescriptor->wTotalLength = DS4_DESCRIPTOR_SIZE;
-            pDescriptor->bNumInterfaces = 0x01;
-            pDescriptor->bConfigurationValue = 0x01;
-            pDescriptor->iConfiguration = 0x00;
-            pDescriptor->bmAttributes = 0xC0;
-            pDescriptor->MaxPower = 0xFA;
+
+            Ds4_GetConfigurationDescriptorType(Buffer, length);
 
             break;
-        }
         case XboxOneWired:
-        {
-            pDescriptor->bLength = 0x09;
-            pDescriptor->bDescriptorType = USB_CONFIGURATION_DESCRIPTOR_TYPE;
-            pDescriptor->wTotalLength = XGIP_DESCRIPTOR_SIZE;
-            pDescriptor->bNumInterfaces = 0x02;
-            pDescriptor->bConfigurationValue = 0x01;
-            pDescriptor->iConfiguration = 0x00;
-            pDescriptor->bmAttributes = 0xC0;
-            pDescriptor->MaxPower = 0xFA; // 500mA
+
+            Xgip_GetConfigurationDescriptorType(Buffer, length);
 
             break;
-        }
         default:
             return STATUS_UNSUCCESSFUL;
         }
     }
 
+    ULONG length = urb->UrbControlDescriptorRequest.TransferBufferLength;
+
     // Second request can store the whole descriptor
     switch (pCommon->TargetType)
     {
     case Xbox360Wired:
-    {
-        if (urb->UrbControlDescriptorRequest.TransferBufferLength >= XUSB_DESCRIPTOR_SIZE)
+
+        if (length >= XUSB_DESCRIPTOR_SIZE)
         {
-            RtlCopyMemory(urb->UrbControlDescriptorRequest.TransferBuffer, XusbDescriptorData, XUSB_DESCRIPTOR_SIZE);
+            Xusb_GetConfigurationDescriptorType(Buffer, XUSB_DESCRIPTOR_SIZE);
         }
 
         break;
-    }
     case DualShock4Wired:
-    {
-        if (urb->UrbControlDescriptorRequest.TransferBufferLength >= DS4_DESCRIPTOR_SIZE)
+    
+        if (length >= DS4_DESCRIPTOR_SIZE)
         {
-            RtlCopyMemory(urb->UrbControlDescriptorRequest.TransferBuffer, Ds4DescriptorData, DS4_DESCRIPTOR_SIZE);
+            Ds4_GetConfigurationDescriptorType(Buffer, DS4_DESCRIPTOR_SIZE);
         }
 
         break;
-    }
     case XboxOneWired:
-    {
-        if (urb->UrbControlDescriptorRequest.TransferBufferLength >= XGIP_DESCRIPTOR_SIZE)
+    
+        if (length >= XGIP_DESCRIPTOR_SIZE)
         {
-            RtlCopyMemory(urb->UrbControlDescriptorRequest.TransferBuffer, XgipDescriptorData, XGIP_DESCRIPTOR_SIZE);
+            Xgip_GetConfigurationDescriptorType(Buffer, XGIP_DESCRIPTOR_SIZE);
         }
 
         break;
-    }
     default:
         return STATUS_UNSUCCESSFUL;
     }
@@ -1131,7 +853,7 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
 
             if (!initialized)
             {
-                UCHAR buffer[32]=
+                UCHAR buffer[32] =
                 {
                     0x02, 0x20, 0x01, 0x1c, 0xb9, 0x06, 0xcf, 0xcf,
                     0x27, 0x97, 0x00, 0x00, 0x6f, 0x0e, 0x39, 0x01,

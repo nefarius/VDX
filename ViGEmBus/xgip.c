@@ -320,6 +320,85 @@ NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device)
     return STATUS_SUCCESS;
 }
 
+VOID Xgip_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length)
+{
+    UCHAR XgipDescriptorData[XGIP_DESCRIPTOR_SIZE] =
+    {
+        0x09,        //   bLength
+        0x02,        //   bDescriptorType (Configuration)
+        0x40, 0x00,  //   wTotalLength 64
+        0x02,        //   bNumInterfaces 2
+        0x01,        //   bConfigurationValue
+        0x00,        //   iConfiguration (String Index)
+        0xC0,        //   bmAttributes
+        0xFA,        //   bMaxPower 500mA
+
+        0x09,        //   bLength
+        0x04,        //   bDescriptorType (Interface)
+        0x00,        //   bInterfaceNumber 0
+        0x00,        //   bAlternateSetting
+        0x02,        //   bNumEndpoints 2
+        0xFF,        //   bInterfaceClass
+        0x47,        //   bInterfaceSubClass
+        0xD0,        //   bInterfaceProtocol
+        0x00,        //   iInterface (String Index)
+
+        0x07,        //   bLength
+        0x05,        //   bDescriptorType (Endpoint)
+        0x81,        //   bEndpointAddress (IN/D2H)
+        0x03,        //   bmAttributes (Interrupt)
+        0x40, 0x00,  //   wMaxPacketSize 64
+        0x04,        //   bInterval 4 (unit depends on device speed)
+
+        0x07,        //   bLength
+        0x05,        //   bDescriptorType (Endpoint)
+        0x01,        //   bEndpointAddress (OUT/H2D)
+        0x03,        //   bmAttributes (Interrupt)
+        0x40, 0x00,  //   wMaxPacketSize 64
+        0x04,        //   bInterval 4 (unit depends on device speed)
+
+        0x09,        //   bLength
+        0x04,        //   bDescriptorType (Interface)
+        0x01,        //   bInterfaceNumber 1
+        0x00,        //   bAlternateSetting
+        0x00,        //   bNumEndpoints 0
+        0xFF,        //   bInterfaceClass
+        0x47,        //   bInterfaceSubClass
+        0xD0,        //   bInterfaceProtocol
+        0x00,        //   iInterface (String Index)
+
+        0x09,        //   bLength
+        0x04,        //   bDescriptorType (Interface)
+        0x01,        //   bInterfaceNumber 1
+        0x01,        //   bAlternateSetting
+        0x02,        //   bNumEndpoints 2
+        0xFF,        //   bInterfaceClass
+        0x47,        //   bInterfaceSubClass
+        0xD0,        //   bInterfaceProtocol
+        0x00,        //   iInterface (String Index)
+
+        0x07,        //   bLength
+        0x05,        //   bDescriptorType (Endpoint)
+        0x02,        //   bEndpointAddress (OUT/H2D)
+        0x01,        //   bmAttributes (Isochronous, No Sync, Data EP)
+        0xE0, 0x00,  //   wMaxPacketSize 224
+        0x01,        //   bInterval 1 (unit depends on device speed)
+
+        0x07,        //   bLength
+        0x05,        //   bDescriptorType (Endpoint)
+        0x83,        //   bEndpointAddress (IN/D2H)
+        0x01,        //   bmAttributes (Isochronous, No Sync, Data EP)
+        0x80, 0x00,  //   wMaxPacketSize 128
+        0x01,        //   bInterval 1 (unit depends on device speed)
+
+                     // 64 bytes
+
+                     // best guess: USB Standard Descriptor
+    };
+
+    RtlCopyBytes(Buffer, XgipDescriptorData, Length);
+}
+
 VOID Xgip_PendingUsbRequestsTimerFunc(
     _In_ WDFTIMER Timer
 )

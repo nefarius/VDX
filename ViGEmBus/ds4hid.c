@@ -253,6 +253,55 @@ NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION 
     return STATUS_SUCCESS;
 }
 
+VOID Ds4_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length)
+{
+    UCHAR Ds4DescriptorData[DS4_DESCRIPTOR_SIZE] =
+    {
+        0x09,        // bLength
+        0x02,        // bDescriptorType (Configuration)
+        0x29, 0x00,  // wTotalLength 41
+        0x01,        // bNumInterfaces 1
+        0x01,        // bConfigurationValue
+        0x00,        // iConfiguration (String Index)
+        0xC0,        // bmAttributes Self Powered
+        0xFA,        // bMaxPower 500mA
+
+        0x09,        // bLength
+        0x04,        // bDescriptorType (Interface)
+        0x00,        // bInterfaceNumber 0
+        0x00,        // bAlternateSetting
+        0x02,        // bNumEndpoints 2
+        0x03,        // bInterfaceClass
+        0x00,        // bInterfaceSubClass
+        0x00,        // bInterfaceProtocol
+        0x00,        // iInterface (String Index)
+
+        0x09,        // bLength
+        0x21,        // bDescriptorType (HID)
+        0x11, 0x01,  // bcdHID 1.17
+        0x00,        // bCountryCode
+        0x01,        // bNumDescriptors
+        0x22,        // bDescriptorType[0] (HID)
+        0xD3, 0x01,  // wDescriptorLength[0] 467
+
+        0x07,        // bLength
+        0x05,        // bDescriptorType (Endpoint)
+        0x84,        // bEndpointAddress (IN/D2H)
+        0x03,        // bmAttributes (Interrupt)
+        0x40, 0x00,  // wMaxPacketSize 64
+        0x05,        // bInterval 5 (unit depends on device speed)
+
+        0x07,        // bLength
+        0x05,        // bDescriptorType (Endpoint)
+        0x03,        // bEndpointAddress (OUT/H2D)
+        0x03,        // bmAttributes (Interrupt)
+        0x40, 0x00,  // wMaxPacketSize 64
+        0x05,        // bInterval 5 (unit depends on device speed)
+    };
+
+    RtlCopyBytes(Buffer, Ds4DescriptorData, Length);
+}
+
 //
 // Completes pending I/O requests if feeder is too slow.
 // 

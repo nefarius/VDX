@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="ViGEmUM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViGEmUM.Native.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

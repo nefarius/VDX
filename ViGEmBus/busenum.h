@@ -290,11 +290,6 @@ typedef struct _XGIP_DEVICE_DATA
     WDFQUEUE PendingUsbInRequests;
 
     //
-    // Timer for dispatching interrupt transfer
-    //
-    WDFTIMER PendingUsbInRequestsTimer;
-
-    //
     // Queue for inverted calls
     //
     WDFQUEUE PendingNotificationRequests;

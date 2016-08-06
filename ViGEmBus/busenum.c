@@ -820,6 +820,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
 
             memAttribs.ParentObject = hChild;
 
+            // Allocate kernel memory
             status = WdfMemoryCreate(&memAttribs, NonPagedPool, VIGEM_POOL_TAG,
                 interrupt->InterruptLength, &memory, NULL);
             if (!NT_SUCCESS(status))
@@ -828,6 +829,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
                 return status;
             }
 
+            // Copy interrupt buffer to memory object
             status = WdfMemoryCopyFromBuffer(memory, 0, interrupt->Interrupt, interrupt->InterruptLength);
             if (!NT_SUCCESS(status))
             {
@@ -835,6 +837,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
                 return status;
             }
 
+            // Add memory object to collection
             status = WdfCollectionAdd(xgip->XboxgipSysInitCollection, memory);
             if (!NT_SUCCESS(status))
             {
@@ -842,9 +845,11 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
                 return status;
             }
 
+            // Check if all packets have been received
             xgip->XboxgipSysInitReady =
                 WdfCollectionGetCount(xgip->XboxgipSysInitCollection) == XGIP_SYS_INIT_PACKETS;
 
+            // If all packets are cached, start initialization timer
             if (xgip->XboxgipSysInitReady)
             {
                 WdfTimerStart(xgip->XboxgipSysInitTimer, XGIP_SYS_INIT_PERIOD);

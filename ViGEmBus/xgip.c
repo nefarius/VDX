@@ -84,8 +84,6 @@ NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device)
     WDF_QUERY_INTERFACE_CONFIG ifaceCfg;
 
     // Expose USB_BUS_INTERFACE_USBDI_GUID
-
-    // This interface actually IS used
     USB_BUS_INTERFACE_USBDI_V1 xgipInterface;
 
     xgipInterface.Size = sizeof(USB_BUS_INTERFACE_USBDI_V1);
@@ -110,6 +108,7 @@ NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device)
         return status;
     }
 
+    // Default button states
     UCHAR DefaultReport[XGIP_REPORT_SIZE] =
     {
         0x20, 0x00, 0x10, 0x0e, 0x00, 0x00, 0x00, 0x00,
@@ -289,16 +288,19 @@ VOID Xgip_SysInitTimerFunc(
 
     if (xgip == NULL) return;
 
+    // Is TRUE when collection is filled up
     if (xgip->XboxgipSysInitReady)
     {
         KdPrint(("XBOXGIP ready, completing requests...\n"));
 
+        // Get pending IN request
         status = WdfIoQueueRetrieveNextRequest(xgip->PendingUsbInRequests, &usbRequest);
 
         if (NT_SUCCESS(status))
         {
             KdPrint(("Request found\n"));
 
+            // Get top memory object
             mem = (WDFMEMORY)WdfCollectionGetFirstItem(xgip->XboxgipSysInitCollection);
 
             // Get pending IRP
@@ -308,9 +310,11 @@ VOID Xgip_SysInitTimerFunc(
             // Get USB request block
             PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
 
+            // Get buffer size and content
             ULONGLONG size;
             PUCHAR Buffer = WdfMemoryGetBuffer(mem, &size);
 
+            // Assign buffer size and content to URB
             urb->UrbBulkOrInterruptTransfer.TransferBufferLength = (ULONG)size;
             RtlCopyBytes(urb->UrbBulkOrInterruptTransfer.TransferBuffer, Buffer, size);
 
@@ -321,10 +325,12 @@ VOID Xgip_SysInitTimerFunc(
             // Complete pending request
             WdfRequestComplete(usbRequest, status);
 
+            // Free memory from collection
             WdfCollectionRemoveItem(xgip->XboxgipSysInitCollection, 0);
             WdfObjectDelete(mem);
         }
 
+        // Stop timer when collection is purged
         if (WdfCollectionGetCount(xgip->XboxgipSysInitCollection) == 0)
         {
             KdPrint(("Collection finished\n"));

@@ -600,9 +600,6 @@ VIGEM_ERROR vigem_xgip_init_xboxgip(PVIGEM_TARGET Target)
                 break;
             }
         }
-
-        // TODO: improve
-        Sleep(5);
     }
 
     CloseHandle(lOverlapped.hEvent);

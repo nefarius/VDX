@@ -134,9 +134,6 @@ extern "C"
         _In_ VIGEM_TARGET Target,
         _In_ XGIP_REPORT Report);
 
-    VIGEM_API VIGEM_ERROR vigem_xgip_init_xboxgip(
-        _In_ VIGEM_TARGET Target);
-
 #ifdef __cplusplus
 }
 #endif

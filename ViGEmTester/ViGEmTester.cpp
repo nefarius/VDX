@@ -100,16 +100,6 @@ int main()
     printf("XBONE Success!");
     getchar();
 
-    if (!VIGEM_SUCCESS(vigem_xgip_init_xboxgip(xbone)))
-    {
-        printf("Couldn't initialize XBOXGIP\n");
-        getchar();
-        return 1;
-    }
-
-    printf("XBONE INIT Success!");
-    getchar();
-
 #endif
 
 #ifdef VIGEM_TEST_XUSB

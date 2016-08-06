@@ -109,7 +109,7 @@ NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device)
         KdPrint(("WdfDeviceAddQueryInterface failed status 0x%x\n", status));
         return status;
     }
-    
+
     UCHAR DefaultReport[XGIP_REPORT_SIZE] =
     {
         0x20, 0x00, 0x10, 0x0e, 0x00, 0x00, 0x00, 0x00,
@@ -156,6 +156,37 @@ NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device)
     if (!NT_SUCCESS(status))
     {
         KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+        return status;
+    }
+
+    WDF_OBJECT_ATTRIBUTES collectionAttribs;
+    WDF_OBJECT_ATTRIBUTES_INIT(&collectionAttribs);
+
+    collectionAttribs.ParentObject = Device;
+
+    status = WdfCollectionCreate(&collectionAttribs, &xgip->XboxgipSysInitCollection);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("WdfCollectionCreate failed 0x%x\n", status));
+        return status;
+    }
+
+    // Initialize periodic timer
+    WDF_TIMER_CONFIG timerConfig;
+    WDF_TIMER_CONFIG_INIT_PERIODIC(&timerConfig, Xgip_SysInitTimerFunc, XGIP_SYS_INIT_PERIOD);
+
+    // Timer object attributes
+    WDF_OBJECT_ATTRIBUTES timerAttribs;
+    WDF_OBJECT_ATTRIBUTES_INIT(&timerAttribs);
+
+    // PDO is parent
+    timerAttribs.ParentObject = Device;
+
+    // Create timer
+    status = WdfTimerCreate(&timerConfig, &timerAttribs, &xgip->XboxgipSysInitTimer);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint(("WdfTimerCreate failed 0x%x\n", status));
         return status;
     }
 
@@ -239,5 +270,67 @@ VOID Xgip_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length)
     };
 
     RtlCopyBytes(Buffer, XgipDescriptorData, Length);
+}
+
+VOID Xgip_SysInitTimerFunc(
+    _In_ WDFTIMER Timer
+)
+{
+    NTSTATUS status;
+    WDFDEVICE hChild;
+    PXGIP_DEVICE_DATA xgip;
+    WDFREQUEST usbRequest;
+    PIRP pendingIrp;
+    PIO_STACK_LOCATION irpStack;
+    WDFMEMORY mem;
+
+    hChild = WdfTimerGetParentObject(Timer);
+    xgip = XgipGetData(hChild);
+
+    if (xgip == NULL) return;
+
+    if (xgip->XboxgipSysInitReady)
+    {
+        KdPrint(("XBOXGIP ready, completing requests...\n"));
+
+        status = WdfIoQueueRetrieveNextRequest(xgip->PendingUsbInRequests, &usbRequest);
+
+        if (NT_SUCCESS(status))
+        {
+            KdPrint(("Request found\n"));
+
+            mem = (WDFMEMORY)WdfCollectionGetFirstItem(xgip->XboxgipSysInitCollection);
+
+            // Get pending IRP
+            pendingIrp = WdfRequestWdmGetIrp(usbRequest);
+            irpStack = IoGetCurrentIrpStackLocation(pendingIrp);
+
+            // Get USB request block
+            PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
+
+            ULONGLONG size;
+            PUCHAR Buffer = WdfMemoryGetBuffer(mem, &size);
+
+            urb->UrbBulkOrInterruptTransfer.TransferBufferLength = (ULONG)size;
+            RtlCopyBytes(urb->UrbBulkOrInterruptTransfer.TransferBuffer, Buffer, size);
+
+            KdPrint(("[%X] Buffer length: %d\n", 
+                ((PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer)[0],
+                urb->UrbBulkOrInterruptTransfer.TransferBufferLength));
+
+            // Complete pending request
+            WdfRequestComplete(usbRequest, status);
+
+            WdfCollectionRemoveItem(xgip->XboxgipSysInitCollection, 0);
+            WdfObjectDelete(mem);
+        }
+
+        if (WdfCollectionGetCount(xgip->XboxgipSysInitCollection) == 0)
+        {
+            KdPrint(("Collection finished\n"));
+
+            WdfTimerStop(xgip->XboxgipSysInitTimer, FALSE);
+        }
+    }
 }
 

@@ -36,6 +36,9 @@ SOFTWARE.
 
 HANDLE g_hViGEmBus = INVALID_HANDLE_VALUE;
 
+// NOTE: used internally
+VIGEM_ERROR vigem_xgip_init_xboxgip(
+    _Out_ PVIGEM_TARGET Target);
 
 VIGEM_API VIGEM_ERROR vigem_init()
 {
@@ -183,6 +186,14 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
         {
             Target->State = VigemTargetConnected;
             CloseHandle(lOverlapped.hEvent);
+
+            if(Type == XboxOneWired)
+            {
+                // TODO: fix this!
+                Sleep(500);
+                vigem_xgip_init_xboxgip(Target);
+            }
+
             return VIGEM_ERROR_NONE;
         }
     }
@@ -409,14 +420,14 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
     return VIGEM_ERROR_NONE;
 }
 
-VIGEM_API VIGEM_ERROR vigem_xgip_init_xboxgip(VIGEM_TARGET Target)
+VIGEM_ERROR vigem_xgip_init_xboxgip(PVIGEM_TARGET Target)
 {
     if (g_hViGEmBus == nullptr)
     {
         return VIGEM_ERROR_BUS_NOT_FOUND;
     }
 
-    if (Target.SerialNo == 0)
+    if (Target->SerialNo == 0)
     {
         return VIGEM_ERROR_INVALID_TARGET;
     }
@@ -569,7 +580,7 @@ VIGEM_API VIGEM_ERROR vigem_xgip_init_xboxgip(VIGEM_TARGET Target)
 
     for (auto &packet : packets)
     {
-        XGIP_SUBMIT_INTERRUPT_INIT(&interrupt, Target.SerialNo);
+        XGIP_SUBMIT_INTERRUPT_INIT(&interrupt, Target->SerialNo);
 
         interrupt.InterruptLength = packet.size();
         memcpy(interrupt.Interrupt, packet.data(), packet.size());

@@ -765,8 +765,8 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
     {
     case Xbox360Wired:
 
-        changed = (RtlCompareMemory(XusbGetData(hChild)->Report, 
-            &((PXUSB_SUBMIT_REPORT)Report)->Report, 
+        changed = (RtlCompareMemory(XusbGetData(hChild)->Report,
+            &((PXUSB_SUBMIT_REPORT)Report)->Report,
             sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
 
         break;
@@ -809,6 +809,50 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
         break;
     case XboxOneWired:
 
+        // Request is control data
+        if (((PXGIP_SUBMIT_INTERRUPT)Report)->Size == sizeof(XGIP_SUBMIT_INTERRUPT))
+        {
+            PXGIP_DEVICE_DATA xgip = XgipGetData(hChild);
+            PXGIP_SUBMIT_INTERRUPT interrupt = (PXGIP_SUBMIT_INTERRUPT)Report;
+            WDFMEMORY memory;
+            WDF_OBJECT_ATTRIBUTES memAttribs;
+            WDF_OBJECT_ATTRIBUTES_INIT(&memAttribs);
+
+            memAttribs.ParentObject = hChild;
+
+            status = WdfMemoryCreate(&memAttribs, NonPagedPool, VIGEM_POOL_TAG,
+                interrupt->InterruptLength, &memory, NULL);
+            if (!NT_SUCCESS(status))
+            {
+                KdPrint(("WdfMemoryCreate failed with status 0x%X\n", status));
+                return status;
+            }
+
+            status = WdfMemoryCopyFromBuffer(memory, 0, interrupt->Interrupt, interrupt->InterruptLength);
+            if (!NT_SUCCESS(status))
+            {
+                KdPrint(("WdfMemoryCopyFromBuffer failed with status 0x%X\n", status));
+                return status;
+            }
+
+            status = WdfCollectionAdd(xgip->XboxgipSysInitCollection, memory);
+            if (!NT_SUCCESS(status))
+            {
+                KdPrint(("WdfCollectionAdd failed with status 0x%X\n", status));
+                return status;
+            }
+
+            xgip->XboxgipSysInitReady =
+                WdfCollectionGetCount(xgip->XboxgipSysInitCollection) == XGIP_SYS_INIT_PACKETS;
+
+            if (xgip->XboxgipSysInitReady)
+            {
+                WdfTimerStart(xgip->XboxgipSysInitTimer, XGIP_SYS_INIT_PERIOD);
+            }
+
+            return status;
+        }
+
         status = WdfIoQueueRetrieveNextRequest(XgipGetData(hChild)->PendingUsbInRequests, &usbRequest);
 
         break;
@@ -830,7 +874,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
 
     // Get transfer buffer
     PUCHAR Buffer = (PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer;
-    
+
     switch (pdoData->TargetType)
     {
     case Xbox360Wired:
@@ -867,17 +911,6 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
              * Skip first four bytes as they are not part of the report */
             RtlCopyBytes(XgipGetData(hChild)->Report + 4, &((PXGIP_SUBMIT_REPORT)Report)->Report, sizeof(XGIP_REPORT));
             RtlCopyBytes(Buffer, XgipGetData(hChild)->Report, XGIP_REPORT_SIZE);
-
-            break;
-        }
-
-        // Request is control data
-        if(((PXGIP_SUBMIT_INTERRUPT)Report)->Size == sizeof(XGIP_SUBMIT_INTERRUPT))
-        {
-            PXGIP_SUBMIT_INTERRUPT interrupt = (PXGIP_SUBMIT_INTERRUPT)Report;
-
-            urb->UrbBulkOrInterruptTransfer.TransferBufferLength = interrupt->InterruptLength;
-            RtlCopyBytes(Buffer, interrupt->Interrupt, interrupt->InterruptLength);
 
             break;
         }

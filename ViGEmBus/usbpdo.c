@@ -230,7 +230,7 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommo
 
         break;
     case DualShock4Wired:
-    
+
         if (length >= DS4_DESCRIPTOR_SIZE)
         {
             Ds4_GetConfigurationDescriptorType(Buffer, DS4_DESCRIPTOR_SIZE);
@@ -238,7 +238,7 @@ NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommo
 
         break;
     case XboxOneWired:
-    
+
         if (length >= XGIP_DESCRIPTOR_SIZE)
         {
             Xgip_GetConfigurationDescriptorType(Buffer, XGIP_DESCRIPTOR_SIZE);

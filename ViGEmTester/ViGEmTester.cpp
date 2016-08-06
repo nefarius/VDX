@@ -30,13 +30,10 @@ SOFTWARE.
 #include <Windows.h>
 #include <initguid.h>
 #include <public.h>
-#include <SetupAPI.h>
-#include <Xinput.h>
-#include <time.h>
 #include <ViGEmUM.h>
 
-//#define VIGEM_TEST_XUSB
-//#define VIGEM_TEST_DS4
+#define VIGEM_TEST_XUSB
+#define VIGEM_TEST_DS4
 #define VIGEM_TEST_XGIP
 
 HANDLE bus;

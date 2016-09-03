@@ -78,20 +78,22 @@ NTSTATUS Bus_CreatePdo(
     _In_ PWDFDEVICE_INIT DeviceInit,
     _In_ PPDO_IDENTIFICATION_DESCRIPTION Description)
 {
-    NTSTATUS status;
-    PPDO_DEVICE_DATA pdoData;
-    WDFDEVICE hChild = NULL;
-    WDF_DEVICE_PNP_CAPABILITIES pnpCaps;
-    WDF_DEVICE_POWER_CAPABILITIES powerCaps;
-    WDF_PNPPOWER_EVENT_CALLBACKS pnpPowerCallbacks;
-    WDF_OBJECT_ATTRIBUTES pdoAttributes;
-    WDF_IO_QUEUE_CONFIG defaultPdoQueueConfig;
-    WDFQUEUE defaultPdoQueue;
+    NTSTATUS                        status;
+    PPDO_DEVICE_DATA                pdoData;
+    WDFDEVICE                       hChild = NULL;
+    WDF_DEVICE_PNP_CAPABILITIES     pnpCaps;
+    WDF_DEVICE_POWER_CAPABILITIES   powerCaps;
+    WDF_PNPPOWER_EVENT_CALLBACKS    pnpPowerCallbacks;
+    WDF_OBJECT_ATTRIBUTES           pdoAttributes;
+    WDF_IO_QUEUE_CONFIG             defaultPdoQueueConfig;
+    WDFQUEUE                        defaultPdoQueue;
+    UNICODE_STRING                  deviceDescription;
+
     DECLARE_CONST_UNICODE_STRING(deviceLocation, L"Virtual Gamepad Emulation Bus");
     DECLARE_UNICODE_STRING_SIZE(buffer, MAX_INSTANCE_ID_LEN);
     // reserve space for device id
     DECLARE_UNICODE_STRING_SIZE(deviceId, MAX_INSTANCE_ID_LEN);
-    UNICODE_STRING deviceDescription;
+    
 
 
     PAGED_CODE();
@@ -379,8 +381,8 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
     _In_ WDFCMRESLIST ResourcesTranslated
 )
 {
-    PPDO_DEVICE_DATA pdoData;
-    NTSTATUS status = STATUS_UNSUCCESSFUL;
+    PPDO_DEVICE_DATA    pdoData;
+    NTSTATUS            status = STATUS_UNSUCCESSFUL;
 
     PAGED_CODE();
 
@@ -443,21 +445,15 @@ VOID Pdo_EvtIoInternalDeviceControl(
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
 
-    NTSTATUS status = STATUS_INVALID_PARAMETER;
-    WDFDEVICE hDevice;
-    PIRP irp;
-    PURB urb;
-    PPDO_DEVICE_DATA pdoData;
-    PIO_STACK_LOCATION irpStack;
+    NTSTATUS                status = STATUS_INVALID_PARAMETER;
+    WDFDEVICE               hDevice;
+    PIRP                    irp;
+    PURB                    urb;
+    PPDO_DEVICE_DATA        pdoData;
+    PIO_STACK_LOCATION      irpStack;
 
     hDevice = WdfIoQueueGetDevice(Queue);
-
-    // KdPrint(("Pdo_EvtIoInternalDeviceControl: 0x%p\n", hDevice));
-
     pdoData = PdoGetData(hDevice);
-
-    // KdPrint(("Pdo_EvtIoInternalDeviceControl PDO: 0x%p\n", pdoData));
-
     // No help from the framework available from here on
     irp = WdfRequestWdmGetIrp(Request);
     irpStack = IoGetCurrentIrpStackLocation(irp);

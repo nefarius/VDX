@@ -168,12 +168,13 @@ Bus_FileCleanup(
     WDFFILEOBJECT FileObject
 )
 {
-    WDFDEVICE device, hChild;
-    NTSTATUS status;
-    WDFCHILDLIST list;
-    WDF_CHILD_LIST_ITERATOR iterator;
-    WDF_CHILD_RETRIEVE_INFO childInfo;
-    PDO_IDENTIFICATION_DESCRIPTION description;
+    WDFDEVICE                           device;
+    WDFDEVICE                           hChild;
+    NTSTATUS                            status;
+    WDFCHILDLIST                        list;
+    WDF_CHILD_LIST_ITERATOR             iterator;
+    WDF_CHILD_RETRIEVE_INFO             childInfo;
+    PDO_IDENTIFICATION_DESCRIPTION      description;
 
     PAGED_CODE();
 
@@ -226,9 +227,9 @@ VOID Bus_EvtIoDeviceControl(
     IN ULONG IoControlCode
 )
 {
-    NTSTATUS status = STATUS_INVALID_PARAMETER;
-    WDFDEVICE hDevice;
-    size_t length = 0;
+    NTSTATUS    status = STATUS_INVALID_PARAMETER;
+    WDFDEVICE   hDevice;
+    size_t      length = 0;
 
     hDevice = WdfIoQueueGetDevice(Queue);
 
@@ -506,8 +507,8 @@ VOID Bus_EvtIoDefault(
 // 
 NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE TargetType)
 {
-    PDO_IDENTIFICATION_DESCRIPTION description;
-    NTSTATUS status;
+    PDO_IDENTIFICATION_DESCRIPTION  description;
+    NTSTATUS                        status;
 
     PAGED_CODE();
 
@@ -542,13 +543,13 @@ NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE Ta
 // 
 NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
 {
-    NTSTATUS status;
-    WDFDEVICE hChild;
-    WDFCHILDLIST list;
-    WDF_CHILD_LIST_ITERATOR iterator;
-    WDF_CHILD_RETRIEVE_INFO childInfo;
-    PDO_IDENTIFICATION_DESCRIPTION description;
-    BOOLEAN unplugAll = (SerialNo == 0);
+    NTSTATUS                            status;
+    WDFDEVICE                           hChild;
+    WDFCHILDLIST                        list;
+    WDF_CHILD_LIST_ITERATOR             iterator;
+    WDF_CHILD_RETRIEVE_INFO             childInfo;
+    PDO_IDENTIFICATION_DESCRIPTION      description;
+    BOOLEAN                             unplugAll = (SerialNo == 0);
 
     PAGED_CODE();
 
@@ -610,13 +611,13 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
 // 
 NTSTATUS Bus_QueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Request)
 {
-    NTSTATUS status = STATUS_INVALID_PARAMETER;
-    WDFCHILDLIST list;
-    WDF_CHILD_RETRIEVE_INFO info;
-    WDFDEVICE hChild;
-    PPDO_DEVICE_DATA pdoData;
-    PXUSB_DEVICE_DATA xusbData;
-    PDS4_DEVICE_DATA ds4Data;
+    NTSTATUS                    status = STATUS_INVALID_PARAMETER;
+    WDFCHILDLIST                list;
+    WDF_CHILD_RETRIEVE_INFO     info;
+    WDFDEVICE                   hChild;
+    PPDO_DEVICE_DATA            pdoData;
+    PXUSB_DEVICE_DATA           xusbData;
+    PDS4_DEVICE_DATA            ds4Data;
 
 
     KdPrint(("Entered Bus_QueueNotification\n"));
@@ -710,14 +711,14 @@ NTSTATUS Bus_XgipSubmitInterrupt(WDFDEVICE Device, ULONG SerialNo, PXGIP_SUBMIT_
 
 NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
 {
-    NTSTATUS status = STATUS_SUCCESS;
-    WDFCHILDLIST list;
-    WDF_CHILD_RETRIEVE_INFO info;
-    WDFDEVICE hChild;
-    PPDO_DEVICE_DATA pdoData;
-    WDFREQUEST usbRequest;
-    PIRP pendingIrp;
-    BOOLEAN changed;
+    NTSTATUS                    status = STATUS_SUCCESS;
+    WDFCHILDLIST                list;
+    WDF_CHILD_RETRIEVE_INFO     info;
+    WDFDEVICE                   hChild;
+    PPDO_DEVICE_DATA            pdoData;
+    WDFREQUEST                  usbRequest;
+    PIRP                        pendingIrp;
+    BOOLEAN                     changed;
 
 
     KdPrint(("Entered Bus_SubmitReport\n"));

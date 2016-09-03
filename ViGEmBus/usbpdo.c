@@ -684,11 +684,12 @@ NTSTATUS UsbPdo_SelectInterface(PURB urb, PPDO_DEVICE_DATA pCommon)
 // 
 NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST Request)
 {
-    struct _URB_BULK_OR_INTERRUPT_TRANSFER* pTransfer = &urb->UrbBulkOrInterruptTransfer;
+    struct _URB_BULK_OR_INTERRUPT_TRANSFER*     pTransfer = &urb->UrbBulkOrInterruptTransfer;
+    NTSTATUS                                    status;
+    PPDO_DEVICE_DATA                            pdoData;
+    WDFREQUEST                                  notifyRequest;
 
-    NTSTATUS status;
-    PPDO_DEVICE_DATA pdoData = PdoGetData(Device);
-    WDFREQUEST notifyRequest;
+    pdoData = PdoGetData(Device);
 
     if (pdoData == NULL)
     {

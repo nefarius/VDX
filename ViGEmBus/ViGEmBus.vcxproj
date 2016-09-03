@@ -376,6 +376,7 @@
     <ClCompile Include="busenum.c" />
     <ClCompile Include="buspdo.c" />
     <ClCompile Include="ds4hid.c" />
+    <ClCompile Include="interface.c" />
     <ClCompile Include="usbpdo.c" />
     <ClCompile Include="util.c" />
     <ClCompile Include="xgip.c" />

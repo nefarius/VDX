@@ -122,6 +122,7 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 #define HID_REPORT_TYPE_FEATURE         0x03
 
 #define VIGEM_POOL_TAG                  0x45476956 // "EGiV"
+#define DRIVERNAME                      "ViGEm: "
 
 #pragma endregion
 
@@ -397,6 +398,26 @@ Bus_SubmitReport(
 
 
 #pragma endregion
+
+NTSTATUS
+BusIface_PlugInTarget(
+    IN PVOID Context,
+    IN ULONG SerialNo,
+    IN VIGEM_TARGET_TYPE TargetType
+);
+
+NTSTATUS
+BufIface_UnplugTarget(
+    IN PVOID Context,
+    IN ULONG SerialNo
+    );
+
+NTSTATUS
+BufIface_XusbSubmitReport(
+    IN PVOID Context,
+    IN ULONG SerialNo,
+    IN PXUSB_SUBMIT_REPORT Report
+    );
 
 #pragma region USB-specific functions
 

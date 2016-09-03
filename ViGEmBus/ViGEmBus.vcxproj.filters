@@ -70,5 +70,8 @@
     <ClCompile Include="xgip.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="interface.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

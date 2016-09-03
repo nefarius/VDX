@@ -65,13 +65,15 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING Registry
 // 
 NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 {
-    WDF_CHILD_LIST_CONFIG   config;
-    NTSTATUS                status;
-    WDFDEVICE               device;
-    WDF_IO_QUEUE_CONFIG     queueConfig;
-    PNP_BUS_INFORMATION     busInfo;
-    WDFQUEUE                queue;
-    WDF_FILEOBJECT_CONFIG   foConfig;
+    WDF_CHILD_LIST_CONFIG       config;
+    NTSTATUS                    status;
+    WDFDEVICE                   device;
+    WDF_IO_QUEUE_CONFIG         queueConfig;
+    PNP_BUS_INFORMATION         busInfo;
+    WDFQUEUE                    queue;
+    WDF_FILEOBJECT_CONFIG       foConfig;
+    VIGEM_INTERFACE_STANDARD    VigemInterface;
+    WDF_QUERY_INTERFACE_CONFIG  qiConfig;
 
     UNREFERENCED_PARAMETER(Driver);
 
@@ -155,6 +157,35 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     WdfDeviceSetBusInformationForChildren(device, &busInfo);
 
 #pragma endregion
+
+#pragma region Add query interface
+
+    RtlZeroMemory(&VigemInterface, sizeof(VIGEM_INTERFACE_STANDARD));
+
+    VigemInterface.Header.Size = sizeof(VigemInterface);
+    VigemInterface.Header.Version = 1;
+    VigemInterface.Header.Context = (PVOID)device;
+
+    VigemInterface.Header.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
+    VigemInterface.Header.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
+
+    VigemInterface.PlugInTarget = BusIface_PlugInTarget;
+    VigemInterface.UnPlugTarget = BufIface_UnplugTarget;
+    VigemInterface.XusbSubmitReport = BufIface_XusbSubmitReport;
+
+    WDF_QUERY_INTERFACE_CONFIG_INIT(&qiConfig,
+        (PINTERFACE)&VigemInterface,
+        &GUID_VIGEM_INTERFACE_STANDARD,
+        NULL);
+
+    status = WdfDeviceAddQueryInterface(device, &qiConfig);
+
+    if (!NT_SUCCESS(status)) {
+        KdPrint(("WdfDeviceAddQueryInterface failed with status 0x%X", status));
+        return status;
+    }
+
+#pragma endregion 
 
     return status;
 }

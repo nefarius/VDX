@@ -92,7 +92,7 @@ NTSTATUS Ds4_PrepareHardware(WDFDEVICE Device)
     status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfDeviceAddQueryInterface failed status 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfDeviceAddQueryInterface failed status 0x%x\n", status));
         return status;
     }
 
@@ -127,7 +127,7 @@ NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION 
 
     PDS4_DEVICE_DATA ds4 = Ds4GetData(Device);
 
-    KdPrint(("Initializing DS4 context...\n"));
+    KdPrint((DRIVERNAME "Initializing DS4 context...\n"));
 
     // I/O Queue for pending IRPs
     WDF_IO_QUEUE_CONFIG pendingUsbQueueConfig, notificationsQueueConfig;
@@ -138,7 +138,7 @@ NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION 
     status = WdfIoQueueCreate(Device, &pendingUsbQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &ds4->PendingUsbInRequests);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));
         return status;
     }
 
@@ -157,7 +157,7 @@ NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION 
     status = WdfTimerCreate(&timerConfig, &timerAttribs, &ds4->PendingUsbInRequestsTimer);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfTimerCreate failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfTimerCreate failed 0x%x\n", status));
         return status;
     }
 
@@ -167,7 +167,7 @@ NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION 
     status = WdfIoQueueCreate(Device, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &ds4->PendingNotificationRequests);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));
         return status;
     }
 
@@ -181,7 +181,7 @@ NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION 
     status = WdfDriverOpenParametersRegistryKey(WdfGetDriver(), STANDARD_RIGHTS_ALL, WDF_NO_OBJECT_ATTRIBUTES, &keyParams);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfDriverOpenParametersRegistryKey failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfDriverOpenParametersRegistryKey failed 0x%x\n", status));
         return status;
     }
 
@@ -191,7 +191,7 @@ NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION 
         KEY_ALL_ACCESS, REG_OPTION_NON_VOLATILE, NULL, WDF_NO_OBJECT_ATTRIBUTES, &keyTargets);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfRegistryCreateKey failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfRegistryCreateKey failed 0x%x\n", status));
         return status;
     }
 
@@ -201,7 +201,7 @@ NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION 
         KEY_ALL_ACCESS, REG_OPTION_NON_VOLATILE, NULL, WDF_NO_OBJECT_ATTRIBUTES, &keyDS);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfRegistryCreateKey failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfRegistryCreateKey failed 0x%x\n", status));
         return status;
     }
 
@@ -212,7 +212,7 @@ NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION 
         KEY_ALL_ACCESS, REG_OPTION_NON_VOLATILE, NULL, WDF_NO_OBJECT_ATTRIBUTES, &keySerial);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfRegistryCreateKey failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfRegistryCreateKey failed 0x%x\n", status));
         return status;
     }
 
@@ -220,7 +220,7 @@ NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION 
 
     status = WdfRegistryQueryValue(keySerial, &valueName, sizeof(MAC_ADDRESS), &ds4->TargetMacAddress, NULL, NULL);
 
-    KdPrint(("MAC-Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+    KdPrint((DRIVERNAME "MAC-Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
         ds4->TargetMacAddress.Vendor0,
         ds4->TargetMacAddress.Vendor1,
         ds4->TargetMacAddress.Vendor2,
@@ -235,13 +235,13 @@ NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION 
         status = WdfRegistryAssignValue(keySerial, &valueName, REG_BINARY, sizeof(MAC_ADDRESS), (PVOID)&ds4->TargetMacAddress);
         if (!NT_SUCCESS(status))
         {
-            KdPrint(("WdfRegistryAssignValue failed 0x%x\n", status));
+            KdPrint((DRIVERNAME "WdfRegistryAssignValue failed 0x%x\n", status));
             return status;
         }
     }
     else if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfRegistryQueryValue failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfRegistryQueryValue failed 0x%x\n", status));
         return status;
     }
 
@@ -320,7 +320,7 @@ VOID Ds4_PendingUsbRequestsTimerFunc(
     PIRP pendingIrp;
     PIO_STACK_LOCATION irpStack;
 
-    // KdPrint(("Ds4_PendingUsbRequestsTimerFunc: Timer elapsed\n"));
+    // KdPrint((DRIVERNAME "Ds4_PendingUsbRequestsTimerFunc: Timer elapsed\n"));
 
     hChild = WdfTimerGetParentObject(Timer);
     ds4Data = Ds4GetData(hChild);
@@ -330,7 +330,7 @@ VOID Ds4_PendingUsbRequestsTimerFunc(
 
     if (NT_SUCCESS(status))
     {
-        // KdPrint(("Ds4_PendingUsbRequestsTimerFunc: pending IRP found\n"));
+        // KdPrint((DRIVERNAME "Ds4_PendingUsbRequestsTimerFunc: pending IRP found\n"));
 
         // Get pending IRP
         pendingIrp = WdfRequestWdmGetIrp(usbRequest);

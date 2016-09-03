@@ -100,7 +100,7 @@ NTSTATUS Bus_CreatePdo(
 
     UNREFERENCED_PARAMETER(Device);
 
-    KdPrint(("Entered Bus_CreatePdo\n"));
+    KdPrint((DRIVERNAME "Entered Bus_CreatePdo\n"));
 
     // set device type
     WdfDeviceInitSetDeviceType(DeviceInit, FILE_DEVICE_BUS_EXTENDER);
@@ -114,7 +114,7 @@ NTSTATUS Bus_CreatePdo(
     status = WdfPdoInitAssignRawDevice(DeviceInit, &GUID_DEVCLASS_VIGEM_RAWPDO);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfPdoInitAssignRawDevice failed status 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfPdoInitAssignRawDevice failed status 0x%x\n", status));
         return status;
     }
 
@@ -123,7 +123,7 @@ NTSTATUS Bus_CreatePdo(
     status = WdfDeviceInitAssignSDDLString(DeviceInit, &SDDL_DEVOBJ_SYS_ALL_ADM_RWX_WORLD_RWX_RES_RWX);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfDeviceInitAssignSDDLString failed status 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfDeviceInitAssignSDDLString failed status 0x%x\n", status));
         return status;
     }
 
@@ -170,7 +170,7 @@ NTSTATUS Bus_CreatePdo(
 
     default:
 
-        KdPrint(("Unsupported target type\n"));
+        KdPrint((DRIVERNAME "Unsupported target type\n"));
         status = STATUS_INVALID_PARAMETER;
         return status;
 
@@ -234,7 +234,7 @@ NTSTATUS Bus_CreatePdo(
         status = WdfObjectAllocateContext(hChild, &pdoAttributes, (PVOID)&xusbData);
         if (!NT_SUCCESS(status))
         {
-            KdPrint(("WdfObjectAllocateContext failed status 0x%x\n", status));
+            KdPrint((DRIVERNAME "WdfObjectAllocateContext failed status 0x%x\n", status));
             return status;
         }
 
@@ -248,7 +248,7 @@ NTSTATUS Bus_CreatePdo(
         status = WdfObjectAllocateContext(hChild, &pdoAttributes, (PVOID)&ds4Data);
         if (!NT_SUCCESS(status))
         {
-            KdPrint(("WdfObjectAllocateContext failed status 0x%x\n", status));
+            KdPrint((DRIVERNAME "WdfObjectAllocateContext failed status 0x%x\n", status));
             return status;
         }
 
@@ -262,7 +262,7 @@ NTSTATUS Bus_CreatePdo(
         status = WdfObjectAllocateContext(hChild, &pdoAttributes, (PVOID)&xgipData);
         if (!NT_SUCCESS(status))
         {
-            KdPrint(("WdfObjectAllocateContext failed status 0x%x\n", status));
+            KdPrint((DRIVERNAME "WdfObjectAllocateContext failed status 0x%x\n", status));
             return status;
         }
 
@@ -279,7 +279,7 @@ NTSTATUS Bus_CreatePdo(
     status = WdfDeviceCreateDeviceInterface(Device, (LPGUID)&GUID_DEVINTERFACE_USB_DEVICE, NULL);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfDeviceCreateDeviceInterface failed status 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfDeviceCreateDeviceInterface failed status 0x%x\n", status));
         return status;
     }
 
@@ -329,7 +329,7 @@ NTSTATUS Bus_CreatePdo(
     status = WdfIoQueueCreate(hChild, &defaultPdoQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &defaultPdoQueue);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));
         return status;
     }
 
@@ -389,7 +389,7 @@ NTSTATUS Bus_EvtDevicePrepareHardware(
     UNREFERENCED_PARAMETER(ResourcesRaw);
     UNREFERENCED_PARAMETER(ResourcesTranslated);
 
-    KdPrint(("Bus_EvtDevicePrepareHardware: 0x%p\n", Device));
+    KdPrint((DRIVERNAME "Bus_EvtDevicePrepareHardware: 0x%p\n", Device));
 
     pdoData = PdoGetData(Device);
 
@@ -462,7 +462,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
     {
     case IOCTL_INTERNAL_USB_SUBMIT_URB:
 
-        KdPrint((">> IOCTL_INTERNAL_USB_SUBMIT_URB\n"));
+        KdPrint((DRIVERNAME ">> IOCTL_INTERNAL_USB_SUBMIT_URB\n"));
 
         urb = (PURB)URB_FROM_IRP(irp);
 
@@ -470,7 +470,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
         {
         case URB_FUNCTION_CONTROL_TRANSFER:
 
-            KdPrint((">> >> URB_FUNCTION_CONTROL_TRANSFER\n"));
+            KdPrint((DRIVERNAME ">> >> URB_FUNCTION_CONTROL_TRANSFER\n"));
 
             // Control transfer can safely be ignored
             status = STATUS_SUCCESS;
@@ -479,7 +479,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
         case URB_FUNCTION_CONTROL_TRANSFER_EX:
 
-            KdPrint((">> >> URB_FUNCTION_CONTROL_TRANSFER_EX\n"));
+            KdPrint((DRIVERNAME ">> >> URB_FUNCTION_CONTROL_TRANSFER_EX\n"));
 
             status = STATUS_UNSUCCESSFUL;
 
@@ -487,7 +487,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
         case URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER:
 
-            KdPrint((">> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
+            KdPrint((DRIVERNAME ">> >> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
 
             status = UsbPdo_BulkOrInterruptTransfer(urb, hDevice, Request);
 
@@ -495,7 +495,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
         case URB_FUNCTION_SELECT_CONFIGURATION:
 
-            KdPrint((">> >> URB_FUNCTION_SELECT_CONFIGURATION\n"));
+            KdPrint((DRIVERNAME ">> >> URB_FUNCTION_SELECT_CONFIGURATION\n"));
 
             status = UsbPdo_SelectConfiguration(urb, pdoData);
 
@@ -503,7 +503,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
         case URB_FUNCTION_SELECT_INTERFACE:
 
-            KdPrint((">> >> URB_FUNCTION_SELECT_INTERFACE\n"));
+            KdPrint((DRIVERNAME ">> >> URB_FUNCTION_SELECT_INTERFACE\n"));
 
             status = UsbPdo_SelectInterface(urb, pdoData);
 
@@ -511,13 +511,13 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
         case URB_FUNCTION_GET_DESCRIPTOR_FROM_DEVICE:
 
-            KdPrint((">> >> URB_FUNCTION_GET_DESCRIPTOR_FROM_DEVICE\n"));
+            KdPrint((DRIVERNAME ">> >> URB_FUNCTION_GET_DESCRIPTOR_FROM_DEVICE\n"));
 
             switch (urb->UrbControlDescriptorRequest.DescriptorType)
             {
             case USB_DEVICE_DESCRIPTOR_TYPE:
 
-                KdPrint((">> >> >> USB_DEVICE_DESCRIPTOR_TYPE\n"));
+                KdPrint((DRIVERNAME ">> >> >> USB_DEVICE_DESCRIPTOR_TYPE\n"));
 
                 status = UsbPdo_GetDeviceDescriptorType(urb, pdoData);
 
@@ -525,7 +525,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             case USB_CONFIGURATION_DESCRIPTOR_TYPE:
 
-                KdPrint((">> >> >> USB_CONFIGURATION_DESCRIPTOR_TYPE\n"));
+                KdPrint((DRIVERNAME ">> >> >> USB_CONFIGURATION_DESCRIPTOR_TYPE\n"));
 
                 status = UsbPdo_GetConfigurationDescriptorType(urb, pdoData);
 
@@ -533,35 +533,35 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
             case USB_STRING_DESCRIPTOR_TYPE:
 
-                KdPrint((">> >> >> USB_STRING_DESCRIPTOR_TYPE\n"));
+                KdPrint((DRIVERNAME ">> >> >> USB_STRING_DESCRIPTOR_TYPE\n"));
 
                 status = UsbPdo_GetStringDescriptorType(urb, pdoData);
 
                 break;
             case USB_INTERFACE_DESCRIPTOR_TYPE:
 
-                KdPrint((">> >> >> USB_INTERFACE_DESCRIPTOR_TYPE\n"));
+                KdPrint((DRIVERNAME ">> >> >> USB_INTERFACE_DESCRIPTOR_TYPE\n"));
 
                 break;
 
             case USB_ENDPOINT_DESCRIPTOR_TYPE:
 
-                KdPrint((">> >> >> USB_ENDPOINT_DESCRIPTOR_TYPE\n"));
+                KdPrint((DRIVERNAME ">> >> >> USB_ENDPOINT_DESCRIPTOR_TYPE\n"));
 
                 break;
 
             default:
-                KdPrint((">> >> >> Unknown descriptor type\n"));
+                KdPrint((DRIVERNAME ">> >> >> Unknown descriptor type\n"));
                 break;
             }
 
-            KdPrint(("<< <<\n"));
+            KdPrint((DRIVERNAME "<< <<\n"));
 
             break;
 
         case URB_FUNCTION_GET_STATUS_FROM_DEVICE:
 
-            KdPrint((">> >> URB_FUNCTION_GET_STATUS_FROM_DEVICE\n"));
+            KdPrint((DRIVERNAME ">> >> URB_FUNCTION_GET_STATUS_FROM_DEVICE\n"));
 
             // Defaults always succeed
             status = STATUS_SUCCESS;
@@ -570,7 +570,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
         case URB_FUNCTION_ABORT_PIPE:
 
-            KdPrint((">> >> URB_FUNCTION_ABORT_PIPE\n"));
+            KdPrint((DRIVERNAME ">> >> URB_FUNCTION_ABORT_PIPE\n"));
 
             status = UsbPdo_AbortPipe(hDevice);
 
@@ -578,7 +578,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
         case URB_FUNCTION_CLASS_INTERFACE:
 
-            KdPrint((">> >> URB_FUNCTION_CLASS_INTERFACE\n"));
+            KdPrint((DRIVERNAME ">> >> URB_FUNCTION_CLASS_INTERFACE\n"));
 
             status = UsbPdo_ClassInterface(urb, hDevice, pdoData);
 
@@ -586,24 +586,24 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
         case URB_FUNCTION_GET_DESCRIPTOR_FROM_INTERFACE:
 
-            KdPrint((">> >> URB_FUNCTION_GET_DESCRIPTOR_FROM_INTERFACE\n"));
+            KdPrint((DRIVERNAME ">> >> URB_FUNCTION_GET_DESCRIPTOR_FROM_INTERFACE\n"));
 
             status = UsbPdo_GetDescriptorFromInterface(urb, pdoData);
 
             break;
 
         default:
-            KdPrint((">> >> Unknown function: 0x%X\n", urb->UrbHeader.Function));
+            KdPrint((DRIVERNAME ">> >> Unknown function: 0x%X\n", urb->UrbHeader.Function));
             break;
         }
 
-        KdPrint(("<<\n"));
+        KdPrint((DRIVERNAME "<<\n"));
 
         break;
 
     case IOCTL_INTERNAL_USB_GET_PORT_STATUS:
 
-        KdPrint((">> IOCTL_INTERNAL_USB_GET_PORT_STATUS\n"));
+        KdPrint((DRIVERNAME ">> IOCTL_INTERNAL_USB_GET_PORT_STATUS\n"));
 
         // We report the (virtual) port as always active
         *(unsigned long *)irpStack->Parameters.Others.Argument1 = USBD_PORT_ENABLED | USBD_PORT_CONNECTED;
@@ -614,7 +614,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
     case IOCTL_INTERNAL_USB_RESET_PORT:
 
-        KdPrint((">> IOCTL_INTERNAL_USB_RESET_PORT\n"));
+        KdPrint((DRIVERNAME ">> IOCTL_INTERNAL_USB_RESET_PORT\n"));
 
         // Sure, why not ;)
         status = STATUS_SUCCESS;
@@ -623,7 +623,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
 
     case IOCTL_INTERNAL_USB_SUBMIT_IDLE_NOTIFICATION:
 
-        KdPrint((">> IOCTL_INTERNAL_USB_SUBMIT_IDLE_NOTIFICATION\n"));
+        KdPrint((DRIVERNAME ">> IOCTL_INTERNAL_USB_SUBMIT_IDLE_NOTIFICATION\n"));
 
         // TODO: implement
         // This happens if the I/O latency is too high so HIDUSB aborts communication.
@@ -632,7 +632,7 @@ VOID Pdo_EvtIoInternalDeviceControl(
         break;
 
     default:
-        KdPrint((">> Unknown I/O control code 0x%X\n", IoControlCode));
+        KdPrint((DRIVERNAME ">> Unknown I/O control code 0x%X\n", IoControlCode));
         break;
     }
 

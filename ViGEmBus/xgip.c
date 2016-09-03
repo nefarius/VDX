@@ -104,7 +104,7 @@ NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device)
     status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfDeviceAddQueryInterface failed status 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfDeviceAddQueryInterface failed status 0x%x\n", status));
         return status;
     }
 
@@ -127,7 +127,7 @@ NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device)
 
     PXGIP_DEVICE_DATA xgip = XgipGetData(Device);
 
-    KdPrint(("Initializing XGIP context...\n"));
+    KdPrint((DRIVERNAME "Initializing XGIP context...\n"));
 
     RtlZeroMemory(xgip, sizeof(XGIP_DEVICE_DATA));
 
@@ -144,7 +144,7 @@ NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device)
     status = WdfIoQueueCreate(Device, &pendingUsbQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xgip->PendingUsbInRequests);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));
         return status;
     }
 
@@ -154,7 +154,7 @@ NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device)
     status = WdfIoQueueCreate(Device, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xgip->PendingNotificationRequests);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));
         return status;
     }
 
@@ -166,7 +166,7 @@ NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device)
     status = WdfCollectionCreate(&collectionAttribs, &xgip->XboxgipSysInitCollection);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfCollectionCreate failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfCollectionCreate failed 0x%x\n", status));
         return status;
     }
 
@@ -185,7 +185,7 @@ NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device)
     status = WdfTimerCreate(&timerConfig, &timerAttribs, &xgip->XboxgipSysInitTimer);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfTimerCreate failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfTimerCreate failed 0x%x\n", status));
         return status;
     }
 
@@ -291,14 +291,14 @@ VOID Xgip_SysInitTimerFunc(
     // Is TRUE when collection is filled up
     if (xgip->XboxgipSysInitReady)
     {
-        KdPrint(("XBOXGIP ready, completing requests...\n"));
+        KdPrint((DRIVERNAME "XBOXGIP ready, completing requests...\n"));
 
         // Get pending IN request
         status = WdfIoQueueRetrieveNextRequest(xgip->PendingUsbInRequests, &usbRequest);
 
         if (NT_SUCCESS(status))
         {
-            KdPrint(("Request found\n"));
+            KdPrint((DRIVERNAME "Request found\n"));
 
             // Get top memory object
             mem = (WDFMEMORY)WdfCollectionGetFirstItem(xgip->XboxgipSysInitCollection);
@@ -318,7 +318,7 @@ VOID Xgip_SysInitTimerFunc(
             urb->UrbBulkOrInterruptTransfer.TransferBufferLength = (ULONG)size;
             RtlCopyBytes(urb->UrbBulkOrInterruptTransfer.TransferBuffer, Buffer, size);
 
-            KdPrint(("[%X] Buffer length: %d\n", 
+            KdPrint((DRIVERNAME "[%X] Buffer length: %d\n", 
                 ((PUCHAR)urb->UrbBulkOrInterruptTransfer.TransferBuffer)[0],
                 urb->UrbBulkOrInterruptTransfer.TransferBufferLength));
 
@@ -333,7 +333,7 @@ VOID Xgip_SysInitTimerFunc(
         // Stop timer when collection is purged
         if (WdfCollectionGetCount(xgip->XboxgipSysInitCollection) == 0)
         {
-            KdPrint(("Collection finished\n"));
+            KdPrint((DRIVERNAME "Collection finished\n"));
 
             WdfTimerStop(xgip->XboxgipSysInitTimer, FALSE);
         }

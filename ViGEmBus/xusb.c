@@ -102,7 +102,7 @@ NTSTATUS Xusb_PrepareHardware(WDFDEVICE Device)
     status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
+        KdPrint((DRIVERNAME "Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
             GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data1,
             GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data2,
             GUID_DEVINTERFACE_XUSB_UNKNOWN_0.Data3,
@@ -126,7 +126,7 @@ NTSTATUS Xusb_PrepareHardware(WDFDEVICE Device)
     status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
+        KdPrint((DRIVERNAME "Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
             GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data1,
             GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data2,
             GUID_DEVINTERFACE_XUSB_UNKNOWN_1.Data3,
@@ -150,7 +150,7 @@ NTSTATUS Xusb_PrepareHardware(WDFDEVICE Device)
     status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
+        KdPrint((DRIVERNAME "Couldn't register unknown interface GUID: %08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X (status 0x%x)\n",
             GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data1,
             GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data2,
             GUID_DEVINTERFACE_XUSB_UNKNOWN_2.Data3,
@@ -190,7 +190,7 @@ NTSTATUS Xusb_PrepareHardware(WDFDEVICE Device)
     status = WdfDeviceAddQueryInterface(Device, &ifaceCfg);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfDeviceAddQueryInterface failed status 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfDeviceAddQueryInterface failed status 0x%x\n", status));
         return status;
     }
 
@@ -201,7 +201,7 @@ NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION
 {
     NTSTATUS status;
 
-    KdPrint(("Initializing XUSB context...\n"));
+    KdPrint((DRIVERNAME "Initializing XUSB context...\n"));
 
     PXUSB_DEVICE_DATA xusb = XusbGetData(Device);
 
@@ -221,7 +221,7 @@ NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION
     status = WdfIoQueueCreate(Device, &usbInQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xusb->PendingUsbInRequests);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));
         return status;
     }
 
@@ -231,7 +231,7 @@ NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION
     status = WdfIoQueueCreate(Device, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xusb->PendingNotificationRequests);
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfIoQueueCreate failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));
         return status;
     }
 

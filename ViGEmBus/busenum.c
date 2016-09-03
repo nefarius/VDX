@@ -46,7 +46,7 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING Registry
     NTSTATUS status;
     WDFDRIVER driver;
 
-    KdPrint(("Virtual Gamepad Emulation Bus Driver [built: %s %s]\n", __DATE__, __TIME__));
+    KdPrint((DRIVERNAME "Virtual Gamepad Emulation Bus Driver [built: %s %s]\n", __DATE__, __TIME__));
 
     WDF_DRIVER_CONFIG_INIT(&config, Bus_EvtDeviceAdd);
 
@@ -54,7 +54,7 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING Registry
 
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfDriverCreate failed with status 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfDriverCreate failed with status 0x%x\n", status));
     }
 
     return status;
@@ -79,7 +79,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 
     PAGED_CODE();
 
-    KdPrint(("Bus_EvtDeviceAdd: 0x%p\n", Driver));
+    KdPrint((DRIVERNAME "Bus_EvtDeviceAdd: 0x%p\n", Driver));
 
     WdfDeviceInitSetDeviceType(DeviceInit, FILE_DEVICE_BUS_EXTENDER);
     // More than one process may talk to the bus at the same time
@@ -111,7 +111,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("Error creating device 0x%x\n", status));
+        KdPrint((DRIVERNAME "Error creating device 0x%x\n", status));
         return status;
     }
 
@@ -130,7 +130,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfIoQueueCreate failed status 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfIoQueueCreate failed status 0x%x\n", status));
         return status;
     }
 
@@ -142,7 +142,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfDeviceCreateDeviceInterface failed status 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfDeviceCreateDeviceInterface failed status 0x%x\n", status));
         return status;
     }
 
@@ -181,7 +181,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     status = WdfDeviceAddQueryInterface(device, &qiConfig);
 
     if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfDeviceAddQueryInterface failed with status 0x%X", status));
+        KdPrint((DRIVERNAME "WdfDeviceAddQueryInterface failed with status 0x%X", status));
         return status;
     }
 
@@ -210,7 +210,7 @@ Bus_FileCleanup(
     PAGED_CODE();
 
 
-    KdPrint(("Bus_FileCleanup called\n"));
+    KdPrint((DRIVERNAME "Bus_FileCleanup called\n"));
 
     device = WdfFileObjectGetDevice(FileObject);
 
@@ -239,7 +239,7 @@ Bus_FileCleanup(
             status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);
             if (!NT_SUCCESS(status))
             {
-                KdPrint(("WdfChildListUpdateChildDescriptionAsMissing failed with status 0x%X\n", status));
+                KdPrint((DRIVERNAME "WdfChildListUpdateChildDescriptionAsMissing failed with status 0x%X\n", status));
             }
         }
     }
@@ -264,7 +264,7 @@ VOID Bus_EvtIoDeviceControl(
 
     hDevice = WdfIoQueueGetDevice(Queue);
 
-    KdPrint(("Bus_EvtIoDeviceControl: 0x%p\n", hDevice));
+    KdPrint((DRIVERNAME "Bus_EvtIoDeviceControl: 0x%p\n", hDevice));
 
     switch (IoControlCode)
     {
@@ -272,13 +272,13 @@ VOID Bus_EvtIoDeviceControl(
     {
         PVIGEM_PLUGIN_TARGET plugIn = NULL;
 
-        KdPrint(("IOCTL_VIGEM_PLUGIN_TARGET\n"));
+        KdPrint((DRIVERNAME "IOCTL_VIGEM_PLUGIN_TARGET\n"));
 
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(VIGEM_PLUGIN_TARGET), (PVOID)&plugIn, &length);
 
         if (!NT_SUCCESS(status))
         {
-            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
             break;
         }
 
@@ -300,13 +300,13 @@ VOID Bus_EvtIoDeviceControl(
     {
         PVIGEM_UNPLUG_TARGET unPlug = NULL;
 
-        KdPrint(("IOCTL_VIGEM_UNPLUG_TARGET\n"));
+        KdPrint((DRIVERNAME "IOCTL_VIGEM_UNPLUG_TARGET\n"));
 
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(VIGEM_UNPLUG_TARGET), (PVOID)&unPlug, &length);
 
         if (!NT_SUCCESS(status))
         {
-            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
             break;
         }
 
@@ -322,13 +322,13 @@ VOID Bus_EvtIoDeviceControl(
     {
         PXUSB_SUBMIT_REPORT xusbSubmit = NULL;
 
-        KdPrint(("IOCTL_XUSB_SUBMIT_REPORT\n"));
+        KdPrint((DRIVERNAME "IOCTL_XUSB_SUBMIT_REPORT\n"));
 
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(XUSB_SUBMIT_REPORT), (PVOID)&xusbSubmit, &length);
 
         if (!NT_SUCCESS(status))
         {
-            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
             break;
         }
 
@@ -351,12 +351,12 @@ VOID Bus_EvtIoDeviceControl(
     {
         PXUSB_REQUEST_NOTIFICATION xusbNotify = NULL;
 
-        KdPrint(("IOCTL_XUSB_REQUEST_NOTIFICATION\n"));
+        KdPrint((DRIVERNAME "IOCTL_XUSB_REQUEST_NOTIFICATION\n"));
 
         // Don't accept the request if the output buffer can't hold the results
         if (OutputBufferLength < sizeof(XUSB_REQUEST_NOTIFICATION))
         {
-            KdPrint(("IOCTL_XUSB_REQUEST_NOTIFICATION: output buffer too small: %ul\n", OutputBufferLength));
+            KdPrint((DRIVERNAME "IOCTL_XUSB_REQUEST_NOTIFICATION: output buffer too small: %ul\n", OutputBufferLength));
             break;
         }
 
@@ -364,7 +364,7 @@ VOID Bus_EvtIoDeviceControl(
 
         if (!NT_SUCCESS(status))
         {
-            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
             break;
         }
 
@@ -387,13 +387,13 @@ VOID Bus_EvtIoDeviceControl(
     {
         PDS4_SUBMIT_REPORT ds4Submit = NULL;
 
-        KdPrint(("IOCTL_DS4_SUBMIT_REPORT\n"));
+        KdPrint((DRIVERNAME "IOCTL_DS4_SUBMIT_REPORT\n"));
 
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(DS4_SUBMIT_REPORT), (PVOID)&ds4Submit, &length);
 
         if (!NT_SUCCESS(status))
         {
-            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
             break;
         }
 
@@ -416,12 +416,12 @@ VOID Bus_EvtIoDeviceControl(
     {
         PDS4_REQUEST_NOTIFICATION ds4Notify = NULL;
 
-        KdPrint(("IOCTL_DS4_REQUEST_NOTIFICATION\n"));
+        KdPrint((DRIVERNAME "IOCTL_DS4_REQUEST_NOTIFICATION\n"));
 
         // Don't accept the request if the output buffer can't hold the results
         if (OutputBufferLength < sizeof(DS4_REQUEST_NOTIFICATION))
         {
-            KdPrint(("IOCTL_DS4_REQUEST_NOTIFICATION: output buffer too small: %ul\n", OutputBufferLength));
+            KdPrint((DRIVERNAME "IOCTL_DS4_REQUEST_NOTIFICATION: output buffer too small: %ul\n", OutputBufferLength));
             break;
         }
 
@@ -429,7 +429,7 @@ VOID Bus_EvtIoDeviceControl(
 
         if (!NT_SUCCESS(status))
         {
-            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
             break;
         }
 
@@ -452,13 +452,13 @@ VOID Bus_EvtIoDeviceControl(
     {
         PXGIP_SUBMIT_REPORT xgipSubmit = NULL;
 
-        KdPrint(("IOCTL_XGIP_SUBMIT_REPORT\n"));
+        KdPrint((DRIVERNAME "IOCTL_XGIP_SUBMIT_REPORT\n"));
 
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(XGIP_SUBMIT_REPORT), (PVOID)&xgipSubmit, &length);
 
         if (!NT_SUCCESS(status))
         {
-            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
             break;
         }
 
@@ -481,13 +481,13 @@ VOID Bus_EvtIoDeviceControl(
     {
         PXGIP_SUBMIT_INTERRUPT xgipSubmit = NULL;
 
-        KdPrint(("IOCTL_XGIP_SUBMIT_INTERRUPT\n"));
+        KdPrint((DRIVERNAME "IOCTL_XGIP_SUBMIT_INTERRUPT\n"));
 
         status = WdfRequestRetrieveInputBuffer(Request, sizeof(XGIP_SUBMIT_INTERRUPT), (PVOID)&xgipSubmit, &length);
 
         if (!NT_SUCCESS(status))
         {
-            KdPrint(("WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
             break;
         }
 
@@ -507,7 +507,7 @@ VOID Bus_EvtIoDeviceControl(
     }
 
     default:
-        KdPrint(("UNKNOWN IOCTL CODE 0x%x\n", IoControlCode));
+        KdPrint((DRIVERNAME "UNKNOWN IOCTL CODE 0x%x\n", IoControlCode));
         break; // default status is STATUS_INVALID_PARAMETER
     }
 
@@ -528,7 +528,7 @@ VOID Bus_EvtIoDefault(
     UNREFERENCED_PARAMETER(Queue);
     UNREFERENCED_PARAMETER(Request);
 
-    KdPrint(("Bus_EvtIoDefault called\n"));
+    KdPrint((DRIVERNAME "Bus_EvtIoDefault called\n"));
 
     WdfRequestComplete(Request, STATUS_INVALID_DEVICE_REQUEST);
 }
@@ -564,7 +564,7 @@ NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE Ta
         status = STATUS_INVALID_PARAMETER;
     }
 
-    KdPrint(("Bus_PlugInDevice exiting with 0x%x\n", status));
+    KdPrint((DRIVERNAME "Bus_PlugInDevice exiting with 0x%x\n", status));
 
     return status;
 }
@@ -584,7 +584,7 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
 
     PAGED_CODE();
 
-    KdPrint(("Entered Bus_UnPlugDevice\n"));
+    KdPrint((DRIVERNAME "Entered Bus_UnPlugDevice\n"));
 
     list = WdfFdoGetDefaultChildList(Device);
 
@@ -619,7 +619,7 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
             status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);
             if (!NT_SUCCESS(status))
             {
-                KdPrint(("WdfChildListUpdateChildDescriptionAsMissing failed with status 0x%X\n", status));
+                KdPrint((DRIVERNAME "WdfChildListUpdateChildDescriptionAsMissing failed with status 0x%X\n", status));
             }
         }
     }
@@ -651,7 +651,7 @@ NTSTATUS Bus_QueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Requ
     PDS4_DEVICE_DATA            ds4Data;
 
 
-    KdPrint(("Entered Bus_QueueNotification\n"));
+    KdPrint((DRIVERNAME "Entered Bus_QueueNotification\n"));
 
 #pragma region Get PDO from child list
 
@@ -672,7 +672,7 @@ NTSTATUS Bus_QueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Requ
     // Validate child
     if (hChild == NULL)
     {
-        KdPrint(("Bus_QueueNotification: PDO with serial %d not found\n", SerialNo));
+        KdPrint((DRIVERNAME "Bus_QueueNotification: PDO with serial %d not found\n", SerialNo));
         return STATUS_NO_SUCH_DEVICE;
     }
 
@@ -680,14 +680,14 @@ NTSTATUS Bus_QueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Requ
     pdoData = PdoGetData(hChild);
     if (pdoData == NULL)
     {
-        KdPrint(("Bus_QueueNotification: PDO context not found\n"));
+        KdPrint((DRIVERNAME "Bus_QueueNotification: PDO context not found\n"));
         return STATUS_INVALID_PARAMETER;
     }
 
     // Check if caller owns this PDO
     if (!IS_OWNER(pdoData))
     {
-        KdPrint(("Bus_QueueNotification: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
+        KdPrint((DRIVERNAME "Bus_QueueNotification: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
         return STATUS_ACCESS_DENIED;
     }
 
@@ -716,7 +716,7 @@ NTSTATUS Bus_QueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Requ
 
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfRequestForwardToIoQueue failed with status 0x%X\n", status));
+        KdPrint((DRIVERNAME "WdfRequestForwardToIoQueue failed with status 0x%X\n", status));
     }
 
     return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
@@ -752,7 +752,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
     BOOLEAN                     changed;
 
 
-    KdPrint(("Entered Bus_SubmitReport\n"));
+    KdPrint((DRIVERNAME "Entered Bus_SubmitReport\n"));
 
 #pragma region Get PDO from child list
 
@@ -773,7 +773,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
     // Validate child
     if (hChild == NULL)
     {
-        KdPrint(("Bus_SubmitReport: PDO with serial %d not found\n", SerialNo));
+        KdPrint((DRIVERNAME "Bus_SubmitReport: PDO with serial %d not found\n", SerialNo));
         return STATUS_NO_SUCH_DEVICE;
     }
 
@@ -781,14 +781,14 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
     pdoData = PdoGetData(hChild);
     if (pdoData == NULL)
     {
-        KdPrint(("Bus_SubmitReport: PDO context not found\n"));
+        KdPrint((DRIVERNAME "Bus_SubmitReport: PDO context not found\n"));
         return STATUS_INVALID_PARAMETER;
     }
 
     // Check if caller owns this PDO
     if (!IS_OWNER(pdoData))
     {
-        KdPrint(("Bus_SubmitReport: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
+        KdPrint((DRIVERNAME "Bus_SubmitReport: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
         return STATUS_ACCESS_DENIED;
     }
 
@@ -824,7 +824,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
     if (!changed)
         return status;
 
-    KdPrint(("Bus_SubmitReport: received new report\n"));
+    KdPrint((DRIVERNAME "Bus_SubmitReport: received new report\n"));
 
     // Get pending USB request
     switch (pdoData->TargetType)
@@ -857,7 +857,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
                 interrupt->InterruptLength, &memory, NULL);
             if (!NT_SUCCESS(status))
             {
-                KdPrint(("WdfMemoryCreate failed with status 0x%X\n", status));
+                KdPrint((DRIVERNAME "WdfMemoryCreate failed with status 0x%X\n", status));
                 return status;
             }
 
@@ -865,7 +865,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
             status = WdfMemoryCopyFromBuffer(memory, 0, interrupt->Interrupt, interrupt->InterruptLength);
             if (!NT_SUCCESS(status))
             {
-                KdPrint(("WdfMemoryCopyFromBuffer failed with status 0x%X\n", status));
+                KdPrint((DRIVERNAME "WdfMemoryCopyFromBuffer failed with status 0x%X\n", status));
                 return status;
             }
 
@@ -873,7 +873,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
             status = WdfCollectionAdd(xgip->XboxgipSysInitCollection, memory);
             if (!NT_SUCCESS(status))
             {
-                KdPrint(("WdfCollectionAdd failed with status 0x%X\n", status));
+                KdPrint((DRIVERNAME "WdfCollectionAdd failed with status 0x%X\n", status));
                 return status;
             }
 
@@ -901,7 +901,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
     if (!NT_SUCCESS(status))
         return status;
 
-    KdPrint(("Bus_SubmitReport: pending IRP found\n"));
+    KdPrint((DRIVERNAME "Bus_SubmitReport: pending IRP found\n"));
 
     // Get pending IRP
     pendingIrp = WdfRequestWdmGetIrp(usbRequest);

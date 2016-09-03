@@ -65,13 +65,13 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING Registry
 // 
 NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 {
-    WDF_CHILD_LIST_CONFIG config;
-    NTSTATUS status;
-    WDFDEVICE device;
-    WDF_IO_QUEUE_CONFIG queueConfig;
-    PNP_BUS_INFORMATION busInfo;
-    WDFQUEUE queue;
-    WDF_FILEOBJECT_CONFIG foConfig;
+    WDF_CHILD_LIST_CONFIG   config;
+    NTSTATUS                status;
+    WDFDEVICE               device;
+    WDF_IO_QUEUE_CONFIG     queueConfig;
+    PNP_BUS_INFORMATION     busInfo;
+    WDFQUEUE                queue;
+    WDF_FILEOBJECT_CONFIG   foConfig;
 
     UNREFERENCED_PARAMETER(Driver);
 

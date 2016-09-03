@@ -201,7 +201,7 @@ VOID FORCEINLINE XUSB_REQUEST_NOTIFICATION_INIT(
 // 
 typedef struct _XUSB_REPORT
 {
-    WORD wButtons;
+    USHORT wButtons;
     BYTE bLeftTrigger;
     BYTE bRightTrigger;
     SHORT sThumbLX;
@@ -325,7 +325,7 @@ typedef struct _DS4_REPORT
     BYTE bThumbLY;
     BYTE bThumbRX;
     BYTE bThumbRY;
-    WORD wButtons;
+    USHORT wButtons;
     BYTE bSpecial;
     BYTE bTriggerL;
     BYTE bTriggerR;
@@ -405,7 +405,7 @@ VOID FORCEINLINE DS4_SET_DPAD(
 )
 {
     Report->wButtons &= ~0xF;
-    Report->wButtons |= (WORD)Dpad;
+    Report->wButtons |= (USHORT)Dpad;
 }
 
 VOID FORCEINLINE DS4_REPORT_INIT(

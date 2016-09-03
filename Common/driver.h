@@ -29,6 +29,9 @@ DEFINE_GUID(GUID_VIGEM_INTERFACE_STANDARD,
 
 #pragma once
 
+DECLARE_GLOBAL_CONST_UNICODE_STRING(VigemNtDeviceName, L"\\Device\\ViGEmBus");
+DECLARE_GLOBAL_CONST_UNICODE_STRING(VigemDosDeviceName, L"\\DosDevices\\ViGEmBus");
+
 #include "public.h"
 
 typedef VOID(*PINTERFACE_REFERENCE)(PVOID Context);
@@ -45,15 +48,15 @@ NTSTATUS
 typedef
 NTSTATUS
 (*PVIGEM_FUNC_UNPLUG_TARGET)(
-    IN PVOID Context, 
+    IN PVOID Context,
     IN ULONG SerialNo
     );
 
 typedef
-NTSTATUS 
+NTSTATUS
 (*PVIGEM_FUNC_XUSB_SUBMIT_REPORT)(
-    IN PVOID Context, 
-    IN ULONG SerialNo, 
+    IN PVOID Context,
+    IN ULONG SerialNo,
     IN PXUSB_SUBMIT_REPORT Report
     );
 

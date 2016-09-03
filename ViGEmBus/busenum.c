@@ -75,6 +75,8 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     VIGEM_INTERFACE_STANDARD    VigemInterface;
     WDF_QUERY_INTERFACE_CONFIG  qiConfig;
 
+
+
     UNREFERENCED_PARAMETER(Driver);
 
     PAGED_CODE();
@@ -105,6 +107,16 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 
 #pragma endregion
 
+#pragma region Assign object name
+
+    status = WdfDeviceInitAssignName(DeviceInit, &VigemNtDeviceName);
+    if (!NT_SUCCESS(status)) {
+        KdPrint((DRIVERNAME "WdfDeviceInitAssignName failed with status 0x%x\n", status));
+        return status;
+    }
+
+#pragma endregion
+
 #pragma region Create FDO
 
     status = WdfDeviceCreate(&DeviceInit, WDF_NO_OBJECT_ATTRIBUTES, &device);
@@ -112,6 +124,19 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     if (!NT_SUCCESS(status))
     {
         KdPrint((DRIVERNAME "Error creating device 0x%x\n", status));
+        return status;
+    }
+
+#pragma endregion
+
+#pragma region Create symbolic link
+
+    status = WdfDeviceCreateSymbolicLink(
+        device,
+        &VigemDosDeviceName
+    );
+    if (!NT_SUCCESS(status)) {
+        KdPrint((DRIVERNAME "WdfDeviceCreateSymbolicLink failed with status 0x%x\n", status));
         return status;
     }
 

@@ -358,7 +358,8 @@ NTSTATUS
 Bus_XusbSubmitReport(
     WDFDEVICE Device,
     ULONG SerialNo,
-    PXUSB_SUBMIT_REPORT Report
+    PXUSB_SUBMIT_REPORT Report,
+    _In_ BOOLEAN FromInterface
 );
 
 NTSTATUS
@@ -372,52 +373,40 @@ NTSTATUS
 Bus_Ds4SubmitReport(
     WDFDEVICE Device,
     ULONG SerialNo,
-    PDS4_SUBMIT_REPORT Report
+    PDS4_SUBMIT_REPORT Report,
+    _In_ BOOLEAN FromInterface
 );
 
 NTSTATUS
 Bus_XgipSubmitReport(
     WDFDEVICE Device,
     ULONG SerialNo,
-    PXGIP_SUBMIT_REPORT Report
+    PXGIP_SUBMIT_REPORT Report,
+    _In_ BOOLEAN FromInterface
 );
 
 NTSTATUS
 Bus_XgipSubmitInterrupt(
     WDFDEVICE Device,
     ULONG SerialNo,
-    PXGIP_SUBMIT_INTERRUPT Report
+    PXGIP_SUBMIT_INTERRUPT Report,
+    _In_ BOOLEAN FromInterface
 );
 
 NTSTATUS
 Bus_SubmitReport(
     WDFDEVICE Device,
     ULONG SerialNo,
-    PVOID Report
+    PVOID Report,
+    _In_ BOOLEAN FromInterface
 );
 
 
 #pragma endregion
 
-NTSTATUS
-BusIface_PlugInTarget(
-    IN PVOID Context,
-    IN ULONG SerialNo,
-    IN VIGEM_TARGET_TYPE TargetType
-);
-
-NTSTATUS
-BufIface_UnplugTarget(
-    IN PVOID Context,
-    IN ULONG SerialNo
-    );
-
-NTSTATUS
-BufIface_XusbSubmitReport(
-    IN PVOID Context,
-    IN ULONG SerialNo,
-    IN PXUSB_SUBMIT_REPORT Report
-    );
+NTSTATUS BusIface_PlugInTarget(IN PVOID Context, IN ULONG SerialNo, IN VIGEM_TARGET_TYPE TargetType);
+NTSTATUS BufIface_UnplugTarget(IN PVOID Context, IN ULONG SerialNo);
+NTSTATUS BufIface_XusbSubmitReport(IN PVOID Context, IN ULONG SerialNo, IN PXUSB_SUBMIT_REPORT Report);
 
 #pragma region USB-specific functions
 

@@ -366,7 +366,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_XusbSubmitReport(hDevice, xusbSubmit->SerialNo, xusbSubmit);
+            status = Bus_XusbSubmitReport(hDevice, xusbSubmit->SerialNo, xusbSubmit, FALSE);
         }
 
         break;
@@ -431,7 +431,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_Ds4SubmitReport(hDevice, ds4Submit->SerialNo, ds4Submit);
+            status = Bus_Ds4SubmitReport(hDevice, ds4Submit->SerialNo, ds4Submit, FALSE);
         }
 
         break;
@@ -496,7 +496,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_XgipSubmitReport(hDevice, xgipSubmit->SerialNo, xgipSubmit);
+            status = Bus_XgipSubmitReport(hDevice, xgipSubmit->SerialNo, xgipSubmit, FALSE);
         }
 
         break;
@@ -525,7 +525,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_XgipSubmitInterrupt(hDevice, xgipSubmit->SerialNo, xgipSubmit);
+            status = Bus_XgipSubmitInterrupt(hDevice, xgipSubmit->SerialNo, xgipSubmit, FALSE);
         }
 
         break;
@@ -657,9 +657,9 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
 //
 // Sends a report update to an XUSB PDO.
 // 
-NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REPORT Report)
+NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REPORT Report, BOOLEAN FromInterface)
 {
-    return Bus_SubmitReport(Device, SerialNo, Report);
+    return Bus_SubmitReport(Device, SerialNo, Report, FromInterface);
 }
 
 //
@@ -750,22 +750,22 @@ NTSTATUS Bus_QueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Requ
 //
 // Sends a report update to a DS4 PDO.
 // 
-NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPORT Report)
+NTSTATUS Bus_Ds4SubmitReport(WDFDEVICE Device, ULONG SerialNo, PDS4_SUBMIT_REPORT Report, BOOLEAN FromInterface)
 {
-    return Bus_SubmitReport(Device, SerialNo, Report);
+    return Bus_SubmitReport(Device, SerialNo, Report, FromInterface);
 }
 
-NTSTATUS Bus_XgipSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXGIP_SUBMIT_REPORT Report)
+NTSTATUS Bus_XgipSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXGIP_SUBMIT_REPORT Report, BOOLEAN FromInterface)
 {
-    return Bus_SubmitReport(Device, SerialNo, Report);
+    return Bus_SubmitReport(Device, SerialNo, Report, FromInterface);
 }
 
-NTSTATUS Bus_XgipSubmitInterrupt(WDFDEVICE Device, ULONG SerialNo, PXGIP_SUBMIT_INTERRUPT Report)
+NTSTATUS Bus_XgipSubmitInterrupt(WDFDEVICE Device, ULONG SerialNo, PXGIP_SUBMIT_INTERRUPT Report, BOOLEAN FromInterface)
 {
-    return Bus_SubmitReport(Device, SerialNo, Report);
+    return Bus_SubmitReport(Device, SerialNo, Report, FromInterface);
 }
 
-NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
+NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report, BOOLEAN FromInterface)
 {
     NTSTATUS                    status = STATUS_SUCCESS;
     WDFCHILDLIST                list;
@@ -811,7 +811,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report)
     }
 
     // Check if caller owns this PDO
-    if (!IS_OWNER(pdoData))
+    if (!FromInterface && !IS_OWNER(pdoData))
     {
         KdPrint((DRIVERNAME "Bus_SubmitReport: PID mismatch: %d != %d\n", pdoData->OwnerProcessId, CURRENT_PROCESS_ID()));
         return STATUS_ACCESS_DENIED;

@@ -102,6 +102,17 @@ typedef struct _VIGEM_PLUGIN_TARGET
     // Type of the target device to emulate.
     // 
     VIGEM_TARGET_TYPE TargetType;
+
+    //
+    // If set, the vendor ID the emulated device is reporting
+    // 
+    USHORT VendorId;
+
+    //
+    // If set, the product ID the emulated device is reporting
+    // 
+    USHORT ProductId;
+
 } VIGEM_PLUGIN_TARGET, *PVIGEM_PLUGIN_TARGET;
 
 //

@@ -167,6 +167,17 @@ typedef struct _PDO_IDENTIFICATION_DESCRIPTION
     // Device type this PDO is emulating
     // 
     VIGEM_TARGET_TYPE TargetType;
+
+    //
+    // If set, the vendor ID the emulated device is reporting
+    // 
+    USHORT VendorId;
+
+    //
+    // If set, the product ID the emulated device is reporting
+    // 
+    USHORT ProductId;
+
 } PDO_IDENTIFICATION_DESCRIPTION, *PPDO_IDENTIFICATION_DESCRIPTION;
 
 //
@@ -188,6 +199,16 @@ typedef struct _PDO_DEVICE_DATA
     // Device type this PDO is emulating
     // 
     VIGEM_TARGET_TYPE TargetType;
+
+    //
+    // If set, the vendor ID the emulated device is reporting
+    // 
+    USHORT VendorId;
+
+    //
+    // If set, the product ID the emulated device is reporting
+    // 
+    USHORT ProductId;
 
 } PDO_DEVICE_DATA, *PPDO_DEVICE_DATA;
 

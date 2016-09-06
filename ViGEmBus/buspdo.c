@@ -136,7 +136,12 @@ NTSTATUS Bus_CreatePdo(
         // 
     case Xbox360Wired:
 
-        status = Xusb_PreparePdo(DeviceInit, &deviceId, &deviceDescription);
+        status = Xusb_PreparePdo(
+            DeviceInit, 
+            Description->VendorId, 
+            Description->ProductId, 
+            &deviceId, 
+            &deviceDescription);
 
         if (!NT_SUCCESS(status))
             return status;

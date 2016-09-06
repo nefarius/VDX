@@ -7,9 +7,14 @@
 #endif
 
 
-NTSTATUS BusIface_PlugInTarget(IN PVOID Context, IN ULONG SerialNo, IN VIGEM_TARGET_TYPE TargetType)
+NTSTATUS BusIface_PlugInTarget(
+    PVOID Context,
+    ULONG SerialNo,
+    VIGEM_TARGET_TYPE TargetType,
+    USHORT VendorId,
+    USHORT ProductId)
 {
-    return Bus_PlugInDevice(Context, SerialNo, TargetType);
+    return Bus_PlugInDevice(Context, SerialNo, TargetType, VendorId, ProductId);
 }
 
 NTSTATUS BufIface_UnplugTarget(IN PVOID Context, IN ULONG SerialNo)

@@ -123,6 +123,7 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 
 #define VIGEM_POOL_TAG                  0x45476956 // "EGiV"
 #define DRIVERNAME                      "ViGEm: "
+#define MAX_HARDWARE_ID_LENGTH          0xFF
 
 #pragma endregion
 
@@ -359,7 +360,9 @@ NTSTATUS
 Bus_PlugInDevice(
     _In_ WDFDEVICE Device,
     _In_ ULONG SerialNo,
-    _In_ VIGEM_TARGET_TYPE TargetType
+    _In_ VIGEM_TARGET_TYPE TargetType,
+    _In_ USHORT VendorId,
+    _In_ USHORT ProductId
 );
 
 NTSTATUS
@@ -425,7 +428,12 @@ Bus_SubmitReport(
 
 #pragma endregion
 
-NTSTATUS BusIface_PlugInTarget(IN PVOID Context, IN ULONG SerialNo, IN VIGEM_TARGET_TYPE TargetType);
+NTSTATUS BusIface_PlugInTarget(
+    IN PVOID Context,
+    IN ULONG SerialNo,
+    IN VIGEM_TARGET_TYPE TargetType,
+    IN USHORT VendorId,
+    IN USHORT ProductId);
 NTSTATUS BufIface_UnplugTarget(IN PVOID Context, IN ULONG SerialNo);
 NTSTATUS BufIface_XusbSubmitReport(IN PVOID Context, IN ULONG SerialNo, IN PXUSB_SUBMIT_REPORT Report);
 
@@ -458,7 +466,7 @@ VOID GenerateRandomMacAddress(PMAC_ADDRESS Address);
 //
 // XUSB-specific functions
 // 
-NTSTATUS Xusb_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
+NTSTATUS Xusb_PreparePdo(PWDFDEVICE_INIT DeviceInit, USHORT VendorId, USHORT ProductId, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
 NTSTATUS Xusb_PrepareHardware(WDFDEVICE Device);
 NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION Description);
 VOID Xusb_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);

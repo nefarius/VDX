@@ -315,7 +315,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_PlugInDevice(hDevice, plugIn->SerialNo, plugIn->TargetType);
+            status = Bus_PlugInDevice(hDevice, plugIn->SerialNo, plugIn->TargetType, plugIn->VendorId, plugIn->ProductId);
         }
 
         break;
@@ -561,7 +561,7 @@ VOID Bus_EvtIoDefault(
 //
 // Simulates a device plug-in event.
 // 
-NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE TargetType)
+NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE TargetType, USHORT VendorId, USHORT ProductId)
 {
     PDO_IDENTIFICATION_DESCRIPTION  description;
     NTSTATUS                        status;
@@ -577,6 +577,37 @@ NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE Ta
     description.SerialNo = SerialNo;
     description.TargetType = TargetType;
     description.OwnerProcessId = CURRENT_PROCESS_ID();
+
+    // Set default IDs if supplied values are invalid
+    if (VendorId == 0 || ProductId == 0)
+    {
+        switch (TargetType)
+        {
+        case Xbox360Wired:
+
+            description.VendorId = 0x045E;
+            description.ProductId = 0x028E;
+
+            break;
+        case DualShock4Wired:
+
+            description.VendorId = 0x054C;
+            description.ProductId = 0x05C4;
+
+            break;
+        case XboxOneWired:
+
+            description.VendorId = 0x0E6F;
+            description.ProductId = 0x0139;
+
+            break;
+        }
+    }
+    else
+    {
+        description.VendorId = VendorId;
+        description.ProductId = ProductId;
+    }
 
     status = WdfChildListAddOrUpdateChildDescriptionAsPresent(WdfFdoGetDefaultChildList(Device), &description.Header, NULL);
 

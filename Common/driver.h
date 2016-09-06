@@ -42,7 +42,9 @@ NTSTATUS
 (*PVIGEM_FUNC_PLUGIN_TARGET)(
     IN PVOID Context,
     IN ULONG SerialNo,
-    IN VIGEM_TARGET_TYPE TargetType
+    IN VIGEM_TARGET_TYPE TargetType,
+    IN USHORT VendorId,
+    IN USHORT ProductId
     );
 
 typedef

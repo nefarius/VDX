@@ -25,26 +25,25 @@ SOFTWARE.
 
 #include "busenum.h"
 
-NTSTATUS Xusb_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription)
+NTSTATUS Xusb_PreparePdo(
+    PWDFDEVICE_INIT DeviceInit, 
+    USHORT VendorId, 
+    USHORT ProductId, 
+    PUNICODE_STRING DeviceId, 
+    PUNICODE_STRING DeviceDescription)
 {
     NTSTATUS status;
-    UNICODE_STRING buffer;
+    DECLARE_UNICODE_STRING_SIZE(buffer, MAX_HARDWARE_ID_LENGTH);
 
     // prepare device description
     status = RtlUnicodeStringInit(DeviceDescription, L"Virtual Xbox 360 Controller");
     if (!NT_SUCCESS(status))
         return status;
 
-    // Set hardware IDs
-    RtlUnicodeStringInit(&buffer, L"USB\\VID_045E&PID_028E&REV_0114");
-
-    status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
-    if (!NT_SUCCESS(status))
-        return status;
-
+    // Set hardware ID
+    RtlUnicodeStringPrintf(&buffer, L"USB\\VID_%04X&PID_%04X", VendorId, ProductId);
+    
     RtlUnicodeStringCopy(DeviceId, &buffer);
-
-    RtlUnicodeStringInit(&buffer, L"USB\\VID_045E&PID_028E");
 
     status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
     if (!NT_SUCCESS(status))

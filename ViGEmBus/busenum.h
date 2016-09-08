@@ -179,6 +179,8 @@ typedef struct _PDO_IDENTIFICATION_DESCRIPTION
     // 
     USHORT ProductId;
 
+    BOOLEAN OwnerIsDriver;
+
 } PDO_IDENTIFICATION_DESCRIPTION, *PPDO_IDENTIFICATION_DESCRIPTION;
 
 //
@@ -362,7 +364,8 @@ Bus_PlugInDevice(
     _In_ ULONG SerialNo,
     _In_ VIGEM_TARGET_TYPE TargetType,
     _In_ USHORT VendorId,
-    _In_ USHORT ProductId
+    _In_ USHORT ProductId,
+    _In_ BOOLEAN FromInterface
 );
 
 NTSTATUS

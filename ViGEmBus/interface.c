@@ -14,7 +14,7 @@ NTSTATUS BusIface_PlugInTarget(
     USHORT VendorId,
     USHORT ProductId)
 {
-    return Bus_PlugInDevice(Context, SerialNo, TargetType, VendorId, ProductId);
+    return Bus_PlugInDevice(Context, SerialNo, TargetType, VendorId, ProductId, TRUE);
 }
 
 NTSTATUS BufIface_UnplugTarget(IN PVOID Context, IN ULONG SerialNo)

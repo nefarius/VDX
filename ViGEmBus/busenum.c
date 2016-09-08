@@ -216,7 +216,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 }
 
 //
-// Gets called when the user-land process exits or closes the handle.
+// Gets called when the user-land process (or kernel driver) exits or closes the handle.
 // 
 _Use_decl_annotations_
 VOID
@@ -258,7 +258,8 @@ Bus_FileCleanup(
 
         // Only unplug owned children
         if (childInfo.Status == WdfChildListRetrieveDeviceSuccess
-            && description.OwnerProcessId == CURRENT_PROCESS_ID())
+            && description.OwnerProcessId == CURRENT_PROCESS_ID()
+            && !description.OwnerIsDriver)
         {
             // "Unplug" child
             status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);
@@ -315,7 +316,13 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_PlugInDevice(hDevice, plugIn->SerialNo, plugIn->TargetType, plugIn->VendorId, plugIn->ProductId);
+            status = Bus_PlugInDevice(
+                hDevice, 
+                plugIn->SerialNo, 
+                plugIn->TargetType, 
+                plugIn->VendorId, 
+                plugIn->ProductId,
+                FALSE);
         }
 
         break;
@@ -561,7 +568,13 @@ VOID Bus_EvtIoDefault(
 //
 // Simulates a device plug-in event.
 // 
-NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE TargetType, USHORT VendorId, USHORT ProductId)
+NTSTATUS Bus_PlugInDevice(
+    WDFDEVICE Device, 
+    ULONG SerialNo, 
+    VIGEM_TARGET_TYPE TargetType, 
+    USHORT VendorId,
+    USHORT ProductId,
+    BOOLEAN FromInterface)
 {
     PDO_IDENTIFICATION_DESCRIPTION  description;
     NTSTATUS                        status;
@@ -577,6 +590,7 @@ NTSTATUS Bus_PlugInDevice(WDFDEVICE Device, ULONG SerialNo, VIGEM_TARGET_TYPE Ta
     description.SerialNo = SerialNo;
     description.TargetType = TargetType;
     description.OwnerProcessId = CURRENT_PROCESS_ID();
+    description.OwnerIsDriver = FromInterface;
 
     // Set default IDs if supplied values are invalid
     if (VendorId == 0 || ProductId == 0)

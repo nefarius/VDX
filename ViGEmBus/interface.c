@@ -8,11 +8,11 @@
 
 
 NTSTATUS BusIface_PlugInTarget(
-    PVOID Context,
-    ULONG SerialNo,
-    VIGEM_TARGET_TYPE TargetType,
-    USHORT VendorId,
-    USHORT ProductId)
+    IN PVOID Context,
+    IN ULONG SerialNo,
+    IN VIGEM_TARGET_TYPE TargetType,
+    IN USHORT VendorId,
+    IN USHORT ProductId)
 {
     return Bus_PlugInDevice(Context, SerialNo, TargetType, VendorId, ProductId, TRUE);
 }

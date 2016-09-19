@@ -74,7 +74,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     WDF_FILEOBJECT_CONFIG       foConfig;
     VIGEM_INTERFACE_STANDARD    VigemInterface;
     WDF_QUERY_INTERFACE_CONFIG  qiConfig;
-
+    WDF_OBJECT_ATTRIBUTES       fdoAttributes;
 
 
     UNREFERENCED_PARAMETER(Driver);
@@ -119,7 +119,9 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 
 #pragma region Create FDO
 
-    status = WdfDeviceCreate(&DeviceInit, WDF_NO_OBJECT_ATTRIBUTES, &device);
+    WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&fdoAttributes, FDO_DEVICE_DATA);
+
+    status = WdfDeviceCreate(&DeviceInit, &fdoAttributes, &device);
 
     if (!NT_SUCCESS(status))
     {
@@ -191,8 +193,8 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     VigemInterface.Header.Version = 1;
     VigemInterface.Header.Context = (PVOID)device;
 
-    VigemInterface.Header.InterfaceReference = WdfDeviceInterfaceReferenceNoOp;
-    VigemInterface.Header.InterfaceDereference = WdfDeviceInterfaceDereferenceNoOp;
+    VigemInterface.Header.InterfaceReference = BusInterfaceReference;
+    VigemInterface.Header.InterfaceDereference = BusInterfaceDereference;
 
     VigemInterface.PlugInTarget = BusIface_PlugInTarget;
     VigemInterface.UnPlugTarget = BufIface_UnplugTarget;

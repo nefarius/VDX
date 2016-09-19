@@ -179,6 +179,9 @@ typedef struct _PDO_IDENTIFICATION_DESCRIPTION
     // 
     USHORT ProductId;
 
+    //
+    // Is the current device owner another driver?
+    // 
     BOOLEAN OwnerIsDriver;
 
 } PDO_IDENTIFICATION_DESCRIPTION, *PPDO_IDENTIFICATION_DESCRIPTION;
@@ -216,6 +219,17 @@ typedef struct _PDO_DEVICE_DATA
 } PDO_DEVICE_DATA, *PPDO_DEVICE_DATA;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(PDO_DEVICE_DATA, PdoGetData)
+
+typedef struct _FDO_DEVICE_DATA
+{
+    //
+    // Counter of interface references
+    // 
+    ULONG InterfaceReferenceCounter;
+
+} FDO_DEVICE_DATA, *PFDO_DEVICE_DATA;
+
+WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(FDO_DEVICE_DATA, FdoGetData)
 
 //
 // XUSB-specific device context data.
@@ -431,6 +445,8 @@ Bus_SubmitReport(
 
 #pragma endregion
 
+#pragma region Bus Interface-specific function
+
 NTSTATUS BusIface_PlugInTarget(
     IN PVOID Context,
     IN ULONG SerialNo,
@@ -439,6 +455,11 @@ NTSTATUS BusIface_PlugInTarget(
     IN USHORT ProductId);
 NTSTATUS BufIface_UnplugTarget(IN PVOID Context, IN ULONG SerialNo);
 NTSTATUS BufIface_XusbSubmitReport(IN PVOID Context, IN ULONG SerialNo, IN PXUSB_SUBMIT_REPORT Report);
+
+VOID BusInterfaceReference(_In_ PVOID Context);
+VOID BusInterfaceDereference(_In_ PVOID Context);
+
+#pragma endregion
 
 #pragma region USB-specific functions
 

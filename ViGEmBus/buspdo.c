@@ -92,7 +92,7 @@ NTSTATUS Bus_CreatePdo(
     DECLARE_UNICODE_STRING_SIZE(buffer, MAX_INSTANCE_ID_LEN);
     // reserve space for device id
     DECLARE_UNICODE_STRING_SIZE(deviceId, MAX_INSTANCE_ID_LEN);
-    
+
 
 
     PAGED_CODE();
@@ -137,10 +137,10 @@ NTSTATUS Bus_CreatePdo(
     case Xbox360Wired:
 
         status = Xusb_PreparePdo(
-            DeviceInit, 
-            Description->VendorId, 
-            Description->ProductId, 
-            &deviceId, 
+            DeviceInit,
+            Description->VendorId,
+            Description->ProductId,
+            &deviceId,
             &deviceDescription);
 
         if (!NT_SUCCESS(status))
@@ -296,6 +296,8 @@ NTSTATUS Bus_CreatePdo(
     pdoData->SerialNo = Description->SerialNo;
     pdoData->TargetType = Description->TargetType;
     pdoData->OwnerProcessId = Description->OwnerProcessId;
+    pdoData->VendorId = Description->VendorId;
+    pdoData->ProductId = Description->ProductId;
 
     // Initialize additional contexts (if available)
     switch (Description->TargetType)
@@ -320,6 +322,12 @@ NTSTATUS Bus_CreatePdo(
 
     default:
         break;
+    }
+
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "Couldn't initialize additional contexts\n"));
+        return status;
     }
 
 #pragma endregion

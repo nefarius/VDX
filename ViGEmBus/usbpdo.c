@@ -127,8 +127,8 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
         pDescriptor->bDeviceSubClass = 0xFF;
         pDescriptor->bDeviceProtocol = 0xFF;
         pDescriptor->bMaxPacketSize0 = 0x08;
-        pDescriptor->idVendor = 0x045E; // Microsoft Corp.
-        pDescriptor->idProduct = 0x028E; // Xbox360 Controller
+        pDescriptor->idVendor = pCommon->VendorId;
+        pDescriptor->idProduct = pCommon->ProductId;
         pDescriptor->bcdDevice = 0x0114;
         pDescriptor->iManufacturer = 0x01;
         pDescriptor->iProduct = 0x02;
@@ -146,8 +146,8 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
         pDescriptor->bDeviceSubClass = 0x00;
         pDescriptor->bDeviceProtocol = 0x00;
         pDescriptor->bMaxPacketSize0 = 0x40;
-        pDescriptor->idVendor = 0x054C; // Sony Corp.
-        pDescriptor->idProduct = 0x05C4; // Wireless Controller
+        pDescriptor->idVendor = pCommon->VendorId;
+        pDescriptor->idProduct = pCommon->ProductId;
         pDescriptor->bcdDevice = 0x0100;
         pDescriptor->iManufacturer = 0x01;
         pDescriptor->iProduct = 0x02;
@@ -165,8 +165,8 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
         pDescriptor->bDeviceSubClass = 0x47;
         pDescriptor->bDeviceProtocol = 0xD0;
         pDescriptor->bMaxPacketSize0 = 0x40;
-        pDescriptor->idVendor = 0x0E6F; // Logic3
-        pDescriptor->idProduct = 0x0139; // Controller
+        pDescriptor->idVendor = pCommon->VendorId;
+        pDescriptor->idProduct = pCommon->ProductId;
         pDescriptor->bcdDevice = 0x0650;
         pDescriptor->iManufacturer = 0x01;
         pDescriptor->iProduct = 0x02;

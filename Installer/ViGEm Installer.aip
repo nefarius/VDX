@@ -12,8 +12,8 @@
     <ROW Property="ARPPRODUCTICON" Value="favicon.exe" Type="8"/>
     <ROW Property="ARPURLINFOABOUT" Value="https://github.com/nefarius/ViGEm"/>
     <ROW Property="ARPURLUPDATEINFO" Value="https://github.com/nefarius/ViGEm/releases"/>
-    <ROW Property="BannerBitmap" Value="banner" Type="1" MsiKey="BannerBitmap"/>
-    <ROW Property="DialogBitmap" Value="dialog" Type="1" MsiKey="DialogBitmap"/>
+    <ROW Property="BannerBitmap" Value="banner" MultiBuildValue="DefaultBuild:Banner.png" Type="1" MsiKey="BannerBitmap"/>
+    <ROW Property="DialogBitmap" Value="dialog" MultiBuildValue="DefaultBuild:Dialog.png" Type="1" MsiKey="DialogBitmap"/>
     <ROW Property="Manufacturer" Value="Nefarius Software Solutions"/>
     <ROW Property="ProductCode" Value="1033:{A2621ADD-668C-4C4E-AA1D-FC9DE531FD7D} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
@@ -119,6 +119,8 @@
     <ROW Property="AI_SETUPEXEPATH" Signature_="AI_EXE_PATH_LM" Builds="DefaultBuild"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiBinaryComponent">
+    <ROW Name="Banner.png" SourcePath="Banner.png"/>
+    <ROW Name="Dialog.png" SourcePath="Dialog.png"/>
     <ROW Name="Prereq.dll" SourcePath="&lt;AI_CUSTACTS&gt;Prereq.dll"/>
     <ROW Name="aicustact.dll" SourcePath="&lt;AI_CUSTACTS&gt;aicustact.dll"/>
     <ROW Name="lzmaextractor.dll" SourcePath="&lt;AI_CUSTACTS&gt;lzmaextractor.dll"/>

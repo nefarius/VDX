@@ -1,7 +1,7 @@
 # ViGEm
 Virtual Gamepad Emulation Driver
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/shields_io.svg?style=social&label=Follow&maxAge=2592000)](https://twitter.com/CNefarius)
+Follow development progress on [Twitter](https://twitter.com/CNefarius) and [YouTube](https://www.youtube.com/user/nefarius2k8)!
 
 *Work in progress*
 

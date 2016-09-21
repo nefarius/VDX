@@ -28,7 +28,6 @@ SOFTWARE.
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text(PAGE, BusIface_PlugInTarget)
 #pragma alloc_text(PAGE, BufIface_UnplugTarget)
-#pragma alloc_text(PAGE, BufIface_XusbSubmitReport)
 #pragma alloc_text(PAGE, BusInterfaceReference)
 #pragma alloc_text(PAGE, BusInterfaceDereference)
 #endif

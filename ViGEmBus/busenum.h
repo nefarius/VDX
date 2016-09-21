@@ -385,7 +385,8 @@ Bus_PlugInDevice(
 NTSTATUS
 Bus_UnPlugDevice(
     WDFDEVICE Device,
-    ULONG SerialNo
+    ULONG SerialNo,
+    _In_ BOOLEAN FromInterface
 );
 
 NTSTATUS

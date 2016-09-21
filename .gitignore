@@ -243,3 +243,6 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/Installer/Setup Files
+/Installer/ViGEm Installer-cache/part1
+/Installer/ViGEm Installer-cache/part2

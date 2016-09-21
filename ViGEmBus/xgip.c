@@ -311,7 +311,7 @@ VOID Xgip_SysInitTimerFunc(
             PURB urb = (PURB)irpStack->Parameters.Others.Argument1;
 
             // Get buffer size and content
-            ULONGLONG size;
+            size_t size;
             PUCHAR Buffer = WdfMemoryGetBuffer(mem, &size);
 
             // Assign buffer size and content to URB

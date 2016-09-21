@@ -46,7 +46,7 @@ NTSTATUS BusIface_PlugInTarget(
 
 NTSTATUS BufIface_UnplugTarget(IN PVOID Context, IN ULONG SerialNo)
 {
-    return Bus_UnPlugDevice(Context, SerialNo);
+    return Bus_UnPlugDevice(Context, SerialNo, TRUE);
 }
 
 NTSTATUS BufIface_XusbSubmitReport(IN PVOID Context, IN ULONG SerialNo, IN PXUSB_SUBMIT_REPORT Report)

@@ -346,7 +346,7 @@ VOID Bus_EvtIoDeviceControl(
 
         if ((sizeof(VIGEM_UNPLUG_TARGET) == unPlug->Size) && (length == InputBufferLength))
         {
-            status = Bus_UnPlugDevice(hDevice, unPlug->SerialNo);
+            status = Bus_UnPlugDevice(hDevice, unPlug->SerialNo, FALSE);
         }
 
         break;
@@ -644,7 +644,7 @@ NTSTATUS Bus_PlugInDevice(
 //
 // Simulates a device unplug event.
 // 
-NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
+NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo, _In_ BOOLEAN FromInterface)
 {
     NTSTATUS                            status;
     WDFDEVICE                           hChild;
@@ -685,7 +685,7 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo)
 
         // Only unplug owned children
         if (childInfo.Status == WdfChildListRetrieveDeviceSuccess
-            && description.OwnerProcessId == CURRENT_PROCESS_ID())
+            && (description.OwnerProcessId == CURRENT_PROCESS_ID() || FromInterface))
         {
             // Unplug child
             status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);

@@ -9,7 +9,7 @@
     <ROW Property="ALLUSERS" Value="1"/>
     <ROW Property="ARPCOMMENTS" Value="[|ProductName]" ValueLocId="*"/>
     <ROW Property="ARPHELPLINK" Value="https://github.com/nefarius/ViGEm/issues"/>
-    <ROW Property="ARPPRODUCTICON" Value="favicon.exe" Type="8"/>
+    <ROW Property="ARPPRODUCTICON" Value="ViGEm.exe" Type="8"/>
     <ROW Property="ARPURLINFOABOUT" Value="https://github.com/nefarius/ViGEm"/>
     <ROW Property="ARPURLUPDATEINFO" Value="https://github.com/nefarius/ViGEm/releases"/>
     <ROW Property="BannerBitmap" Value="banner" MultiBuildValue="DefaultBuild:Banner.png" Type="1" MsiKey="BannerBitmap"/>
@@ -84,7 +84,7 @@
     <ROW File="x360ce2ViGEm.exe_1" Component_="x360ce2ViGEm.exe_1" FileName="X360CE~1.EXE|x360ce2ViGEm.exe" Attributes="0" SourcePath="..\Release\x360ce2ViGEm.exe" SelfReg="false" NextFile="ViGEmBus.sys_3" DigSign="true"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.BuildComponent">
-    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="0" PackageFolder="Setup Files" Languages="en" InstallationType="4" CabsLocation="1" PackageType="1" FilesInsideExe="true" ExeIconPath="favicon.ico" ExtractionFolder="[AppDataFolder][|Manufacturer]\[|ProductName] [|ProductVersion]\install" UseLargeSchema="true" ExeName="ViGEm_Setup_[|ProductVersion]" MsiPackageType="AI_ALL"/>
+    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="0" PackageFolder="Setup Files" Languages="en" InstallationType="4" CabsLocation="1" PackageType="1" FilesInsideExe="true" ExeIconPath="ViGEm.ico" ExtractionFolder="[AppDataFolder][|Manufacturer]\[|ProductName] [|ProductVersion]\install" UseLargeSchema="true" ExeName="ViGEm_Setup_[|ProductVersion]" MsiPackageType="AI_ALL"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.DictionaryComponent">
     <ROW Path="&lt;AI_DICTS&gt;ui.ail"/>
@@ -192,7 +192,7 @@
     <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
-    <ROW Name="favicon.exe" SourcePath="favicon.ico" Index="0"/>
+    <ROW Name="ViGEm.exe" SourcePath="ViGEm.ico" Index="0"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiInstExSeqComponent">
     <ROW Action="AI_DOWNGRADE" Condition="AI_NEWERPRODUCTFOUND AND (UILevel &lt;&gt; 5)" Sequence="210"/>

@@ -53,6 +53,62 @@ NTSTATUS BufIface_XusbSubmitReport(IN PVOID Context, IN ULONG SerialNo, IN PXUSB
     return Bus_XusbSubmitReport(Context, SerialNo, Report, TRUE);
 }
 
+NTSTATUS BusIface_RegisterXusbRequestNotificationCallback(
+    IN PVOID Context, 
+    IN ULONG SerialNo, 
+    IN PVIGEM_FUNC_XUSB_NOTIFICATION_CALLBACK Callback, 
+    IN PVOID CallbackContext)
+{
+    WDFCHILDLIST                list;
+    WDF_CHILD_RETRIEVE_INFO     info;
+    WDFDEVICE                   hChild;
+    PPDO_DEVICE_DATA            pdoData;
+    PXUSB_DEVICE_DATA           xusbData;
+
+
+    KdPrint((DRIVERNAME "Entered BusIface_RegisterXusbRequestNotificationCallback\n"));
+
+#pragma region Get PDO from child list
+
+    list = WdfFdoGetDefaultChildList(Context);
+
+    PDO_IDENTIFICATION_DESCRIPTION description;
+
+    WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
+
+    description.SerialNo = SerialNo;
+
+    WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
+
+    hChild = WdfChildListRetrievePdo(list, &info);
+
+#pragma endregion
+
+    // Validate child
+    if (hChild == NULL)
+    {
+        KdPrint((DRIVERNAME "BusIface_RegisterXusbRequestNotificationCallback: PDO with serial %d not found\n", SerialNo));
+        return STATUS_NO_SUCH_DEVICE;
+    }
+
+    pdoData = PdoGetData(hChild);
+
+    switch(pdoData->TargetType)
+    {
+    case Xbox360Wired:
+
+        xusbData = XusbGetData(hChild);
+        xusbData->NotificationCallback = Callback;
+        xusbData->NotificationCallbackContext = CallbackContext;
+
+        break;
+    default:
+        return STATUS_NOT_IMPLEMENTED;
+    }
+
+    return STATUS_SUCCESS;
+}
+
 VOID BusInterfaceReference(
     _In_ PVOID Context
 )

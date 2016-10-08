@@ -766,6 +766,11 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
             RtlCopyBytes(xusb->Rumble, Buffer, pTransfer->TransferBufferLength);
         }
 
+        if(xusb->NotificationCallback)
+        {
+            (*xusb->NotificationCallback)(xusb->NotificationCallbackContext, xusb->LedNumber, xusb->Rumble[3], xusb->Rumble[4]);
+        }
+
         // Notify user-mode process that new data is available
         status = WdfIoQueueRetrieveNextRequest(xusb->PendingNotificationRequests, &notifyRequest);
 

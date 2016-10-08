@@ -199,6 +199,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     VigemInterface.PlugInTarget = BusIface_PlugInTarget;
     VigemInterface.UnPlugTarget = BufIface_UnplugTarget;
     VigemInterface.XusbSubmitReport = BufIface_XusbSubmitReport;
+    VigemInterface.RegisterXusbRequestNotificationCallback = BusIface_RegisterXusbRequestNotificationCallback;
 
     WDF_QUERY_INTERFACE_CONFIG_INIT(&qiConfig,
         (PINTERFACE)&VigemInterface,

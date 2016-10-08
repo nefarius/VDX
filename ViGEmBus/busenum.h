@@ -260,6 +260,11 @@ typedef struct _XUSB_DEVICE_DATA
     // Queue for inverted calls
     //
     WDFQUEUE PendingNotificationRequests;
+
+    PVIGEM_FUNC_XUSB_NOTIFICATION_CALLBACK NotificationCallback;
+
+    PVOID NotificationCallbackContext;
+
 } XUSB_DEVICE_DATA, *PXUSB_DEVICE_DATA;
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XUSB_DEVICE_DATA, XusbGetData)
@@ -456,6 +461,12 @@ NTSTATUS BusIface_PlugInTarget(
     IN USHORT ProductId);
 NTSTATUS BufIface_UnplugTarget(IN PVOID Context, IN ULONG SerialNo);
 NTSTATUS BufIface_XusbSubmitReport(IN PVOID Context, IN ULONG SerialNo, IN PXUSB_SUBMIT_REPORT Report);
+NTSTATUS BusIface_RegisterXusbRequestNotificationCallback(
+    IN PVOID Context,
+    IN ULONG SerialNo,
+    IN PVIGEM_FUNC_XUSB_NOTIFICATION_CALLBACK Callback,
+    IN PVOID CallbackContext
+    );
 
 VOID BusInterfaceReference(_In_ PVOID Context);
 VOID BusInterfaceDereference(_In_ PVOID Context);

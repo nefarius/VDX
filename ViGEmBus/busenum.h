@@ -383,9 +383,10 @@ Bus_PlugInDevice(
 
 NTSTATUS
 Bus_UnPlugDevice(
-    WDFDEVICE Device,
-    ULONG SerialNo,
-    _In_ BOOLEAN FromInterface
+    _In_ WDFDEVICE Device,
+    _In_ WDFREQUEST Request,
+    _In_ BOOLEAN IsInternal,
+    _Out_ PSIZE_T Transferred
 );
 
 NTSTATUS

@@ -275,26 +275,12 @@ VOID Bus_EvtIoDeviceControl(
         break;
 
     case IOCTL_VIGEM_UNPLUG_TARGET:
-    {
-        PVIGEM_UNPLUG_TARGET unPlug = NULL;
 
         KdPrint((DRIVERNAME "IOCTL_VIGEM_UNPLUG_TARGET\n"));
 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(VIGEM_UNPLUG_TARGET), (PVOID)&unPlug, &length);
-
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
-            break;
-        }
-
-        if ((sizeof(VIGEM_UNPLUG_TARGET) == unPlug->Size) && (length == InputBufferLength))
-        {
-            status = Bus_UnPlugDevice(Device, unPlug->SerialNo, FALSE);
-        }
+        status = Bus_UnPlugDevice(Device, Request, FALSE, &length);
 
         break;
-    }
 
     case IOCTL_XUSB_SUBMIT_REPORT:
     {
@@ -523,6 +509,14 @@ VOID Bus_EvtIoInternalDeviceControl(
         status = Bus_PlugInDevice(Device, Request, TRUE, &length);
 
         break;
+
+    case IOCTL_VIGEM_UNPLUG_TARGET:
+
+        KdPrint((DRIVERNAME "IOCTL_VIGEM_UNPLUG_TARGET\n"));
+
+        status = Bus_UnPlugDevice(Device, Request, TRUE, &length);
+
+        break;
     }
 
     if (status != STATUS_PENDING)
@@ -644,7 +638,11 @@ NTSTATUS Bus_PlugInDevice(
 //
 // Simulates a device unplug event.
 // 
-NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo, _In_ BOOLEAN FromInterface)
+NTSTATUS Bus_UnPlugDevice(
+    _In_ WDFDEVICE Device,
+    _In_ WDFREQUEST Request,
+    _In_ BOOLEAN IsInternal,
+    _Out_ PSIZE_T Transferred)
 {
     NTSTATUS                            status;
     WDFDEVICE                           hChild;
@@ -652,11 +650,30 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo, _In_ BOOLEAN FromInt
     WDF_CHILD_LIST_ITERATOR             iterator;
     WDF_CHILD_RETRIEVE_INFO             childInfo;
     PDO_IDENTIFICATION_DESCRIPTION      description;
-    BOOLEAN                             unplugAll = (SerialNo == 0);
+    BOOLEAN                             unplugAll;
+    PVIGEM_UNPLUG_TARGET                unPlug;
+    SIZE_T                              length = 0;
 
     PAGED_CODE();
 
     KdPrint((DRIVERNAME "Entered Bus_UnPlugDevice\n"));
+
+    status = WdfRequestRetrieveInputBuffer(Request, sizeof(VIGEM_UNPLUG_TARGET), (PVOID)&unPlug, &length);
+
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+        return status;
+    }
+
+    if ((sizeof(VIGEM_UNPLUG_TARGET) != unPlug->Size) || (length != unPlug->Size))
+    {
+        KdPrint((DRIVERNAME "Input buffer size mismatch"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    *Transferred = length;
+    unplugAll = (unPlug->SerialNo == 0);
 
     list = WdfFdoGetDefaultChildList(Device);
 
@@ -678,14 +695,14 @@ NTSTATUS Bus_UnPlugDevice(WDFDEVICE Device, ULONG SerialNo, _In_ BOOLEAN FromInt
         }
 
         // Child isn't the one we looked for, skip
-        if (!unplugAll && description.SerialNo != SerialNo)
+        if (!unplugAll && description.SerialNo != unPlug->SerialNo)
         {
             continue;
         }
 
         // Only unplug owned children
         if (childInfo.Status == WdfChildListRetrieveDeviceSuccess
-            && (description.OwnerProcessId == CURRENT_PROCESS_ID() || FromInterface))
+            && (description.OwnerProcessId == CURRENT_PROCESS_ID() || IsInternal))
         {
             // Unplug child
             status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);

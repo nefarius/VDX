@@ -257,53 +257,22 @@ VOID Bus_EvtIoDeviceControl(
 )
 {
     NTSTATUS    status = STATUS_INVALID_PARAMETER;
-    WDFDEVICE   hDevice;
+    WDFDEVICE   Device;
     size_t      length = 0;
 
-    hDevice = WdfIoQueueGetDevice(Queue);
+    Device = WdfIoQueueGetDevice(Queue);
 
-    KdPrint((DRIVERNAME "Bus_EvtIoDeviceControl: 0x%p\n", hDevice));
+    KdPrint((DRIVERNAME "Bus_EvtIoDeviceControl: 0x%p\n", Device));
 
     switch (IoControlCode)
     {
     case IOCTL_VIGEM_PLUGIN_TARGET:
-    {
-        PVIGEM_PLUGIN_TARGET plugIn = NULL;
 
         KdPrint((DRIVERNAME "IOCTL_VIGEM_PLUGIN_TARGET\n"));
 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(VIGEM_PLUGIN_TARGET), (PVOID)&plugIn, &length);
-
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
-            break;
-        }
-
-        if ((sizeof(VIGEM_PLUGIN_TARGET) == plugIn->Size) && (length == InputBufferLength))
-        {
-            if (plugIn->SerialNo == 0)
-            {
-                KdPrint((DRIVERNAME "Serial no. 0 not allowed"));
-                status = STATUS_INVALID_PARAMETER;
-                break;
-            }
-
-            status = Bus_PlugInDevice(
-                hDevice, 
-                plugIn->SerialNo, 
-                plugIn->TargetType, 
-                plugIn->VendorId, 
-                plugIn->ProductId,
-                FALSE);
-        }
-        else
-        {
-            KdPrint((DRIVERNAME "Input buffer size mismatch"));
-        }
+        status = Bus_PlugInDevice(Device, Request, FALSE, &length);
 
         break;
-    }
 
     case IOCTL_VIGEM_UNPLUG_TARGET:
     {
@@ -321,7 +290,7 @@ VOID Bus_EvtIoDeviceControl(
 
         if ((sizeof(VIGEM_UNPLUG_TARGET) == unPlug->Size) && (length == InputBufferLength))
         {
-            status = Bus_UnPlugDevice(hDevice, unPlug->SerialNo, FALSE);
+            status = Bus_UnPlugDevice(Device, unPlug->SerialNo, FALSE);
         }
 
         break;
@@ -350,7 +319,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_XusbSubmitReport(hDevice, xusbSubmit->SerialNo, xusbSubmit, FALSE);
+            status = Bus_XusbSubmitReport(Device, xusbSubmit->SerialNo, xusbSubmit, FALSE);
         }
 
         break;
@@ -386,7 +355,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_QueueNotification(hDevice, xusbNotify->SerialNo, Request);
+            status = Bus_QueueNotification(Device, xusbNotify->SerialNo, Request);
         }
 
         break;
@@ -415,7 +384,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_Ds4SubmitReport(hDevice, ds4Submit->SerialNo, ds4Submit, FALSE);
+            status = Bus_Ds4SubmitReport(Device, ds4Submit->SerialNo, ds4Submit, FALSE);
         }
 
         break;
@@ -451,7 +420,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_QueueNotification(hDevice, ds4Notify->SerialNo, Request);
+            status = Bus_QueueNotification(Device, ds4Notify->SerialNo, Request);
         }
 
         break;
@@ -480,7 +449,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_XgipSubmitReport(hDevice, xgipSubmit->SerialNo, xgipSubmit, FALSE);
+            status = Bus_XgipSubmitReport(Device, xgipSubmit->SerialNo, xgipSubmit, FALSE);
         }
 
         break;
@@ -509,7 +478,7 @@ VOID Bus_EvtIoDeviceControl(
                 break;
             }
 
-            status = Bus_XgipSubmitInterrupt(hDevice, xgipSubmit->SerialNo, xgipSubmit, FALSE);
+            status = Bus_XgipSubmitInterrupt(Device, xgipSubmit->SerialNo, xgipSubmit, FALSE);
         }
 
         break;
@@ -534,12 +503,32 @@ VOID Bus_EvtIoInternalDeviceControl(
     _In_ ULONG      IoControlCode
 )
 {
-    UNREFERENCED_PARAMETER(Queue);
-    UNREFERENCED_PARAMETER(Request);
+    NTSTATUS    status = STATUS_INVALID_PARAMETER;
+    WDFDEVICE   Device;
+    size_t      length = 0;
+
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
-    UNREFERENCED_PARAMETER(IoControlCode);
-    
+
+    Device = WdfIoQueueGetDevice(Queue);
+
+    KdPrint((DRIVERNAME "Bus_EvtIoInternalDeviceControl: 0x%p\n", Device));
+
+    switch (IoControlCode)
+    {
+    case IOCTL_VIGEM_PLUGIN_TARGET:
+
+        KdPrint((DRIVERNAME "IOCTL_VIGEM_PLUGIN_TARGET\n"));
+
+        status = Bus_PlugInDevice(Device, Request, TRUE, &length);
+
+        break;
+    }
+
+    if (status != STATUS_PENDING)
+    {
+        WdfRequestCompleteWithInformation(Request, status, length);
+    }
 }
 
 //
@@ -562,17 +551,39 @@ VOID Bus_EvtIoDefault(
 // Simulates a device plug-in event.
 // 
 NTSTATUS Bus_PlugInDevice(
-    WDFDEVICE Device, 
-    ULONG SerialNo, 
-    VIGEM_TARGET_TYPE TargetType, 
-    USHORT VendorId,
-    USHORT ProductId,
-    BOOLEAN FromInterface)
+    _In_ WDFDEVICE Device,
+    _In_ WDFREQUEST Request,
+    _In_ BOOLEAN IsInternal,
+    _Out_ PSIZE_T Transferred)
 {
     PDO_IDENTIFICATION_DESCRIPTION  description;
     NTSTATUS                        status;
+    PVIGEM_PLUGIN_TARGET            plugIn;
+    size_t                          length = 0;
 
     PAGED_CODE();
+
+    status = WdfRequestRetrieveInputBuffer(Request, sizeof(VIGEM_PLUGIN_TARGET), (PVOID)&plugIn, &length);
+
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+        return status;
+    }
+
+    if ((sizeof(VIGEM_PLUGIN_TARGET) != plugIn->Size) || (length != plugIn->Size))
+    {
+        KdPrint((DRIVERNAME "Input buffer size mismatch"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    if (plugIn->SerialNo == 0)
+    {
+        KdPrint((DRIVERNAME "Serial no. 0 not allowed"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    *Transferred = length;
 
     //
     // Initialize the description with the information about the newly
@@ -580,15 +591,15 @@ NTSTATUS Bus_PlugInDevice(
     //
     WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
 
-    description.SerialNo = SerialNo;
-    description.TargetType = TargetType;
+    description.SerialNo = plugIn->SerialNo;
+    description.TargetType = plugIn->TargetType;
     description.OwnerProcessId = CURRENT_PROCESS_ID();
-    description.OwnerIsDriver = FromInterface;
+    description.OwnerIsDriver = IsInternal;
 
     // Set default IDs if supplied values are invalid
-    if (VendorId == 0 || ProductId == 0)
+    if (plugIn->VendorId == 0 || plugIn->ProductId == 0)
     {
-        switch (TargetType)
+        switch (plugIn->TargetType)
         {
         case Xbox360Wired:
 
@@ -612,8 +623,8 @@ NTSTATUS Bus_PlugInDevice(
     }
     else
     {
-        description.VendorId = VendorId;
-        description.ProductId = ProductId;
+        description.VendorId = plugIn->VendorId;
+        description.ProductId = plugIn->ProductId;
     }
 
     status = WdfChildListAddOrUpdateChildDescriptionAsPresent(WdfFdoGetDefaultChildList(Device), &description.Header, NULL);
@@ -626,8 +637,6 @@ NTSTATUS Bus_PlugInDevice(
         //
         status = STATUS_INVALID_PARAMETER;
     }
-
-    KdPrint((DRIVERNAME "Bus_PlugInDevice exiting with 0x%x\n", status));
 
     return status;
 }

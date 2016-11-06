@@ -376,11 +376,9 @@ EVT_WDF_TIMER Xgip_SysInitTimerFunc;
 NTSTATUS
 Bus_PlugInDevice(
     _In_ WDFDEVICE Device,
-    _In_ ULONG SerialNo,
-    _In_ VIGEM_TARGET_TYPE TargetType,
-    _In_ USHORT VendorId,
-    _In_ USHORT ProductId,
-    _In_ BOOLEAN FromInterface
+    _In_ WDFREQUEST Request,
+    _In_ BOOLEAN IsInternal,
+    _Out_ PSIZE_T Transferred
 );
 
 NTSTATUS

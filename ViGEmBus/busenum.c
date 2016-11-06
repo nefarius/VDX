@@ -149,6 +149,7 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&queueConfig, WdfIoQueueDispatchParallel);
 
     queueConfig.EvtIoDeviceControl = Bus_EvtIoDeviceControl;
+    queueConfig.EvtIoInternalDeviceControl = Bus_EvtIoInternalDeviceControl;
     queueConfig.EvtIoDefault = Bus_EvtIoDefault;
 
     __analysis_assume(queueConfig.EvtIoStop != 0);
@@ -315,6 +316,7 @@ VOID Bus_EvtIoDeviceControl(
         {
             if (plugIn->SerialNo == 0)
             {
+                KdPrint((DRIVERNAME "Serial no. 0 not allowed"));
                 status = STATUS_INVALID_PARAMETER;
                 break;
             }
@@ -326,6 +328,10 @@ VOID Bus_EvtIoDeviceControl(
                 plugIn->VendorId, 
                 plugIn->ProductId,
                 FALSE);
+        }
+        else
+        {
+            KdPrint((DRIVERNAME "Input buffer size mismatch"));
         }
 
         break;
@@ -550,6 +556,17 @@ VOID Bus_EvtIoDeviceControl(
     {
         WdfRequestCompleteWithInformation(Request, status, length);
     }
+}
+
+VOID Bus_EvtIoInternalDeviceControl(
+    _In_ WDFQUEUE   Queue,
+    _In_ WDFREQUEST Request,
+    _In_ size_t     OutputBufferLength,
+    _In_ size_t     InputBufferLength,
+    _In_ ULONG      IoControlCode
+)
+{
+    
 }
 
 //

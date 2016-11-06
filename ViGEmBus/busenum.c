@@ -72,8 +72,6 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     PNP_BUS_INFORMATION         busInfo;
     WDFQUEUE                    queue;
     WDF_FILEOBJECT_CONFIG       foConfig;
-    VIGEM_INTERFACE_STANDARD    VigemInterface;
-    WDF_QUERY_INTERFACE_CONFIG  qiConfig;
     WDF_OBJECT_ATTRIBUTES       fdoAttributes;
 
 
@@ -185,36 +183,6 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     WdfDeviceSetBusInformationForChildren(device, &busInfo);
 
 #pragma endregion
-
-#pragma region Add query interface
-
-    RtlZeroMemory(&VigemInterface, sizeof(VIGEM_INTERFACE_STANDARD));
-
-    VigemInterface.Header.Size = sizeof(VigemInterface);
-    VigemInterface.Header.Version = 1;
-    VigemInterface.Header.Context = (PVOID)device;
-
-    VigemInterface.Header.InterfaceReference = BusInterfaceReference;
-    VigemInterface.Header.InterfaceDereference = BusInterfaceDereference;
-
-    VigemInterface.PlugInTarget = BusIface_PlugInTarget;
-    VigemInterface.UnPlugTarget = BufIface_UnplugTarget;
-    VigemInterface.XusbSubmitReport = BufIface_XusbSubmitReport;
-    VigemInterface.RegisterXusbRequestNotificationCallback = BusIface_RegisterXusbRequestNotificationCallback;
-
-    WDF_QUERY_INTERFACE_CONFIG_INIT(&qiConfig,
-        (PINTERFACE)&VigemInterface,
-        &GUID_VIGEM_INTERFACE_STANDARD,
-        NULL);
-
-    status = WdfDeviceAddQueryInterface(device, &qiConfig);
-
-    if (!NT_SUCCESS(status)) {
-        KdPrint((DRIVERNAME "WdfDeviceAddQueryInterface failed with status 0x%X", status));
-        return status;
-    }
-
-#pragma endregion 
 
     return status;
 }
@@ -566,6 +534,11 @@ VOID Bus_EvtIoInternalDeviceControl(
     _In_ ULONG      IoControlCode
 )
 {
+    UNREFERENCED_PARAMETER(Queue);
+    UNREFERENCED_PARAMETER(Request);
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+    UNREFERENCED_PARAMETER(InputBufferLength);
+    UNREFERENCED_PARAMETER(IoControlCode);
     
 }
 

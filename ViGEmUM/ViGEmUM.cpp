@@ -161,12 +161,12 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
         return VIGEM_ERROR_BUS_NOT_FOUND;
     }
 
-    if (Target->State == VigemTargetNew)
+    if (Target->State == VIGEM_TARGET_NEW)
     {
         return VIGEM_ERROR_TARGET_UNINITIALIZED;
     }
 
-    if (Target->State == VigemTargetConnected)
+    if (Target->State == VIGEM_TARGET_CONNECTED)
     {
         return VIGEM_ERROR_ALREADY_CONNECTED;
     }
@@ -180,11 +180,14 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
     {
         VIGEM_PLUGIN_TARGET_INIT(&plugin, Target->SerialNo, Type);
 
+        plugin.VendorId = Target->VendorId;
+        plugin.ProductId = Target->ProductId;
+
         DeviceIoControl(g_hViGEmBus, IOCTL_VIGEM_PLUGIN_TARGET, &plugin, plugin.Size, nullptr, 0, &transfered, &lOverlapped);
 
         if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
         {
-            Target->State = VigemTargetConnected;
+            Target->State = VIGEM_TARGET_CONNECTED;
             CloseHandle(lOverlapped.hEvent);
 
             if(Type == XboxOneWired)
@@ -210,12 +213,12 @@ VIGEM_API VIGEM_ERROR vigem_target_unplug(PVIGEM_TARGET Target)
         return VIGEM_ERROR_BUS_NOT_FOUND;
     }
 
-    if (Target->State == VigemTargetNew)
+    if (Target->State == VIGEM_TARGET_NEW)
     {
         return VIGEM_ERROR_TARGET_UNINITIALIZED;
     }
 
-    if (Target->State != VigemTargetConnected)
+    if (Target->State != VIGEM_TARGET_CONNECTED)
     {
         return VIGEM_ERROR_TARGET_NOT_PLUGGED_IN;
     }
@@ -231,7 +234,7 @@ VIGEM_API VIGEM_ERROR vigem_target_unplug(PVIGEM_TARGET Target)
 
     if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
     {
-        Target->State = VigemTargetDisconnected;
+        Target->State = VIGEM_TARGET_DISCONNECTED;
         CloseHandle(lOverlapped.hEvent);
         return VIGEM_ERROR_NONE;
     }
@@ -418,6 +421,16 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
     CloseHandle(lOverlapped.hEvent);
 
     return VIGEM_ERROR_NONE;
+}
+
+VIGEM_API VOID vigem_target_set_vid(PVIGEM_TARGET Target, USHORT VendorId)
+{
+    Target->VendorId = VendorId;
+}
+
+VIGEM_API VOID vigem_target_set_pid(PVIGEM_TARGET Target, USHORT ProductId)
+{
+    Target->ProductId = ProductId;
 }
 
 VIGEM_ERROR vigem_xgip_init_xboxgip(PVIGEM_TARGET Target)

@@ -54,10 +54,10 @@ typedef enum _VIGEM_ERRORS
 
 typedef enum _VIGEM_TARGET_STATE
 {
-    VigemTargetNew,
-    VigemTargetInitialized,
-    VigemTargetConnected,
-    VigemTargetDisconnected
+    VIGEM_TARGET_NEW,
+    VIGEM_TARGET_INITIALIZED,
+    VIGEM_TARGET_CONNECTED,
+    VIGEM_TARGET_DISCONNECTED
 } VIGEM_TARGET_STATE, *PVIGEM_TARGET_STATE;
 
 //
@@ -69,6 +69,8 @@ typedef struct _VIGEM_TARGET
     IN USHORT Version;
     IN ULONG SerialNo;
     IN VIGEM_TARGET_STATE State;
+    IN USHORT VendorId;
+    IN USHORT ProductId;
 } VIGEM_TARGET, *PVIGEM_TARGET;
 
 //
@@ -82,7 +84,7 @@ VOID FORCEINLINE VIGEM_TARGET_INIT(
 
     Target->Size = sizeof(VIGEM_TARGET);
     Target->Version = VIGEM_COMMON_VERSION;
-    Target->State = VigemTargetInitialized;
+    Target->State = VIGEM_TARGET_INITIALIZED;
 }
 
 typedef VOID(CALLBACK* PVIGEM_XUSB_NOTIFICATION)(
@@ -133,6 +135,14 @@ extern "C"
     VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(
         _In_ VIGEM_TARGET Target,
         _In_ XGIP_REPORT Report);
+
+    VIGEM_API VOID vigem_target_set_vid(
+        _Out_ PVIGEM_TARGET Target,
+        _In_ USHORT VendorId);
+
+    VIGEM_API VOID vigem_target_set_pid(
+        _Out_ PVIGEM_TARGET Target,
+        _In_ USHORT ProductId);
 
 #ifdef __cplusplus
 }

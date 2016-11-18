@@ -114,14 +114,39 @@ Return Value:
 
 --*/
 {
-    TraceEvents(TRACE_LEVEL_INFORMATION, 
-                TRACE_QUEUE, 
-                "%!FUNC! Queue 0x%p, Request 0x%p OutputBufferLength %d InputBufferLength %d IoControlCode %d", 
-                Queue, Request, (int) OutputBufferLength, (int) InputBufferLength, IoControlCode);
+    NTSTATUS                        status;
+    WDF_REQUEST_SEND_OPTIONS        options;
+    BOOLEAN                         ret;
+    PDEVICE_CONTEXT                 DeviceContext;
+    WDFDEVICE                       Device;
 
-    WdfRequestComplete(Request, STATUS_SUCCESS);
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+    UNREFERENCED_PARAMETER(InputBufferLength);
+    UNREFERENCED_PARAMETER(IoControlCode);
 
-    return;
+    Device = WdfIoQueueGetDevice(Queue);
+
+    DeviceContext = DeviceGetContext(Device);
+
+    if (DeviceContext->IsAffected)
+    {
+        WdfRequestComplete(Request, STATUS_ACCESS_DENIED);
+        KdPrint(("I am affected!\n"));
+        return;
+    }
+
+    KdPrint(("I am not affected, forwarding request...\n"));
+
+    WDF_REQUEST_SEND_OPTIONS_INIT(&options,
+        WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
+
+    ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), &options);
+
+    if (ret == FALSE) {
+        status = WdfRequestGetStatus(Request);
+        KdPrint(("WdfRequestSend failed: 0x%x\n", status));
+        WdfRequestComplete(Request, status);
+    }
 }
 
 VOID

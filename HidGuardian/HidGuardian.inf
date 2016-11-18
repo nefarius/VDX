@@ -4,8 +4,8 @@
 
 [Version]
 Signature="$WINDOWS NT$"
-Class=Sample ; TODO: edit Class
-ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Class=HIDClass
+ClassGuid={745a17a0-74d3-11d0-b6fe-00a0c90f57da}
 Provider=%ManufacturerName%
 CatalogFile=HidGuardian.cat
 DriverVer= ; TODO: set DriverVer in stampinf property pages
@@ -14,14 +14,6 @@ DriverVer= ; TODO: set DriverVer in stampinf property pages
 DefaultDestDir = 12
 
 ; ================= Class section =====================
-
-[ClassInstall32]
-Addreg=SampleClassReg
-
-[SampleClassReg]
-HKR,,,0,%ClassName%
-HKR,,Icon,,-5
-
 [SourceDisksNames]
 1 = %DiskName%,,,""
 
@@ -36,7 +28,7 @@ HidGuardian.sys  = 1,,
 %ManufacturerName%=Standard,NT$ARCH$
 
 [Standard.NT$ARCH$]
-%HidGuardian.DeviceDesc%=HidGuardian_Device, Root\HidGuardian ; TODO: edit hw-id
+%HidGuardian.DeviceDesc%=HidGuardian_Device, Root\HidGuardian
 
 [HidGuardian_Device.NT]
 CopyFiles=Drivers_Dir
@@ -83,8 +75,7 @@ KmdfLibraryVersion = $KMDFVERSION$
 
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
-ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
-ClassName="Samples" ; TODO: edit ClassName
+ManufacturerName="Nefarius Software Solutions"
 DiskName = "HidGuardian Installation Disk"
-HidGuardian.DeviceDesc = "HidGuardian Device"
+HidGuardian.DeviceDesc = "HidGuardian Virtual Device"
 HidGuardian.SVCDESC = "HidGuardian Service"

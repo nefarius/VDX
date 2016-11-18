@@ -18,13 +18,17 @@ Environment:
 
 EXTERN_C_START
 
+#define MAX_HARDWARE_ID_SIZE        0xFF
+
 //
 // The device context performs the same job as
 // a WDM device extension in the driver frameworks
 //
 typedef struct _DEVICE_CONTEXT
 {
-    ULONG PrivateDeviceData;  // just a placeholder
+    WDFMEMORY   HardwareIDMemory;
+    PCWSTR      HardwareID;
+    BOOLEAN     IsAffected;
 
 } DEVICE_CONTEXT, *PDEVICE_CONTEXT;
 
@@ -44,5 +48,7 @@ HidGuardianCreateDevice(
     );
 
 EVT_WDF_DEVICE_FILE_CREATE EvtDeviceFileCreate;
+
+NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext);
 
 EXTERN_C_END

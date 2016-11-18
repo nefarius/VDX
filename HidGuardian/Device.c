@@ -7,7 +7,7 @@ Module Name:
 Abstract:
 
    This file contains the device entry points and callbacks.
-    
+
 Environment:
 
     Kernel-mode Driver Framework
@@ -16,6 +16,8 @@ Environment:
 
 #include "driver.h"
 #include "device.tmh"
+#define NTSTRSAFE_LIB
+#include <ntstrsafe.h>
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, HidGuardianCreateDevice)
@@ -25,7 +27,7 @@ Environment:
 NTSTATUS
 HidGuardianCreateDevice(
     _Inout_ PWDFDEVICE_INIT DeviceInit
-    )
+)
 /*++
 
 Routine Description:
@@ -49,11 +51,12 @@ Return Value:
     WDFDEVICE               device;
     NTSTATUS                status;
     WDF_FILEOBJECT_CONFIG   deviceConfig;
+    WDFMEMORY               memory;
 
     PAGED_CODE();
 
     WdfFdoInitSetFilter(DeviceInit);
-    
+
     WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
     deviceAttributes.SynchronizationScope = WdfSynchronizationScopeNone;
     WDF_FILEOBJECT_CONFIG_INIT(&deviceConfig, EvtDeviceFileCreate, NULL, NULL);
@@ -80,27 +83,33 @@ Return Value:
         //
         deviceContext = DeviceGetContext(device);
 
-        //
-        // Initialize the context.
-        //
-        deviceContext->PrivateDeviceData = 0;
+        WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
+        deviceAttributes.ParentObject = device;
 
-        //
-        // Create a device interface so that applications can find and talk
-        // to us.
-        //
-        status = WdfDeviceCreateDeviceInterface(
-            device,
-            &GUID_DEVINTERFACE_HIDGUARDIAN,
-            NULL // ReferenceString
-            );
+        status = WdfDeviceAllocAndQueryProperty(device,
+            DevicePropertyHardwareID,
+            NonPagedPool,
+            &deviceAttributes,
+            &memory
+        );
 
-        if (NT_SUCCESS(status)) {
-            //
-            // Initialize the I/O Package and any Queues
-            //
-            status = HidGuardianQueueInitialize(device);
+        if (!NT_SUCCESS(status)) {
+            return status;
         }
+
+        deviceContext->HardwareIDMemory = memory;
+        deviceContext->HardwareID = WdfMemoryGetBuffer(memory, NULL);
+
+        //
+        // Initialize the I/O Package and any Queues
+        //
+        status = HidGuardianQueueInitialize(device);
+
+        if (!NT_SUCCESS(status)) {
+            return status;
+        }
+
+        status = AmIAffected(deviceContext);
     }
 
     return status;
@@ -112,10 +121,100 @@ VOID EvtDeviceFileCreate(
     _In_ WDFFILEOBJECT FileObject
 )
 {
+    NTSTATUS                        status;
+    WDF_REQUEST_SEND_OPTIONS        options;
+    BOOLEAN                         ret;
+    PDEVICE_CONTEXT                 DeviceContext;
+
     UNREFERENCED_PARAMETER(Device);
     UNREFERENCED_PARAMETER(FileObject);
 
-    WdfRequestComplete(Request, STATUS_ACCESS_DENIED);
+    DeviceContext = DeviceGetContext(Device);
+
+    if(DeviceContext->IsAffected)
+    {
+        WdfRequestComplete(Request, STATUS_ACCESS_DENIED);
+        KdPrint(("I am affected!\n"));
+        return;
+    }
+
+    KdPrint(("I am not affected, forwarding request...\n"));
+
+    WDF_REQUEST_SEND_OPTIONS_INIT(&options,
+        WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
+
+    ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), &options);
+
+    if (ret == FALSE) {
+        status = WdfRequestGetStatus(Request);
+        KdPrint(("WdfRequestSend failed: 0x%x\n", status));
+        WdfRequestComplete(Request, status);
+    }
+}
+
+NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
+{
+    WDF_OBJECT_ATTRIBUTES   stringAttributes;
+    WDFCOLLECTION           col;
+    NTSTATUS                status;
+    ULONG                   count;
+    WDFKEY                  keyParams;
+    DECLARE_CONST_UNICODE_STRING(valueMultiSz, L"AffectedDevices");
+    DECLARE_UNICODE_STRING_SIZE(currentHardwareID, MAX_HARDWARE_ID_SIZE);
+    DECLARE_UNICODE_STRING_SIZE(myHardwareID, MAX_HARDWARE_ID_SIZE);
+
+    status = RtlUnicodeStringInit(&myHardwareID, DeviceContext->HardwareID);
+    if (!NT_SUCCESS(status)) {
+        KdPrint(("RtlUnicodeStringInit failed: 0x%x\n", status));
+        return status;
+    }
+
+    status = WdfCollectionCreate(
+        NULL,
+        &col
+    );
+    if (!NT_SUCCESS(status)) {
+        KdPrint(("WdfCollectionCreate failed: 0x%x\n", status));
+        return status;
+    }
+
+    status = WdfDriverOpenParametersRegistryKey(WdfGetDriver(), STANDARD_RIGHTS_ALL, WDF_NO_OBJECT_ATTRIBUTES, &keyParams);
+    if (!NT_SUCCESS(status)) {
+        KdPrint(("WdfDriverOpenParametersRegistryKey failed: 0x%x\n", status));
+        return status;
+    }
+
+    WDF_OBJECT_ATTRIBUTES_INIT(&stringAttributes);
+    stringAttributes.ParentObject = col;
+
+    status = WdfRegistryQueryMultiString(
+        keyParams,
+        &valueMultiSz,
+        &stringAttributes,
+        col
+    );
+    if (!NT_SUCCESS(status)) {
+        KdPrint(("WdfRegistryQueryMultiString failed: 0x%x\n", status));
+        return status;
+    }
+
+    count = WdfCollectionGetCount(col);
+
+    for (ULONG i = 0; i < count; i++)
+    {
+        WdfStringGetUnicodeString(WdfCollectionGetItem(col, i), &currentHardwareID);
+
+        KdPrint(("My ID %wZ vs current ID %wZ\n", &myHardwareID, &currentHardwareID));
+
+        DeviceContext->IsAffected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
+        KdPrint(("Are we affected: %d\n", DeviceContext->IsAffected));
+
+        if (DeviceContext->IsAffected) break;
+    }
+
+    WdfRegistryClose(keyParams);
+
+    return STATUS_SUCCESS;
 }
 
 

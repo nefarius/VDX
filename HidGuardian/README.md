@@ -13,7 +13,7 @@ A common way for intercepting the Game's communication with the input devices wo
 ## Demo
 Sony DualShock 4 and generic USB Gamepad connected:
 
-![](http://content.screencast.com/users/Nefarius/folders/Snagit/media/74e9dc9c-e86d-4232-9eb5-7565e7542d16/11.19.2016-19.30.png)
+![](http://content.screencast.com/users/Nefarius/folders/Snagit/media/f7532345-da15-41f8-b403-1d3c42ace1a9/11.19.2016-19.33.png)
 
 `HidGuardian.sys` active and hiding the DualShock 4:
 

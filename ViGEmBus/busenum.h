@@ -378,7 +378,7 @@ Bus_PlugInDevice(
     _In_ WDFDEVICE Device,
     _In_ WDFREQUEST Request,
     _In_ BOOLEAN IsInternal,
-    _Out_ PSIZE_T Transferred
+    _Out_ size_t* Transferred
 );
 
 NTSTATUS
@@ -386,7 +386,7 @@ Bus_UnPlugDevice(
     _In_ WDFDEVICE Device,
     _In_ WDFREQUEST Request,
     _In_ BOOLEAN IsInternal,
-    _Out_ PSIZE_T Transferred
+    _Out_ size_t* Transferred
 );
 
 NTSTATUS

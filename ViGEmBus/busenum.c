@@ -548,7 +548,7 @@ NTSTATUS Bus_PlugInDevice(
     _In_ WDFDEVICE Device,
     _In_ WDFREQUEST Request,
     _In_ BOOLEAN IsInternal,
-    _Out_ PSIZE_T Transferred)
+    _Out_ size_t* Transferred)
 {
     PDO_IDENTIFICATION_DESCRIPTION  description;
     NTSTATUS                        status;
@@ -642,7 +642,7 @@ NTSTATUS Bus_UnPlugDevice(
     _In_ WDFDEVICE Device,
     _In_ WDFREQUEST Request,
     _In_ BOOLEAN IsInternal,
-    _Out_ PSIZE_T Transferred)
+    _Out_ size_t* Transferred)
 {
     NTSTATUS                            status;
     WDFDEVICE                           hChild;
@@ -652,7 +652,7 @@ NTSTATUS Bus_UnPlugDevice(
     PDO_IDENTIFICATION_DESCRIPTION      description;
     BOOLEAN                             unplugAll;
     PVIGEM_UNPLUG_TARGET                unPlug;
-    SIZE_T                              length = 0;
+    size_t                              length = 0;
 
     PAGED_CODE();
 

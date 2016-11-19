@@ -18,3 +18,9 @@ Sony DualShock 4 and generic USB Gamepad connected:
 `HidGuardian.sys` active and hiding the DualShock 4:
 
 ![](http://content.screencast.com/users/Nefarius/folders/Snagit/media/121a302a-97d0-4b2b-a4bb-ff8b4892b4cc/11.19.2016-19.07.png)
+
+## Manual Installation
+```
+devcon.exe install HidGuardian.inf Root\HidGuardian
+devcon.exe classfilter HIDClass upper -HidGuardian
+```

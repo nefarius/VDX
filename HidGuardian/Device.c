@@ -1,18 +1,27 @@
-/*++
+/*
+MIT License
 
-Module Name:
+Copyright (c) 2016 Benjamin "Nefarius" Höglinger
 
-    device.c - Device handling events for example driver.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-Abstract:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-   This file contains the device entry points and callbacks.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
-Environment:
-
-    Kernel-mode Driver Framework
-
---*/
 
 #include "driver.h"
 #include "device.tmh"
@@ -21,6 +30,7 @@ Environment:
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, HidGuardianCreateDevice)
+#pragma alloc_text (PAGE, AmIAffected)
 #endif
 
 
@@ -28,23 +38,6 @@ NTSTATUS
 HidGuardianCreateDevice(
     _Inout_ PWDFDEVICE_INIT DeviceInit
 )
-/*++
-
-Routine Description:
-
-    Worker routine called to create a device and its software resources.
-
-Arguments:
-
-    DeviceInit - Pointer to an opaque init structure. Memory for this
-                    structure will be freed by the framework when the WdfDeviceCreate
-                    succeeds. So don't access the structure after that point.
-
-Return Value:
-
-    NTSTATUS
-
---*/
 {
     WDF_OBJECT_ATTRIBUTES   deviceAttributes;
     PDEVICE_CONTEXT         deviceContext;
@@ -86,6 +79,9 @@ Return Value:
         WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
         deviceAttributes.ParentObject = device;
 
+        //
+        // Query for current device's Hardware ID
+        // 
         status = WdfDeviceAllocAndQueryProperty(device,
             DevicePropertyHardwareID,
             NonPagedPool,
@@ -97,6 +93,9 @@ Return Value:
             return status;
         }
 
+        //
+        // Get Hardware ID string
+        // 
         deviceContext->HardwareIDMemory = memory;
         deviceContext->HardwareID = WdfMemoryGetBuffer(memory, NULL);
 
@@ -109,49 +108,36 @@ Return Value:
             return status;
         }
 
+        //
+        // Check if this device should get intercepted
+        // 
         status = AmIAffected(deviceContext);
     }
 
     return status;
 }
 
+//
+// Catches CreateFile(...) calls.
+// 
 VOID EvtDeviceFileCreate(
     _In_ WDFDEVICE     Device,
     _In_ WDFREQUEST    Request,
     _In_ WDFFILEOBJECT FileObject
 )
 {
-    NTSTATUS                        status;
-    WDF_REQUEST_SEND_OPTIONS        options;
-    BOOLEAN                         ret;
-    PDEVICE_CONTEXT                 DeviceContext;
-
     UNREFERENCED_PARAMETER(Device);
     UNREFERENCED_PARAMETER(FileObject);
 
-    DeviceContext = DeviceGetContext(Device);
-
-    if(DeviceContext->IsAffected)
-    {
-        WdfRequestComplete(Request, STATUS_ACCESS_DENIED);
-        KdPrint(("I am affected!\n"));
-        return;
-    }
-
-    KdPrint(("I am not affected, forwarding request...\n"));
-
-    WDF_REQUEST_SEND_OPTIONS_INIT(&options,
-        WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
-
-    ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), &options);
-
-    if (ret == FALSE) {
-        status = WdfRequestGetStatus(Request);
-        KdPrint(("WdfRequestSend failed: 0x%x\n", status));
-        WdfRequestComplete(Request, status);
-    }
+    //
+    // We are loaded within a targeted device, fail the request
+    // 
+    WdfRequestComplete(Request, STATUS_ACCESS_DENIED);
 }
 
+//
+// Checks if the current device should be intercepted or not.
+// 
 NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
 {
     WDF_OBJECT_ATTRIBUTES   stringAttributes;
@@ -159,16 +145,25 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     NTSTATUS                status;
     ULONG                   count;
     WDFKEY                  keyParams;
+    BOOLEAN                 affected = FALSE;
     DECLARE_CONST_UNICODE_STRING(valueMultiSz, L"AffectedDevices");
     DECLARE_UNICODE_STRING_SIZE(currentHardwareID, MAX_HARDWARE_ID_SIZE);
     DECLARE_UNICODE_STRING_SIZE(myHardwareID, MAX_HARDWARE_ID_SIZE);
 
+    PAGED_CODE();
+
+    //
+    // Convert wide into Unicode string
+    // 
     status = RtlUnicodeStringInit(&myHardwareID, DeviceContext->HardwareID);
     if (!NT_SUCCESS(status)) {
         KdPrint(("RtlUnicodeStringInit failed: 0x%x\n", status));
         return status;
     }
 
+    //
+    // Create collection holding the Hardware IDs
+    // 
     status = WdfCollectionCreate(
         NULL,
         &col
@@ -178,6 +173,9 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
         return status;
     }
 
+    //
+    // Get the filter drivers Parameter key
+    // 
     status = WdfDriverOpenParametersRegistryKey(WdfGetDriver(), STANDARD_RIGHTS_ALL, WDF_NO_OBJECT_ATTRIBUTES, &keyParams);
     if (!NT_SUCCESS(status)) {
         KdPrint(("WdfDriverOpenParametersRegistryKey failed: 0x%x\n", status));
@@ -187,6 +185,9 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     WDF_OBJECT_ATTRIBUTES_INIT(&stringAttributes);
     stringAttributes.ParentObject = col;
 
+    //
+    // Get the multi-string value
+    // 
     status = WdfRegistryQueryMultiString(
         keyParams,
         &valueMultiSz,
@@ -200,21 +201,27 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
 
     count = WdfCollectionGetCount(col);
 
+    // 
+    // Loop through registry multi-string values
+    // 
     for (ULONG i = 0; i < count; i++)
     {
         WdfStringGetUnicodeString(WdfCollectionGetItem(col, i), &currentHardwareID);
 
         KdPrint(("My ID %wZ vs current ID %wZ\n", &myHardwareID, &currentHardwareID));
 
-        DeviceContext->IsAffected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
+        affected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
         KdPrint(("Are we affected: %d\n", DeviceContext->IsAffected));
 
-        if (DeviceContext->IsAffected) break;
+        if (affected) break;
     }
 
     WdfRegistryClose(keyParams);
 
-    return STATUS_SUCCESS;
+    //
+    // If Hardware ID wasn't found, report failure so the filter gets unloaded
+    // 
+    return (affected) ? STATUS_SUCCESS : STATUS_DEVICE_FEATURE_NOT_SUPPORTED;
 }
 
 

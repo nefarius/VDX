@@ -1,18 +1,27 @@
-/*++
+/*
+MIT License
 
-Module Name:
+Copyright (c) 2016 Benjamin "Nefarius" Höglinger
 
-    queue.c
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-Abstract:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-    This file contains the queue entry points and callbacks.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
-Environment:
-
-    Kernel-mode Driver Framework
-
---*/
 
 #include "driver.h"
 #include "queue.tmh"
@@ -63,7 +72,6 @@ Return Value:
         WdfIoQueueDispatchParallel
         );
 
-    queueConfig.EvtIoDeviceControl = HidGuardianEvtIoDeviceControl;
     queueConfig.EvtIoStop = HidGuardianEvtIoStop;
 
     status = WdfIoQueueCreate(
@@ -79,74 +87,6 @@ Return Value:
     }
 
     return status;
-}
-
-VOID
-HidGuardianEvtIoDeviceControl(
-    _In_ WDFQUEUE Queue,
-    _In_ WDFREQUEST Request,
-    _In_ size_t OutputBufferLength,
-    _In_ size_t InputBufferLength,
-    _In_ ULONG IoControlCode
-    )
-/*++
-
-Routine Description:
-
-    This event is invoked when the framework receives IRP_MJ_DEVICE_CONTROL request.
-
-Arguments:
-
-    Queue -  Handle to the framework queue object that is associated with the
-             I/O request.
-
-    Request - Handle to a framework request object.
-
-    OutputBufferLength - Size of the output buffer in bytes
-
-    InputBufferLength - Size of the input buffer in bytes
-
-    IoControlCode - I/O control code.
-
-Return Value:
-
-    VOID
-
---*/
-{
-    NTSTATUS                        status;
-    WDF_REQUEST_SEND_OPTIONS        options;
-    BOOLEAN                         ret;
-    PDEVICE_CONTEXT                 DeviceContext;
-    WDFDEVICE                       Device;
-
-    UNREFERENCED_PARAMETER(OutputBufferLength);
-    UNREFERENCED_PARAMETER(InputBufferLength);
-    UNREFERENCED_PARAMETER(IoControlCode);
-
-    Device = WdfIoQueueGetDevice(Queue);
-
-    DeviceContext = DeviceGetContext(Device);
-
-    if (DeviceContext->IsAffected)
-    {
-        WdfRequestComplete(Request, STATUS_ACCESS_DENIED);
-        KdPrint(("I am affected!\n"));
-        return;
-    }
-
-    KdPrint(("I am not affected, forwarding request...\n"));
-
-    WDF_REQUEST_SEND_OPTIONS_INIT(&options,
-        WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
-
-    ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), &options);
-
-    if (ret == FALSE) {
-        status = WdfRequestGetStatus(Request);
-        KdPrint(("WdfRequestSend failed: 0x%x\n", status));
-        WdfRequestComplete(Request, status);
-    }
 }
 
 VOID

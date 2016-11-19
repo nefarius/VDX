@@ -23,4 +23,5 @@ Sony DualShock 4 and generic USB Gamepad connected:
 ```
 devcon.exe install HidGuardian.inf Root\HidGuardian
 devcon.exe classfilter HIDClass upper -HidGuardian
+devcon.exe remove Root\HidGuardian
 ```

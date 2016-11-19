@@ -32,6 +32,8 @@ SOFTWARE.
 #include "queue.h"
 #include "trace.h"
 
+#define DRIVERNAME "HidGuardian: "
+
 EXTERN_C_START
 
 //

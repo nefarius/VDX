@@ -72,6 +72,7 @@ Return Value:
         WdfIoQueueDispatchParallel
         );
 
+    queueConfig.EvtIoDefault = HidGuardianEvtIoDefault;
     queueConfig.EvtIoStop = HidGuardianEvtIoStop;
 
     status = WdfIoQueueCreate(
@@ -87,6 +88,18 @@ Return Value:
     }
 
     return status;
+}
+
+VOID HidGuardianEvtIoDefault(
+    _In_ WDFQUEUE   Queue,
+    _In_ WDFREQUEST Request
+)
+{
+    UNREFERENCED_PARAMETER(Queue);
+
+    KdPrint((DRIVERNAME "HidGuardianEvtIoDefault called\n"));
+
+    WdfRequestComplete(Request, STATUS_ACCESS_DENIED);
 }
 
 VOID

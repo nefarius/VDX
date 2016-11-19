@@ -101,6 +101,8 @@ Return Value:
 
     TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "%!FUNC! Exit");
 
+    KdPrint(("HidGuardian loaded: 0x%X\n", status));
+
     return status;
 }
 

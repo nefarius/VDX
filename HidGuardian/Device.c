@@ -90,6 +90,7 @@ HidGuardianCreateDevice(
         );
 
         if (!NT_SUCCESS(status)) {
+            KdPrint((DRIVERNAME "WdfDeviceAllocAndQueryProperty failed with status 0x%X", status));
             return status;
         }
 
@@ -105,6 +106,7 @@ HidGuardianCreateDevice(
         status = HidGuardianQueueInitialize(device);
 
         if (!NT_SUCCESS(status)) {
+            KdPrint((DRIVERNAME "HidGuardianQueueInitialize failed with status 0x%X", status));
             return status;
         }
 
@@ -112,6 +114,8 @@ HidGuardianCreateDevice(
         // Check if this device should get intercepted
         // 
         status = AmIAffected(deviceContext);
+
+        KdPrint(("AmIAffected status 0x%X\n", status));
     }
 
     return status;
@@ -129,10 +133,12 @@ VOID EvtDeviceFileCreate(
     UNREFERENCED_PARAMETER(Device);
     UNREFERENCED_PARAMETER(FileObject);
 
+    KdPrint(("CreateFile(...) blocked\n"));
+
     //
     // We are loaded within a targeted device, fail the request
     // 
-    WdfRequestComplete(Request, STATUS_ACCESS_DENIED);
+    WdfRequestComplete(Request, STATUS_ACCESS_DENIED);    
 }
 
 //
@@ -211,7 +217,7 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
         KdPrint(("My ID %wZ vs current ID %wZ\n", &myHardwareID, &currentHardwareID));
 
         affected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
-        KdPrint(("Are we affected: %d\n", DeviceContext->IsAffected));
+        KdPrint(("Are we affected: %d\n", affected));
 
         if (affected) break;
     }

@@ -13,8 +13,15 @@ A common way for intercepting the Game's communication with the input devices wo
 ## Demo
 Sony DualShock 4 and generic USB Gamepad connected:
 
-![](http://content.screencast.com/users/Nefarius/folders/Snagit/media/c2d74568-c5fa-427b-a957-dc32dd31da2a/11.18.2016-23.46.png)
+![](http://content.screencast.com/users/Nefarius/folders/Snagit/media/f7532345-da15-41f8-b403-1d3c42ace1a9/11.19.2016-19.33.png)
 
 `HidGuardian.sys` active and hiding the DualShock 4:
 
-![](http://content.screencast.com/users/Nefarius/folders/Snagit/media/121a302a-97d0-4b2b-a4bb-ff8b4892b4cc/11.19.2016-19.07.png)
+![](http://content.screencast.com/users/Nefarius/folders/Snagit/media/08741f7b-8272-4d16-9c18-0376f716dc42/11.19.2016-19.28.png)
+
+## Manual Installation
+```
+devcon.exe install HidGuardian.inf Root\HidGuardian
+devcon.exe classfilter HIDClass upper -HidGuardian
+devcon.exe remove Root\HidGuardian
+```

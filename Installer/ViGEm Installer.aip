@@ -16,15 +16,15 @@
     <ROW Property="ARPHELPLINK" Value="https://github.com/nefarius/ViGEm/issues"/>
     <ROW Property="ARPNOMODIFY" MultiBuildValue="DefaultBuild:1"/>
     <ROW Property="ARPNOREPAIR" Value="1"/>
-    <ROW Property="ARPPRODUCTICON" Value="MichalKowalkowskiMetroDatingBlendr.exe" Type="8"/>
+    <ROW Property="ARPPRODUCTICON" Value="FlutterGem.exe" Type="8"/>
     <ROW Property="ARPURLINFOABOUT" Value="https://github.com/nefarius/ViGEm"/>
     <ROW Property="ARPURLUPDATEINFO" Value="https://github.com/nefarius/ViGEm/releases"/>
     <ROW Property="IAgree" Value="Yes" Type="4" MsiKey="IAgree"/>
     <ROW Property="Manufacturer" Value="Nefarius Software Solutions"/>
-    <ROW Property="ProductCode" Value="1033:{074B93BB-53BD-49D8-97D5-289FCD61F5F5} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{724399E4-2153-4C28-9BF9-0CA52DD8A241} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Virtual Gamepad Emulation Driver"/>
-    <ROW Property="ProductVersion" Value="1.1.1" Type="32"/>
+    <ROW Property="ProductVersion" Value="1.2.0" Type="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;AI_SETUPEXEPATH;SETUPEXEDIR"/>
     <ROW Property="UpgradeCode" Value="{28B1991F-E0E1-4ED5-9FD9-86D640B2A4F4}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -87,7 +87,7 @@
     <ROW BootstrOptKey="GlobalOptions" DownloadFolder="[AppDataFolder][|Manufacturer]\[|ProductName]\prerequisites" Options="4" UpdatesUrl="https://raw.githubusercontent.com/nefarius/ViGEm/master/updates.txt" EulaPathLocId="*" IntroTextPathLocId="*"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.BuildComponent">
-    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="1" PackageFolder="Setup Files" Languages="en" InstallationType="4" CabsLocation="1" PackageType="1" FilesInsideExe="true" ExeIconPath="Michal-Kowalkowski-Metro-Dating-Blendr.ico" ExtractionFolder="[AppDataFolder][|Manufacturer]\[|ProductName] [|ProductVersion]\install" ExtUI="true" UseLargeSchema="true" ExeName="ViGEm_Setup_[|ProductVersion]" MsiPackageType="AI_ALL"/>
+    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="1" PackageFolder="Setup Files" Languages="en" InstallationType="4" CabsLocation="1" PackageType="1" FilesInsideExe="true" ExeIconPath="FlutterGem.ico" ExtractionFolder="[AppDataFolder][|Manufacturer]\[|ProductName] [|ProductVersion]\install" ExtUI="true" UseLargeSchema="true" ExeName="ViGEm_Setup_[|ProductVersion]" MsiPackageType="AI_ALL"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.DictionaryComponent">
     <ROW Path="&lt;AI_DICTS&gt;ui.ail"/>
@@ -216,7 +216,7 @@
     <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
-    <ROW Name="MichalKowalkowskiMetroDatingBlendr.exe" SourcePath="Michal-Kowalkowski-Metro-Dating-Blendr.ico" Index="0"/>
+    <ROW Name="FlutterGem.exe" SourcePath="FlutterGem.ico" Index="0"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiIniFileComponent">
     <ROW IniFile="AppDir" FileName="VIGEMU~1.INI|ViGEm Updater.ini" DirProperty="APPDIR" Section="General" Key="AppDir" Value="[APPDIR]" Action="0" Component_="updater.exe"/>

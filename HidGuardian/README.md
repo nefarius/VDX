@@ -25,3 +25,8 @@ devcon.exe install HidGuardian.inf Root\HidGuardian
 devcon.exe classfilter HIDClass upper -HidGuardian
 devcon.exe remove Root\HidGuardian
 ```
+
+## Manual Removal
+```
+devcon.exe classfilter HIDClass upper !HidGuardian
+```

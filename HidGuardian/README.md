@@ -25,6 +25,11 @@ devcon.exe install HidGuardian.inf Root\HidGuardian
 devcon.exe classfilter HIDClass upper -HidGuardian
 devcon.exe remove Root\HidGuardian
 ```
+Now create a `REG_MULTI_SZ` Registry Value named `AffectedDevices` in the key `HKLM\System\CurrentControlSet\Services\HidGuardian\Parameters` and put the Hardware ID(s) of the device(s) you'd like to hide in separate lines:
+
+![](http://content.screencast.com/users/Nefarius/folders/Snagit/media/9dcbc48b-3b38-4a78-b3ca-f72155ab33ca/11.21.2016-19.21.png)
+
+Now plug in your device(s) and see the magic happen!
 
 ## Manual Removal
 ```

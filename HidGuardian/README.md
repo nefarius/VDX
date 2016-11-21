@@ -35,3 +35,4 @@ Now plug in your device(s) and see the magic happen!
 ```
 devcon.exe classfilter HIDClass upper !HidGuardian
 ```
+Re-plug your devices or reboot the system for the driver to get unloaded and removed.

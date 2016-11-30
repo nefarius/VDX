@@ -165,6 +165,7 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     WDFCOLLECTION           col;
     NTSTATUS                status;
     ULONG                   count;
+    ULONG                   i;
     WDFKEY                  keyParams;
     BOOLEAN                 affected = FALSE;
     DECLARE_CONST_UNICODE_STRING(valueMultiSz, L"AffectedDevices");
@@ -225,7 +226,7 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     // 
     // Loop through registry multi-string values
     // 
-    for (ULONG i = 0; i < count; i++)
+    for (i = 0; i < count; i++)
     {
         WdfStringGetUnicodeString(WdfCollectionGetItem(col, i), &currentHardwareID);
 

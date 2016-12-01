@@ -24,11 +24,11 @@ namespace HidCerberus.Srv
 
             var binding = new NetTcpBinding
             {
-                TransferMode = TransferMode.Streamed,
                 Security = new NetTcpSecurity { Mode = SecurityMode.None }
             };
 
             _serviceHost = new ServiceHost(typeof(HidCerberusWcf), Lib.HidCerberus.WcfUrl);
+            _serviceHost.Closing += (sender, eventArgs) => Log.Info("Client disconnected");
             _serviceHost.AddServiceEndpoint(typeof(IHidCerberusWcf), binding, Lib.HidCerberus.WcfUrl);
 
             _serviceHost.Open();

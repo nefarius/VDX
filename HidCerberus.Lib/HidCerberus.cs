@@ -26,7 +26,6 @@ namespace HidCerberus.Lib
             var address = new EndpointAddress(WcfUrl);
             var binding = new NetTcpBinding
             {
-                TransferMode = TransferMode.Streamed,
                 Security = new NetTcpSecurity {Mode = SecurityMode.None}
             };
             var factory = new ChannelFactory<IHidCerberusWcf>(binding, address);

@@ -28,7 +28,6 @@ namespace HidCerberus.Srv
             };
 
             _serviceHost = new ServiceHost(typeof(HidCerberusWcf), Lib.HidCerberus.WcfUrl);
-            _serviceHost.Closing += (sender, eventArgs) => Log.Info("Client disconnected");
             _serviceHost.AddServiceEndpoint(typeof(IHidCerberusWcf), binding, Lib.HidCerberus.WcfUrl);
 
             _serviceHost.Open();

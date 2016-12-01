@@ -15,14 +15,6 @@ namespace HidCerberus.Lib
 
         static HidCerberus()
         {
-            Log.Info("Loading HidCerberus.Lib");
-
-            AppDomain.CurrentDomain.ProcessExit += (sender, args) =>
-            {
-                Log.Info("Library shutdown");
-                ServiceChannel?.RemovePid(Process.GetCurrentProcess().Id);
-            };
-
             var address = new EndpointAddress(WcfUrl);
             var binding = new NetTcpBinding
             {
@@ -33,7 +25,6 @@ namespace HidCerberus.Lib
             try
             {
                 ServiceChannel = factory.CreateChannel(address);
-                ServiceChannel?.AddPid(Process.GetCurrentProcess().Id);
             }
             catch (Exception ex)
             {
@@ -41,14 +32,29 @@ namespace HidCerberus.Lib
             }
         }
 
+        #region Static Properties
+
         public static Uri WcfUrl => new Uri("net.tcp://localhost:26762/HidCerberusService");
 
         public static string WhitelistRegistryKeyBase
             => @"SYSTEM\CurrentControlSet\Services\HidGuardian\Parameters\Whitelist";
 
+        #endregion
+
+        #region DLL Exports
+
         [DllExport(CallingConvention = CallingConvention.StdCall)]
-        public static void Dummy()
+        public static void HidGuardianOpen()
         {
+            ServiceChannel?.AddPid(Process.GetCurrentProcess().Id);
         }
+
+        [DllExport(CallingConvention = CallingConvention.StdCall)]
+        public static void HidGuardianClose()
+        {
+            ServiceChannel?.RemovePid(Process.GetCurrentProcess().Id);
+        }
+
+        #endregion
     }
 }

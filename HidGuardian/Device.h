@@ -30,6 +30,11 @@ EXTERN_C_START
 #define MAX_HARDWARE_ID_SIZE        0xFF
 
 //
+// Returns the current caller process id.
+// 
+#define CURRENT_PROCESS_ID() ((DWORD)((DWORD_PTR)PsGetCurrentProcessId() & 0xFFFFFFFF))
+
+//
 // The device context performs the same job as
 // a WDM device extension in the driver frameworks
 //

@@ -148,7 +148,7 @@ VOID EvtDeviceFileCreate(
     UNREFERENCED_PARAMETER(Device);
     UNREFERENCED_PARAMETER(FileObject);
 
-    KdPrint(("CreateFile(...) blocked\n"));
+    KdPrint(("CreateFile(...) blocked for PID: %d\n", CURRENT_PROCESS_ID()));
 
     //
     // We are loaded within a targeted device, fail the request

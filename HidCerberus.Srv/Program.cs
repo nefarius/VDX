@@ -1,20 +1,53 @@
-﻿using System.ServiceProcess;
+﻿using System;
+using System.Configuration.Install;
+using System.Reflection;
+using System.ServiceProcess;
+using log4net;
 
 namespace HidCerberus.Srv
 {
     internal static class Program
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         /// <summary>
         ///     The main entry point for the application.
         /// </summary>
-        private static void Main()
+        private static void Main(string[] args)
         {
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
+            if (Environment.UserInteractive)
             {
-                new HidCerberusService()
-            };
-            ServiceBase.Run(ServicesToRun);
+                try
+                {
+                    var parameter = string.Concat(args);
+                    switch (parameter)
+                    {
+                        case "--install":
+                            Log.Info("Installing HidCerberus Service");
+                            ManagedInstallerClass.InstallHelper(new[] { Assembly.GetExecutingAssembly().Location });
+                            Log.Info("Service installed successfully");
+                            break;
+                        case "--uninstall":
+                            Log.Info("Uninstalling HidCerberus Service");
+                            ManagedInstallerClass.InstallHelper(new[] { "/u", Assembly.GetExecutingAssembly().Location });
+                            Log.Info("Service uninstalled successfully");
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.ErrorFormat("Couldn't (un)install service: {0}", ex);
+                }
+            }
+            else
+            {
+                ServiceBase[] ServicesToRun;
+                ServicesToRun = new ServiceBase[]
+                {
+                    new HidCerberusService(), 
+                };
+                ServiceBase.Run(ServicesToRun);
+            }
         }
     }
 }

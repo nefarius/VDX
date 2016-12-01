@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace HidCerberus.Lib
 {
     public class HidCerberus
     {
+        public static Uri WcfUrl => new Uri("net.tcp://localhost:26762/HidCerberusService");
     }
 }

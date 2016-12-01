@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.ServiceModel;
 using System.ServiceProcess;
-using System.Text;
+using HidCerberus.Lib;
+
 
 namespace HidCerberus.Srv
 {
     public partial class HidCerberusService : ServiceBase
     {
+        private static ServiceHost _serviceHost;
+
         public HidCerberusService()
         {
             InitializeComponent();
@@ -18,6 +16,18 @@ namespace HidCerberus.Srv
 
         protected override void OnStart(string[] args)
         {
+            _serviceHost?.Close();
+
+            var binding = new NetTcpBinding
+            {
+                TransferMode = TransferMode.Streamed,
+                Security = new NetTcpSecurity { Mode = SecurityMode.None }
+            };
+
+            _serviceHost = new ServiceHost(typeof(HidCerberusWcf), Lib.HidCerberus.WcfUrl);
+            _serviceHost.AddServiceEndpoint(typeof (IHidCerberusWcf), binding, Lib.HidCerberus.WcfUrl);
+
+            _serviceHost.Open();
         }
 
         protected override void OnStop()

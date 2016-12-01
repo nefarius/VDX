@@ -8,7 +8,7 @@ Games and other user-mode applications enumerate Joysticks, Gamepads and similar
 A common way for intercepting the Game's communication with the input devices would be hooking the mentioned input APIs within the target process. While a stable and user-friendly implementation for the end-user might be achievable for some processes, targeting the wide variety of Games available on the market is a difficult task. Hooking APIs involves manipulating the target processe's memory which also might falsly trigger Anti-Cheat systems and ban innocent users.
 
 ## The Real Solution
-`HidGuardian` is an upper filter driver for the `HIDClass` device class therefore targeting and attaching itself to every HID device connected to the system. On startup it queries the `AffectedDevices` value in the service's `Parameters` key to check if the current device in the driver stack is "blacklisted". If a matching Hardware ID is found, every call of the `CreateFile(...)` API will be answered with an `ERROR_ACCESS_DENIED` thus failing the attempt to open a file handle and communicate with the affected device.
+`HidGuardian` is an upper filter driver for the `HIDClass` device class therefore targeting and attaching itself to every HID device connected to the system. On startup it queries the `AffectedDevices` value in the service's `Parameters` key to check if the current device in the driver stack is "blacklisted". If a matching Hardware ID is found, every call of the `CreateFile(...)` API will be answered with an `ERROR_ACCESS_DENIED` thus failing the attempt to open a file handle and communicate with the affected device. If the guardian is attached to a device which shouldn't get blocked it will unload itself from the driver stack.
 
 ## Demo
 Sony DualShock 4 and generic USB Gamepad connected:
@@ -25,3 +25,14 @@ devcon.exe install HidGuardian.inf Root\HidGuardian
 devcon.exe classfilter HIDClass upper -HidGuardian
 devcon.exe remove Root\HidGuardian
 ```
+Now create a `REG_MULTI_SZ` Registry Value named `AffectedDevices` in the key `HKLM\System\CurrentControlSet\Services\HidGuardian\Parameters` and put the Hardware ID(s) of the device(s) you'd like to hide in separate lines:
+
+![](http://content.screencast.com/users/Nefarius/folders/Snagit/media/9dcbc48b-3b38-4a78-b3ca-f72155ab33ca/11.21.2016-19.21.png)
+
+Now plug in your device(s) and see the magic happen!
+
+## Manual Removal
+```
+devcon.exe classfilter HIDClass upper !HidGuardian
+```
+Re-plug your devices or reboot the system for the driver to get unloaded and removed.

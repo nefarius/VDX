@@ -9,9 +9,9 @@ using System.Text;
 
 namespace HidCerberus.Srv
 {
-    public partial class Service1 : ServiceBase
+    public partial class HidCerberusService : ServiceBase
     {
-        public Service1()
+        public HidCerberusService()
         {
             InitializeComponent();
         }

@@ -1,6 +1,6 @@
 ﻿namespace HidCerberus.Srv
 {
-    partial class Service1
+    partial class HidCerberusService
     {
         /// <summary> 
         /// Required designer variable.

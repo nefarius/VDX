@@ -24,6 +24,7 @@ SOFTWARE.
 
 
 #include "public.h"
+#include <ntintsafe.h>
 
 EXTERN_C_START
 
@@ -63,5 +64,7 @@ HidGuardianCreateDevice(
 EVT_WDF_DEVICE_FILE_CREATE EvtDeviceFileCreate;
 
 NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext);
+
+BOOLEAN AmIWhitelisted(DWORD Pid);
 
 EXTERN_C_END

@@ -30,7 +30,9 @@ SOFTWARE.
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, HidGuardianCreateDevice)
+#pragma alloc_text (PAGE, EvtDeviceFileCreate)
 #pragma alloc_text (PAGE, AmIAffected)
+#pragma alloc_text (PAGE, AmIWhitelisted)
 #endif
 
 
@@ -145,15 +147,42 @@ VOID EvtDeviceFileCreate(
     _In_ WDFFILEOBJECT FileObject
 )
 {
+    DWORD                           pid;
+    WDF_REQUEST_SEND_OPTIONS        options;
+    NTSTATUS                        status;
+    BOOLEAN                         ret;
+
     UNREFERENCED_PARAMETER(Device);
     UNREFERENCED_PARAMETER(FileObject);
 
-    KdPrint(("CreateFile(...) blocked for PID: %d\n", CURRENT_PROCESS_ID()));
+    PAGED_CODE();
 
-    //
-    // We are loaded within a targeted device, fail the request
-    // 
-    WdfRequestComplete(Request, STATUS_ACCESS_DENIED);    
+    pid = CURRENT_PROCESS_ID();
+
+    if (AmIWhitelisted(pid))
+    {
+        //
+        // PID is white-listed, pass request down the stack
+        // 
+        WDF_REQUEST_SEND_OPTIONS_INIT(&options,
+            WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
+
+        ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), &options);
+
+        if (ret == FALSE) {
+            status = WdfRequestGetStatus(Request);
+            KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
+            WdfRequestComplete(Request, status);
+        }
+    }
+    else
+    {
+        //
+        // PID is not white-listed, fail the open request
+        // 
+        KdPrint((DRIVERNAME "CreateFile(...) blocked for PID: %d\n", pid));
+        WdfRequestComplete(Request, STATUS_ACCESS_DENIED);
+    }
 }
 
 //
@@ -246,4 +275,59 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     return (affected) ? STATUS_SUCCESS : STATUS_DEVICE_FEATURE_NOT_SUPPORTED;
 }
 
+//
+// Checks if the given Process ID is white-listed.
+// 
+BOOLEAN AmIWhitelisted(DWORD Pid)
+{
+    NTSTATUS            status;
+    WDFKEY              keyParams;
+    WDFKEY              keyPid;
+    DECLARE_UNICODE_STRING_SIZE(keyPidName, 128);
+
+    PAGED_CODE();
+
+    //
+    // Get the filter drivers Parameter key
+    // 
+    status = WdfDriverOpenParametersRegistryKey(WdfGetDriver(), STANDARD_RIGHTS_READ, WDF_NO_OBJECT_ATTRIBUTES, &keyParams);
+    if (!NT_SUCCESS(status)) {
+        KdPrint(("WdfDriverOpenParametersRegistryKey failed: 0x%x\n", status));
+        return FALSE;
+    }
+
+    //
+    // Build key path
+    // 
+    status = RtlUnicodeStringPrintf(&keyPidName, L"Whitelist\\%d", Pid);
+    if (!NT_SUCCESS(status)) {
+        KdPrint(("RtlUnicodeStringPrintf failed: 0x%x\n", status));
+        WdfRegistryClose(keyParams);
+        return FALSE;
+    }
+
+    //
+    // Try to open key
+    // 
+    status = WdfRegistryOpenKey(
+        keyParams,
+        &keyPidName,
+        STANDARD_RIGHTS_READ,
+        WDF_NO_OBJECT_ATTRIBUTES,
+        &keyPid
+    );
+
+    //
+    // Key exists, process is white-listed
+    // 
+    if (NT_SUCCESS(status)) {
+        WdfRegistryClose(keyPid);
+        WdfRegistryClose(keyParams);
+        return TRUE;
+    }
+
+    WdfRegistryClose(keyParams);
+
+    return FALSE;
+}
 

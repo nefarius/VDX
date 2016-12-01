@@ -95,11 +95,24 @@ VOID HidGuardianEvtIoDefault(
     _In_ WDFREQUEST Request
 )
 {
+    WDF_REQUEST_SEND_OPTIONS        options;
+    NTSTATUS                        status;
+    BOOLEAN                         ret;
+
     UNREFERENCED_PARAMETER(Queue);
 
     KdPrint((DRIVERNAME "HidGuardianEvtIoDefault called\n"));
 
-    WdfRequestComplete(Request, STATUS_ACCESS_DENIED);
+    WDF_REQUEST_SEND_OPTIONS_INIT(&options,
+        WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
+
+    ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(WdfIoQueueGetDevice(Queue)), &options);
+
+    if (ret == FALSE) {
+        status = WdfRequestGetStatus(Request);
+        KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
+        WdfRequestComplete(Request, status);
+    }
 }
 
 VOID

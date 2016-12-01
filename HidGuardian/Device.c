@@ -152,7 +152,6 @@ VOID EvtDeviceFileCreate(
     NTSTATUS                        status;
     BOOLEAN                         ret;
 
-    UNREFERENCED_PARAMETER(Device);
     UNREFERENCED_PARAMETER(FileObject);
 
     PAGED_CODE();

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace HidCerberus.Lib
 {
-    public class Class1
+    public class HidCerberus
     {
     }
 }

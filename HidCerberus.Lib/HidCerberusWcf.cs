@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Microsoft.Win32;
 
 namespace HidCerberus.Lib
 {
@@ -6,12 +6,12 @@ namespace HidCerberus.Lib
     {
         public void AddPid(int id)
         {
-            throw new NotImplementedException();
+            Registry.LocalMachine.CreateSubKey($"{HidCerberus.WhitelistRegistryKeyBase}\\{id}");
         }
 
         public void RemovePid(int id)
         {
-            throw new NotImplementedException();
+            Registry.LocalMachine.DeleteSubKey($"{HidCerberus.WhitelistRegistryKeyBase}\\{id}");
         }
     }
 }

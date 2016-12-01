@@ -2,7 +2,6 @@
 using System.ServiceProcess;
 using HidCerberus.Lib;
 
-
 namespace HidCerberus.Srv
 {
     public partial class HidCerberusService : ServiceBase
@@ -21,10 +20,10 @@ namespace HidCerberus.Srv
             var binding = new NetTcpBinding
             {
                 TransferMode = TransferMode.Streamed,
-                Security = new NetTcpSecurity { Mode = SecurityMode.None }
+                Security = new NetTcpSecurity {Mode = SecurityMode.None}
             };
 
-            _serviceHost = new ServiceHost(typeof(HidCerberusWcf), Lib.HidCerberus.WcfUrl);
+            _serviceHost = new ServiceHost(typeof (HidCerberusWcf), Lib.HidCerberus.WcfUrl);
             _serviceHost.AddServiceEndpoint(typeof (IHidCerberusWcf), binding, Lib.HidCerberus.WcfUrl);
 
             _serviceHost.Open();
@@ -32,6 +31,8 @@ namespace HidCerberus.Srv
 
         protected override void OnStop()
         {
+            _serviceHost?.Close();
+            _serviceHost = null;
         }
     }
 }

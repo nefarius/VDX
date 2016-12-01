@@ -331,10 +331,10 @@ Global
 		{6B9C8E3A-7B7E-44C8-AF3B-79CBFD5E653A}.Release|ARM.Build.0 = Release|Any CPU
 		{6B9C8E3A-7B7E-44C8-AF3B-79CBFD5E653A}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{6B9C8E3A-7B7E-44C8-AF3B-79CBFD5E653A}.Release|ARM64.Build.0 = Release|Any CPU
-		{6B9C8E3A-7B7E-44C8-AF3B-79CBFD5E653A}.Release|x64.ActiveCfg = Release|Any CPU
-		{6B9C8E3A-7B7E-44C8-AF3B-79CBFD5E653A}.Release|x64.Build.0 = Release|Any CPU
-		{6B9C8E3A-7B7E-44C8-AF3B-79CBFD5E653A}.Release|x86.ActiveCfg = Release|Any CPU
-		{6B9C8E3A-7B7E-44C8-AF3B-79CBFD5E653A}.Release|x86.Build.0 = Release|Any CPU
+		{6B9C8E3A-7B7E-44C8-AF3B-79CBFD5E653A}.Release|x64.ActiveCfg = Release|x64
+		{6B9C8E3A-7B7E-44C8-AF3B-79CBFD5E653A}.Release|x64.Build.0 = Release|x64
+		{6B9C8E3A-7B7E-44C8-AF3B-79CBFD5E653A}.Release|x86.ActiveCfg = Release|x86
+		{6B9C8E3A-7B7E-44C8-AF3B-79CBFD5E653A}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

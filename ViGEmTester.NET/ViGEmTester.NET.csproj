@@ -51,6 +51,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\HidCerberus.Lib\HidCerberus.Lib.csproj">
+      <Project>{6b9c8e3a-7b7e-44c8-af3b-79cbfd5e653a}</Project>
+      <Name>HidCerberus.Lib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ViGEmUM.NET\ViGEmUM.NET.csproj">
       <Project>{3a3bf391-1d52-48f9-b08a-cdef4c119316}</Project>
       <Name>ViGEmUM.NET</Name>

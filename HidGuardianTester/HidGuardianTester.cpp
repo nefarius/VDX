@@ -4,14 +4,12 @@
 #include "stdafx.h"
 #include <Windows.h>
 #include <SetupAPI.h>
-#include <initguid.h>
 #include <hidsdi.h>
 
 #pragma comment(lib, "hid.lib")
 
-DEFINE_GUID(GUID_DEVINTERFACE_HIDGUARDIAN,
-    0x2f6dcf26, 0xeb50, 0x44ea, 0x90, 0x93, 0x4d, 0x83, 0x5c, 0xdd, 0xef, 0x2f);
-// {2f6dcf26-eb50-44ea-9093-4d835cddef2f}
+typedef void (WINAPI* HidGuardianOpen_t)();
+typedef void (WINAPI* HidGuardianClose_t)();
 
 
 int main()
@@ -24,10 +22,16 @@ int main()
 
     GUID hidClass;
     HidD_GetHidGuid(&hidClass);
-    
-    auto deviceInfoSet = SetupDiGetClassDevs(&GUID_DEVINTERFACE_HIDGUARDIAN, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
-    while (SetupDiEnumDeviceInterfaces(deviceInfoSet, nullptr, &GUID_DEVINTERFACE_HIDGUARDIAN, memberIndex++, &deviceInterfaceData))
+    HMODULE cerberus = LoadLibrary(L"HidCerberus.Lib.dll");
+    HidGuardianOpen_t fpOpen = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianOpen"));
+    HidGuardianOpen_t fpClose = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianClose"));
+    
+    fpOpen();
+
+    auto deviceInfoSet = SetupDiGetClassDevs(&hidClass, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+
+    while (SetupDiEnumDeviceInterfaces(deviceInfoSet, nullptr, &hidClass, memberIndex++, &deviceInterfaceData))
     {
         printf("Found one!\n");
 
@@ -72,6 +76,8 @@ int main()
 
     printf("Done\n");
     getchar();
+
+    fpClose();
 
     return 0;
 }

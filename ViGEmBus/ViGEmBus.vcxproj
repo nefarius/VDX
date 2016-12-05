@@ -381,6 +381,7 @@
   <ItemGroup>
     <ClCompile Include="busenum.c" />
     <ClCompile Include="buspdo.c" />
+    <ClCompile Include="Driver.c" />
     <ClCompile Include="Ds4.c" />
     <ClCompile Include="Queue.c" />
     <ClCompile Include="UsbPdo.c" />

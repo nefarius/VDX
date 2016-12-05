@@ -23,7 +23,6 @@ Sony DualShock 4 and generic USB Gamepad connected:
 ```
 devcon.exe install HidGuardian.inf Root\HidGuardian
 devcon.exe classfilter HIDClass upper -HidGuardian
-devcon.exe remove Root\HidGuardian
 ```
 Now create a `REG_MULTI_SZ` Registry Value named `AffectedDevices` in the key `HKLM\System\CurrentControlSet\Services\HidGuardian\Parameters` and put the Hardware ID(s) of the device(s) you'd like to hide in separate lines:
 
@@ -33,6 +32,7 @@ Now plug in your device(s) and see the magic happen!
 
 ## Manual Removal
 ```
+devcon.exe remove Root\HidGuardian
 devcon.exe classfilter HIDClass upper !HidGuardian
 ```
 Re-plug your devices or reboot the system for the driver to get unloaded and removed.

@@ -23,6 +23,8 @@ SOFTWARE.
 */
 
 
+#pragma once
+
 #include <ntddk.h>
 #include <wdf.h>
 #define NTSTRSAFE_LIB
@@ -31,6 +33,7 @@ SOFTWARE.
 #include <initguid.h>
 #include "driver.h"
 #include "public.h"
+#include "Queue.h"
 #include <usb.h>
 #include <usbbusif.h>
 
@@ -353,10 +356,6 @@ DRIVER_INITIALIZE DriverEntry;
 EVT_WDF_DRIVER_DEVICE_ADD Bus_EvtDeviceAdd;
 
 EVT_WDF_FILE_CLEANUP  Bus_FileCleanup;
-
-EVT_WDF_IO_QUEUE_IO_DEFAULT Bus_EvtIoDefault;
-EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL Bus_EvtIoDeviceControl;
-EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Bus_EvtIoInternalDeviceControl;
 
 EVT_WDF_CHILD_LIST_CREATE_DEVICE Bus_EvtDeviceListCreatePdo;
 

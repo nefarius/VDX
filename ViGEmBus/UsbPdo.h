@@ -26,10 +26,20 @@ SOFTWARE.
 #pragma once
 
 BOOLEAN USB_BUSIFFN UsbPdo_IsDeviceHighSpeed(IN PVOID BusContext);
-NTSTATUS USB_BUSIFFN UsbPdo_QueryBusInformation(IN PVOID BusContext, IN ULONG Level, IN OUT PVOID BusInformationBuffer, IN OUT PULONG BusInformationBufferLength, OUT PULONG BusInformationActualLength);
+NTSTATUS USB_BUSIFFN UsbPdo_QueryBusInformation(
+    IN PVOID BusContext,
+    IN ULONG Level,
+    IN OUT PVOID BusInformationBuffer,
+    IN OUT PULONG BusInformationBufferLength,
+    OUT PULONG BusInformationActualLength
+);
 NTSTATUS USB_BUSIFFN UsbPdo_SubmitIsoOutUrb(IN PVOID BusContext, IN PURB Urb);
 NTSTATUS USB_BUSIFFN UsbPdo_QueryBusTime(IN PVOID BusContext, IN OUT PULONG CurrentUsbFrame);
-VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(IN PVOID BusContext, IN OUT PUSBD_VERSION_INFORMATION VersionInformation, IN OUT PULONG HcdCapabilities);
+VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(
+    IN PVOID BusContext,
+    IN OUT PUSBD_VERSION_INFORMATION VersionInformation,
+    IN OUT PULONG HcdCapabilities
+);
 NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
 NTSTATUS UsbPdo_GetStringDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);

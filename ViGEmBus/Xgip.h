@@ -93,7 +93,11 @@ Bus_XgipSubmitInterrupt(
 //
 // XGIP-specific functions
 // 
-NTSTATUS Xgip_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
+NTSTATUS Xgip_PreparePdo(
+    PWDFDEVICE_INIT DeviceInit,
+    PUNICODE_STRING DeviceId,
+    PUNICODE_STRING DeviceDescription
+);
 NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device);
 NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device);
 VOID Xgip_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);

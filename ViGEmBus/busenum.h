@@ -41,6 +41,7 @@ SOFTWARE.
 #include "UsbPdo.h"
 #include "Xusb.h"
 #include "Ds4.h"
+#include "Xgip.h"
 
 #pragma region GUID definitions
 
@@ -97,12 +98,6 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 #define MAX_INSTANCE_ID_LEN             80
 #define HID_LANGUAGE_ID_LENGTH          0x04
 
-#define XGIP_DESCRIPTOR_SIZE	        0x0040
-#define XGIP_CONFIGURATION_SIZE         0x88
-#define XGIP_REPORT_SIZE                0x12
-#define XGIP_SYS_INIT_PACKETS           0x0F
-#define XGIP_SYS_INIT_PERIOD            0x32
-
 #define HID_REQUEST_GET_REPORT          0x01
 #define HID_REQUEST_SET_REPORT          0x09
 #define HID_REPORT_TYPE_FEATURE         0x03
@@ -127,33 +122,6 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 
 #pragma endregion
 
-#pragma region Context & request data types
-
-
-typedef struct _XGIP_DEVICE_DATA
-{
-    UCHAR Report[XGIP_REPORT_SIZE];
-
-    //
-    // Queue for incoming interrupt transfer
-    //
-    WDFQUEUE PendingUsbInRequests;
-
-    //
-    // Queue for inverted calls
-    //
-    WDFQUEUE PendingNotificationRequests;
-
-    WDFCOLLECTION XboxgipSysInitCollection;
-
-    BOOLEAN XboxgipSysInitReady;
-
-    WDFTIMER XboxgipSysInitTimer;
-} XGIP_DEVICE_DATA, *PXGIP_DEVICE_DATA;
-
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XGIP_DEVICE_DATA, XgipGetData)
-
-#pragma endregion
 
 #pragma region WDF callback prototypes
 
@@ -171,7 +139,6 @@ EVT_WDF_DEVICE_PREPARE_HARDWARE Bus_EvtDevicePrepareHardware;
 
 EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Pdo_EvtIoInternalDeviceControl;
 
-EVT_WDF_TIMER Ds4_PendingUsbRequestsTimerFunc;
 EVT_WDF_TIMER Xgip_SysInitTimerFunc;
 
 #pragma endregion
@@ -202,14 +169,6 @@ Bus_CreatePdo(
 );
 
 NTSTATUS
-Bus_XusbSubmitReport(
-    WDFDEVICE Device,
-    ULONG SerialNo,
-    PXUSB_SUBMIT_REPORT Report,
-    _In_ BOOLEAN FromInterface
-);
-
-NTSTATUS
 Bus_QueueNotification(
     WDFDEVICE Device,
     ULONG SerialNo,
@@ -217,26 +176,10 @@ Bus_QueueNotification(
 );
 
 NTSTATUS
-Bus_Ds4SubmitReport(
-    WDFDEVICE Device,
-    ULONG SerialNo,
-    PDS4_SUBMIT_REPORT Report,
-    _In_ BOOLEAN FromInterface
-);
-
-NTSTATUS
 Bus_XgipSubmitReport(
     WDFDEVICE Device,
     ULONG SerialNo,
     PXGIP_SUBMIT_REPORT Report,
-    _In_ BOOLEAN FromInterface
-);
-
-NTSTATUS
-Bus_XgipSubmitInterrupt(
-    WDFDEVICE Device,
-    ULONG SerialNo,
-    PXGIP_SUBMIT_INTERRUPT Report,
     _In_ BOOLEAN FromInterface
 );
 
@@ -250,30 +193,4 @@ Bus_SubmitReport(
 
 
 #pragma endregion
-
-
-
-//
-// XUSB-specific functions
-// 
-NTSTATUS Xusb_PreparePdo(PWDFDEVICE_INIT DeviceInit, USHORT VendorId, USHORT ProductId, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
-NTSTATUS Xusb_PrepareHardware(WDFDEVICE Device);
-NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION Description);
-VOID Xusb_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);
-
-//
-// DS4-specific functions
-// 
-NTSTATUS Ds4_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
-NTSTATUS Ds4_PrepareHardware(WDFDEVICE Device);
-NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION Description);
-VOID Ds4_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);
-
-//
-// XGIP-specific functions
-// 
-NTSTATUS Xgip_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
-NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device);
-NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device);
-VOID Xgip_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);
 

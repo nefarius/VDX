@@ -94,3 +94,21 @@ typedef struct _DS4_DEVICE_DATA
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DS4_DEVICE_DATA, Ds4GetData)
 
+
+EVT_WDF_TIMER Ds4_PendingUsbRequestsTimerFunc;
+
+NTSTATUS
+Bus_Ds4SubmitReport(
+    WDFDEVICE Device,
+    ULONG SerialNo,
+    PDS4_SUBMIT_REPORT Report,
+    _In_ BOOLEAN FromInterface
+);
+
+//
+// DS4-specific functions
+// 
+NTSTATUS Ds4_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
+NTSTATUS Ds4_PrepareHardware(WDFDEVICE Device);
+NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION Description);
+VOID Ds4_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);

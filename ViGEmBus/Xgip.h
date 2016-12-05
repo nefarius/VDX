@@ -25,36 +25,15 @@ SOFTWARE.
 
 #pragma once
 
-#if defined(_X86_)
-#define XUSB_CONFIGURATION_SIZE         0x00E4
-#else
-#define XUSB_CONFIGURATION_SIZE         0x0130
-#endif
-#define XUSB_DESCRIPTOR_SIZE	        0x0099
-#define XUSB_REPORT_SIZE                20
-#define XUSB_RUMBLE_SIZE                8
-#define XUSB_LEDSET_SIZE                3
-#define XUSB_LEDNUM_SIZE                1
+#define XGIP_DESCRIPTOR_SIZE	        0x0040
+#define XGIP_CONFIGURATION_SIZE         0x88
+#define XGIP_REPORT_SIZE                0x12
+#define XGIP_SYS_INIT_PACKETS           0x0F
+#define XGIP_SYS_INIT_PERIOD            0x32
 
-//
-// XUSB-specific device context data.
-// 
-typedef struct _XUSB_DEVICE_DATA
+typedef struct _XGIP_DEVICE_DATA
 {
-    //
-    // Rumble buffer
-    //
-    UCHAR Rumble[XUSB_RUMBLE_SIZE];
-
-    //
-    // LED number (represents XInput slot index)
-    //
-    UCHAR LedNumber;
-
-    //
-    // Report buffer
-    //
-    UCHAR Report[XUSB_REPORT_SIZE];
+    UCHAR Report[XGIP_REPORT_SIZE];
 
     //
     // Queue for incoming interrupt transfer
@@ -66,23 +45,29 @@ typedef struct _XUSB_DEVICE_DATA
     //
     WDFQUEUE PendingNotificationRequests;
 
-} XUSB_DEVICE_DATA, *PXUSB_DEVICE_DATA;
+    WDFCOLLECTION XboxgipSysInitCollection;
 
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XUSB_DEVICE_DATA, XusbGetData)
+    BOOLEAN XboxgipSysInitReady;
+
+    WDFTIMER XboxgipSysInitTimer;
+} XGIP_DEVICE_DATA, *PXGIP_DEVICE_DATA;
+
+WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XGIP_DEVICE_DATA, XgipGetData)
 
 
 NTSTATUS
-Bus_XusbSubmitReport(
+Bus_XgipSubmitInterrupt(
     WDFDEVICE Device,
     ULONG SerialNo,
-    PXUSB_SUBMIT_REPORT Report,
+    PXGIP_SUBMIT_INTERRUPT Report,
     _In_ BOOLEAN FromInterface
 );
 
 //
-// XUSB-specific functions
+// XGIP-specific functions
 // 
-NTSTATUS Xusb_PreparePdo(PWDFDEVICE_INIT DeviceInit, USHORT VendorId, USHORT ProductId, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
-NTSTATUS Xusb_PrepareHardware(WDFDEVICE Device);
-NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION Description);
-VOID Xusb_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);
+NTSTATUS Xgip_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PUNICODE_STRING DeviceDescription);
+NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device);
+NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device);
+VOID Xgip_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);
+

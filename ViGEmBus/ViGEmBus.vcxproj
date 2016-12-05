@@ -372,6 +372,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="UsbPdo.h" />
     <ClInclude Include="Util.h" />
+    <ClInclude Include="Xgip.h" />
     <ClInclude Include="Xusb.h" />
   </ItemGroup>
   <ItemGroup>

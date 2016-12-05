@@ -366,9 +366,13 @@
     <ClInclude Include="..\Common\driver.h" />
     <ClInclude Include="..\Common\public.h" />
     <ClInclude Include="busenum.h" />
-    <ClInclude Include="ds4defs.h" />
+    <ClInclude Include="Context.h" />
+    <ClInclude Include="Ds4.h" />
     <ClInclude Include="Queue.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="UsbPdo.h" />
+    <ClInclude Include="Util.h" />
+    <ClInclude Include="Xusb.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ViGEmBus.rc" />
@@ -376,10 +380,10 @@
   <ItemGroup>
     <ClCompile Include="busenum.c" />
     <ClCompile Include="buspdo.c" />
-    <ClCompile Include="ds4hid.c" />
+    <ClCompile Include="Ds4.c" />
     <ClCompile Include="Queue.c" />
-    <ClCompile Include="usbpdo.c" />
-    <ClCompile Include="util.c" />
+    <ClCompile Include="UsbPdo.c" />
+    <ClCompile Include="Util.c" />
     <ClCompile Include="xgip.c" />
     <ClCompile Include="xusb.c" />
   </ItemGroup>

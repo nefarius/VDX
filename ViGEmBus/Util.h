@@ -25,16 +25,26 @@ SOFTWARE.
 
 #pragma once
 
-#define HID_GET_FEATURE_REPORT_SIZE_0                   49
-#define HID_GET_FEATURE_REPORT_SIZE_1                   37
-#define HID_GET_FEATURE_REPORT_MAC_ADDRESSES_SIZE       16
+//
+// Returns the current caller process id.
+// 
+#define CURRENT_PROCESS_ID() ((DWORD)((DWORD_PTR)PsGetCurrentProcessId() & 0xFFFFFFFF))
 
-#define HID_SET_FEATURE_REPORT_SIZE_0                   23
-#define HID_SET_FEATURE_REPORT_SIZE_1                   17
+#define IS_OWNER(_pdo_) (_pdo_->OwnerProcessId == CURRENT_PROCESS_ID())
 
-#define HID_REPORT_ID_0                                 0xA3
-#define HID_REPORT_ID_1                                 0x02
-#define HID_REPORT_MAC_ADDRESSES_ID                     0x12
-#define HID_REPORT_ID_3                                 0x13
-#define HID_REPORT_ID_4                                 0x14
+//
+// Represents a MAC address.
+//
+typedef struct _MAC_ADDRESS
+{
+    UCHAR Vendor0;
+    UCHAR Vendor1;
+    UCHAR Vendor2;
+    UCHAR Nic0;
+    UCHAR Nic1;
+    UCHAR Nic2;
+} MAC_ADDRESS, *PMAC_ADDRESS;
 
+
+VOID ReverseByteArray(PUCHAR Array, INT Length);
+VOID GenerateRandomMacAddress(PMAC_ADDRESS Address);

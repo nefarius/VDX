@@ -36,6 +36,11 @@ SOFTWARE.
 #include "Queue.h"
 #include <usb.h>
 #include <usbbusif.h>
+#include "Context.h"
+#include "Util.h"
+#include "UsbPdo.h"
+#include "Xusb.h"
+#include "Ds4.h"
 
 #pragma region GUID definitions
 
@@ -90,35 +95,13 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 #pragma region Macros
 
 #define MAX_INSTANCE_ID_LEN             80
-#define XUSB_DESCRIPTOR_SIZE	        0x0099
-#define DS4_DESCRIPTOR_SIZE	            0x0029
-#define DS4_CONFIGURATION_SIZE          0x0070
-#define DS4_HID_REPORT_DESCRIPTOR_SIZE  0x01D3
 #define HID_LANGUAGE_ID_LENGTH          0x04
-#define DS4_MANUFACTURER_NAME_LENGTH    0x38
-#define DS4_PRODUCT_NAME_LENGTH         0x28
-#define DS4_OUTPUT_BUFFER_OFFSET        0x04
-#define DS4_OUTPUT_BUFFER_LENGTH        0x05
-
-#if defined(_X86_)
-#define XUSB_CONFIGURATION_SIZE              0x00E4
-#else
-#define XUSB_CONFIGURATION_SIZE              0x0130
-#endif
 
 #define XGIP_DESCRIPTOR_SIZE	        0x0040
 #define XGIP_CONFIGURATION_SIZE         0x88
 #define XGIP_REPORT_SIZE                0x12
 #define XGIP_SYS_INIT_PACKETS           0x0F
 #define XGIP_SYS_INIT_PERIOD            0x32
-
-#define XUSB_REPORT_SIZE                20
-#define XUSB_RUMBLE_SIZE                8
-#define XUSB_LEDSET_SIZE                3
-#define XUSB_LEDNUM_SIZE                1
-
-#define DS4_REPORT_SIZE                 64
-#define DS4_QUEUE_FLUSH_PERIOD          5
 
 #define HID_REQUEST_GET_REPORT          0x01
 #define HID_REQUEST_SET_REPORT          0x09
@@ -131,13 +114,6 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 #pragma endregion
 
 #pragma region Helpers
-
-//
-// Returns the current caller process id.
-// 
-#define CURRENT_PROCESS_ID() ((DWORD)((DWORD_PTR)PsGetCurrentProcessId() & 0xFFFFFFFF))
-
-#define IS_OWNER(_pdo_) (_pdo_->OwnerProcessId == CURRENT_PROCESS_ID())
 
 //
 // Extracts the HID Report ID from the supplied class request.
@@ -153,176 +129,6 @@ DEFINE_GUID(GUID_DEVINTERFACE_XGIP_UNKNOWN_4,
 
 #pragma region Context & request data types
 
-//
-// Used to identify children in the device list of the bus.
-// 
-typedef struct _PDO_IDENTIFICATION_DESCRIPTION
-{
-    WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER Header; // should contain this header
-
-    ULONG SerialNo;
-
-    // 
-    // PID of the process creating this PDO
-    // 
-    DWORD OwnerProcessId;
-
-    //
-    // Device type this PDO is emulating
-    // 
-    VIGEM_TARGET_TYPE TargetType;
-
-    //
-    // If set, the vendor ID the emulated device is reporting
-    // 
-    USHORT VendorId;
-
-    //
-    // If set, the product ID the emulated device is reporting
-    // 
-    USHORT ProductId;
-
-    //
-    // Is the current device owner another driver?
-    // 
-    BOOLEAN OwnerIsDriver;
-
-} PDO_IDENTIFICATION_DESCRIPTION, *PPDO_IDENTIFICATION_DESCRIPTION;
-
-//
-// The PDO device-extension (context).
-//
-typedef struct _PDO_DEVICE_DATA
-{
-    //
-    // Unique serial number of the device on the bus
-    // 
-    ULONG SerialNo;
-
-    // 
-    // PID of the process creating this PDO
-    // 
-    DWORD OwnerProcessId;
-
-    //
-    // Device type this PDO is emulating
-    // 
-    VIGEM_TARGET_TYPE TargetType;
-
-    //
-    // If set, the vendor ID the emulated device is reporting
-    // 
-    USHORT VendorId;
-
-    //
-    // If set, the product ID the emulated device is reporting
-    // 
-    USHORT ProductId;
-
-} PDO_DEVICE_DATA, *PPDO_DEVICE_DATA;
-
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(PDO_DEVICE_DATA, PdoGetData)
-
-typedef struct _FDO_DEVICE_DATA
-{
-    //
-    // Counter of interface references
-    // 
-    ULONG InterfaceReferenceCounter;
-
-} FDO_DEVICE_DATA, *PFDO_DEVICE_DATA;
-
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(FDO_DEVICE_DATA, FdoGetData)
-
-//
-// XUSB-specific device context data.
-// 
-typedef struct _XUSB_DEVICE_DATA
-{
-    //
-    // Rumble buffer
-    //
-    UCHAR Rumble[XUSB_RUMBLE_SIZE];
-
-    //
-    // LED number (represents XInput slot index)
-    //
-    UCHAR LedNumber;
-
-    //
-    // Report buffer
-    //
-    UCHAR Report[XUSB_REPORT_SIZE];
-
-    //
-    // Queue for incoming interrupt transfer
-    //
-    WDFQUEUE PendingUsbInRequests;
-
-    //
-    // Queue for inverted calls
-    //
-    WDFQUEUE PendingNotificationRequests;
-
-} XUSB_DEVICE_DATA, *PXUSB_DEVICE_DATA;
-
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XUSB_DEVICE_DATA, XusbGetData)
-
-//
-// Represents a MAC address.
-//
-typedef struct _MAC_ADDRESS
-{
-    UCHAR Vendor0;
-    UCHAR Vendor1;
-    UCHAR Vendor2;
-    UCHAR Nic0;
-    UCHAR Nic1;
-    UCHAR Nic2;
-} MAC_ADDRESS, *PMAC_ADDRESS;
-
-//
-// DS4-specific device context data.
-// 
-typedef struct _DS4_DEVICE_DATA
-{
-    //
-    // HID Input Report buffer
-    //
-    UCHAR Report[DS4_REPORT_SIZE];
-
-    //
-    // Output report cache
-    //
-    DS4_OUTPUT_REPORT OutputReport;
-
-    //
-    // Queue for incoming interrupt transfer
-    //
-    WDFQUEUE PendingUsbInRequests;
-
-    //
-    // Timer for dispatching interrupt transfer
-    //
-    WDFTIMER PendingUsbInRequestsTimer;
-
-    //
-    // Queue for inverted calls
-    //
-    WDFQUEUE PendingNotificationRequests;
-
-    //
-    // Auto-generated MAC address of the target device
-    //
-    MAC_ADDRESS TargetMacAddress;
-
-    //
-    // Default MAC address of the host (not used)
-    //
-    MAC_ADDRESS HostMacAddress;
-} DS4_DEVICE_DATA, *PDS4_DEVICE_DATA;
-
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DS4_DEVICE_DATA, Ds4GetData)
 
 typedef struct _XGIP_DEVICE_DATA
 {
@@ -445,31 +251,7 @@ Bus_SubmitReport(
 
 #pragma endregion
 
-#pragma region USB-specific functions
 
-BOOLEAN USB_BUSIFFN UsbPdo_IsDeviceHighSpeed(IN PVOID BusContext);
-NTSTATUS USB_BUSIFFN UsbPdo_QueryBusInformation(IN PVOID BusContext, IN ULONG Level, IN OUT PVOID BusInformationBuffer, IN OUT PULONG BusInformationBufferLength, OUT PULONG BusInformationActualLength);
-NTSTATUS USB_BUSIFFN UsbPdo_SubmitIsoOutUrb(IN PVOID BusContext, IN PURB Urb);
-NTSTATUS USB_BUSIFFN UsbPdo_QueryBusTime(IN PVOID BusContext, IN OUT PULONG CurrentUsbFrame);
-VOID USB_BUSIFFN UsbPdo_GetUSBDIVersion(IN PVOID BusContext, IN OUT PUSBD_VERSION_INFORMATION VersionInformation, IN OUT PULONG HcdCapabilities);
-NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
-NTSTATUS UsbPdo_GetConfigurationDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
-NTSTATUS UsbPdo_GetStringDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon);
-NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon);
-NTSTATUS UsbPdo_SelectInterface(PURB urb, PPDO_DEVICE_DATA pCommon);
-NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST Request);
-NTSTATUS UsbPdo_AbortPipe(WDFDEVICE Device);
-NTSTATUS UsbPdo_ClassInterface(PURB urb, WDFDEVICE Device, PPDO_DEVICE_DATA pCommon);
-NTSTATUS UsbPdo_GetDescriptorFromInterface(PURB urb, PPDO_DEVICE_DATA pCommon);
-
-#pragma endregion
-
-//
-// Utility functions
-//
-
-VOID ReverseByteArray(PUCHAR Array, INT Length);
-VOID GenerateRandomMacAddress(PMAC_ADDRESS Address);
 
 //
 // XUSB-specific functions

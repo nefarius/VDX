@@ -23,6 +23,8 @@ SOFTWARE.
 */
 
 
+#pragma once
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -36,7 +38,7 @@ SOFTWARE.
 #define VIGEM_API __declspec(dllimport)
 #endif
 
-#define VIGEM_TARGETS_MAX   4
+#define VIGEM_TARGETS_MAX   0xFF
 
 typedef enum _VIGEM_ERRORS
 {

@@ -60,7 +60,6 @@ int main()
 
     DWORD result;
     XINPUT_STATE state;
-    XUSB_REPORT xReport;
 
     printf("Starting translation, close window to exit...\n");
 
@@ -81,9 +80,7 @@ int main()
                     printf("Plugged in controller %d\t\t\t\t\n", targets[i].SerialNo);
                 }
 
-                RtlCopyMemory(&xReport, &state.Gamepad, sizeof(XUSB_REPORT));
-
-                vigem_xusb_submit_report(targets[i], xReport);
+                vigem_xusb_submit_report(targets[i], *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
             }
             else
             {

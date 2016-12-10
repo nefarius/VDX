@@ -49,10 +49,10 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 #define XUSB_CONFIGURATION_SIZE         0x0130
 #endif
 #define XUSB_DESCRIPTOR_SIZE	        0x0099
-#define XUSB_REPORT_SIZE                20
-#define XUSB_RUMBLE_SIZE                8
-#define XUSB_LEDSET_SIZE                3
-#define XUSB_LEDNUM_SIZE                1
+#define XUSB_REPORT_SIZE                0x14
+#define XUSB_RUMBLE_SIZE                0x08
+#define XUSB_LEDSET_SIZE                0x03
+#define XUSB_LEDNUM_SIZE                0x01
 
 //
 // XUSB-specific device context data.

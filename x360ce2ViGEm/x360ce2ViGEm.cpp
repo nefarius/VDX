@@ -33,12 +33,29 @@ SOFTWARE.
 #include <thread>
 
 
+typedef void (WINAPI* HidGuardianOpen_t)();
+typedef void (WINAPI* HidGuardianClose_t)();
+
+static HidGuardianOpen_t fpOpen;
+static HidGuardianOpen_t fpClose;
+
+BOOL WINAPI HandlerRoutine(
+    _In_ DWORD dwCtrlType
+);
+
 int main()
 {
     using namespace std::this_thread; // sleep_for, sleep_until
     using namespace std::chrono; // nanoseconds, system_clock, seconds
 
     SetConsoleTitle(L"x360ce to ViGEm demo application");
+    SetConsoleCtrlHandler(HandlerRoutine, TRUE);
+
+    HMODULE cerberus = LoadLibrary(L"HidCerberus.Lib.dll");
+    fpOpen = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianOpen"));
+    fpClose = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianClose"));
+
+    fpOpen();
 
     printf("Initializing emulation driver\n");
 
@@ -100,11 +117,24 @@ int main()
 
         auto finished = high_resolution_clock::now();
 
-        printf("Polling delay: %1d ms (Frequency: %3.2f Hz)\r",
+        printf("Polling delay: %1lld ms (Frequency: %3.2f Hz)\r",
             duration_cast<milliseconds>(delay).count(),
             (1.0 / duration_cast<milliseconds>(finished - begin).count()) * 1000);
     }
 
     return 0;
+}
+
+BOOL WINAPI HandlerRoutine(
+    _In_ DWORD dwCtrlType
+)
+{
+    if(dwCtrlType == CTRL_CLOSE_EVENT)
+    {
+        fpClose();
+        return TRUE;
+    }
+
+    return FALSE;
 }
 

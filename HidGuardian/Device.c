@@ -196,7 +196,9 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     ULONG                   i;
     WDFKEY                  keyParams;
     BOOLEAN                 affected = FALSE;
+    ULONG                   force = 0;
     DECLARE_CONST_UNICODE_STRING(valueMultiSz, L"AffectedDevices");
+    DECLARE_CONST_UNICODE_STRING(valueForceUl, L"Force");
     DECLARE_UNICODE_STRING_SIZE(currentHardwareID, MAX_HARDWARE_ID_SIZE);
     DECLARE_UNICODE_STRING_SIZE(myHardwareID, MAX_HARDWARE_ID_SIZE);
 
@@ -230,6 +232,15 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     if (!NT_SUCCESS(status)) {
         KdPrint(("WdfDriverOpenParametersRegistryKey failed: 0x%x\n", status));
         return status;
+    }
+
+    //
+    // Force loading on every class device
+    // 
+    status = WdfRegistryQueryULong(keyParams, &valueForceUl, &force);
+    if (NT_SUCCESS(status) && force > 0) {
+        WdfRegistryClose(keyParams);
+        return STATUS_SUCCESS;
     }
 
     WDF_OBJECT_ATTRIBUTES_INIT(&stringAttributes);

@@ -88,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HidCerberus.cs" />
+    <Compile Include="HidCerberus.Exports.cs" />
     <Compile Include="HidCerberusWcf.cs" />
     <Compile Include="IHidCerberusWcf.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

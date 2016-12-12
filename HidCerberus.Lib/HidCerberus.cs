@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.ServiceModel;
 using log4net;
-using RGiesecke.DllExport;
 
 namespace HidCerberus.Lib
 {
-    public class HidCerberus : IDisposable
+    public partial class HidCerberus : IDisposable
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private static readonly IHidCerberusWcf ServiceChannel;
@@ -36,37 +33,24 @@ namespace HidCerberus.Lib
 
         public static Uri WcfUrl => new Uri("net.tcp://localhost:26762/HidCerberusService");
 
-        public static string WhitelistRegistryKeyBase
+        public static string HidWhitelistRegistryKeyBase
             => @"SYSTEM\CurrentControlSet\Services\HidGuardian\Parameters\Whitelist";
+
+        public static string XnaWhitelistRegistryKeyBase
+            => @"SYSTEM\CurrentControlSet\Services\XnaGuardian\Parameters\Whitelist";
 
         #endregion
 
-        #region DLL Exports
-
-        [DllExport(CallingConvention = CallingConvention.StdCall)]
-        public static void HidGuardianOpen()
-        {
-            ServiceChannel?.AddPid(Process.GetCurrentProcess().Id);
-        }
-
-        [DllExport(CallingConvention = CallingConvention.StdCall)]
-        public static void HidGuardianClose()
-        {
-            ServiceChannel?.RemovePid(Process.GetCurrentProcess().Id);
-        }
-
         #region IDisposable Support
-        private bool _disposedValue = false; // To detect redundant calls
+
+        private bool _disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {
             if (_disposedValue) return;
 
             if (disposing)
-            {
-                // TODO: dispose managed state (managed objects).
                 HidGuardianClose();
-            }
 
             // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
             // TODO: set large fields to null.
@@ -88,6 +72,7 @@ namespace HidCerberus.Lib
             // TODO: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
         }
+
         #endregion
 
         #endregion

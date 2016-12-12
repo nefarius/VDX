@@ -6,9 +6,15 @@ namespace HidCerberus.Lib
     public interface IHidCerberusWcf
     {
         [OperationContract]
-        void AddPid(int id);
+        void HidAddPid(int id);
 
         [OperationContract]
-        void RemovePid(int id);
+        void HidRemovePid(int id);
+
+        [OperationContract]
+        void XnaAddPid(int id);
+
+        [OperationContract]
+        void XnaRemovePid(int id);
     }
 }

@@ -9,12 +9,12 @@ namespace HidCerberus.Lib
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public void AddPid(int id)
+        public void HidAddPid(int id)
         {
-            Log.Info($"Adding PID {id}");
+            Log.Info($"Adding PID {id} to HidGuardian white-list");
             try
             {
-                Registry.LocalMachine.CreateSubKey($"{HidCerberus.WhitelistRegistryKeyBase}\\{id}");
+                Registry.LocalMachine.CreateSubKey($"{HidCerberus.HidWhitelistRegistryKeyBase}\\{id}");
             }
             catch (Exception ex)
             {
@@ -22,12 +22,38 @@ namespace HidCerberus.Lib
             }
         }
 
-        public void RemovePid(int id)
+        public void HidRemovePid(int id)
         {
-            Log.Info($"Removing PID {id}");
+            Log.Info($"Removing PID {id} from HidGuardian white-list");
             try
             {
-                Registry.LocalMachine.DeleteSubKey($"{HidCerberus.WhitelistRegistryKeyBase}\\{id}");
+                Registry.LocalMachine.DeleteSubKey($"{HidCerberus.HidWhitelistRegistryKeyBase}\\{id}");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+            }
+        }
+
+        public void XnaAddPid(int id)
+        {
+            Log.Info($"Adding PID {id} to HidGuardian white-list");
+            try
+            {
+                Registry.LocalMachine.CreateSubKey($"{HidCerberus.XnaWhitelistRegistryKeyBase}\\{id}");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+            }
+        }
+
+        public void XnaRemovePid(int id)
+        {
+            Log.Info($"Removing PID {id} from HidGuardian white-list");
+            try
+            {
+                Registry.LocalMachine.DeleteSubKey($"{HidCerberus.XnaWhitelistRegistryKeyBase}\\{id}");
             }
             catch (Exception ex)
             {

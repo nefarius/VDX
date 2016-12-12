@@ -74,7 +74,5 @@ namespace HidCerberus.Lib
         }
 
         #endregion
-
-        #endregion
     }
 }

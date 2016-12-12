@@ -100,6 +100,9 @@ int main()
 
             if (result == ERROR_SUCCESS)
             {
+                vigem_target_set_vid(&targets[i], 0x1234);
+                vigem_target_set_pid(&targets[i], 0x0001);
+
                 if (VIGEM_SUCCESS(vigem_target_plugin(Xbox360Wired, &targets[i])))
                 {
                     printf("Plugged in controller %d\t\t\t\t\n", targets[i].SerialNo);

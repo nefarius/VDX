@@ -52,9 +52,17 @@ int main()
     SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 
     HMODULE cerberus = LoadLibrary(L"HidCerberus.Lib.dll");
+
+    if (cerberus == INVALID_HANDLE_VALUE)
+    {
+        printf("Couldn't find HidCerberus.Lib.dll\n");
+        return 1;
+    }
+
     fpOpen = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianOpen"));
     fpClose = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianClose"));
 
+    printf("Bypassing HidGuardian\n");
     fpOpen();
 
     printf("Initializing emulation driver\n");
@@ -129,7 +137,7 @@ BOOL WINAPI HandlerRoutine(
     _In_ DWORD dwCtrlType
 )
 {
-    if(dwCtrlType == CTRL_CLOSE_EVENT)
+    if (dwCtrlType == CTRL_CLOSE_EVENT)
     {
         fpClose();
         return TRUE;

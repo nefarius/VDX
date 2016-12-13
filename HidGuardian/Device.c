@@ -132,7 +132,7 @@ HidGuardianCreateDevice(
         // 
         status = AmIAffected(deviceContext);
 
-        KdPrint(("AmIAffected status 0x%X\n", status));
+        KdPrint((DRIVERNAME "AmIAffected status 0x%X\n", status));
     }
 
     return status;
@@ -192,13 +192,13 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     WDF_OBJECT_ATTRIBUTES   stringAttributes;
     WDFCOLLECTION           col;
     NTSTATUS                status;
-    ULONG                   count;
     ULONG                   i;
     WDFKEY                  keyParams;
     BOOLEAN                 affected = FALSE;
     ULONG                   force = 0;
-    DECLARE_CONST_UNICODE_STRING(valueMultiSz, L"AffectedDevices");
+    DECLARE_CONST_UNICODE_STRING(valueAffectedMultiSz, L"AffectedDevices");
     DECLARE_CONST_UNICODE_STRING(valueForceUl, L"Force");
+    DECLARE_CONST_UNICODE_STRING(valueExemptedMultiSz, L"ExemptedDevices");
     DECLARE_UNICODE_STRING_SIZE(currentHardwareID, MAX_HARDWARE_ID_SIZE);
     DECLARE_UNICODE_STRING_SIZE(myHardwareID, MAX_HARDWARE_ID_SIZE);
 
@@ -209,7 +209,7 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     // 
     status = RtlUnicodeStringInit(&myHardwareID, DeviceContext->HardwareID);
     if (!NT_SUCCESS(status)) {
-        KdPrint(("RtlUnicodeStringInit failed: 0x%x\n", status));
+        KdPrint((DRIVERNAME "RtlUnicodeStringInit failed: 0x%x\n", status));
         return status;
     }
 
@@ -221,7 +221,7 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
         &col
     );
     if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfCollectionCreate failed: 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfCollectionCreate failed: 0x%x\n", status));
         return status;
     }
 
@@ -230,8 +230,45 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     // 
     status = WdfDriverOpenParametersRegistryKey(WdfGetDriver(), STANDARD_RIGHTS_ALL, WDF_NO_OBJECT_ATTRIBUTES, &keyParams);
     if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfDriverOpenParametersRegistryKey failed: 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfDriverOpenParametersRegistryKey failed: 0x%x\n", status));
         return status;
+    }
+
+    WDF_OBJECT_ATTRIBUTES_INIT(&stringAttributes);
+    stringAttributes.ParentObject = col;
+
+    //
+    // Get the multi-string value
+    // 
+    status = WdfRegistryQueryMultiString(
+        keyParams,
+        &valueExemptedMultiSz,
+        &stringAttributes,
+        col
+    );
+    if (!NT_SUCCESS(status)) {
+        KdPrint((DRIVERNAME "WdfRegistryQueryMultiString failed: 0x%x\n", status));
+        return status;
+    }
+
+    // 
+    // Get exempted values
+    // 
+    for (i = 0; i < WdfCollectionGetCount(col); i++)
+    {
+        WdfStringGetUnicodeString(WdfCollectionGetItem(col, i), &currentHardwareID);
+
+        KdPrint((DRIVERNAME "My ID %wZ vs current exempted ID %wZ\n", &myHardwareID, &currentHardwareID));
+
+        affected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
+        KdPrint((DRIVERNAME "Are we exempted: %d\n", affected));
+
+        if (affected)
+        {
+            WdfRegistryClose(keyParams);
+            WdfObjectDelete(col);
+            return STATUS_DEVICE_FEATURE_NOT_SUPPORTED;
+        }
     }
 
     //
@@ -240,6 +277,7 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     status = WdfRegistryQueryULong(keyParams, &valueForceUl, &force);
     if (NT_SUCCESS(status) && force > 0) {
         WdfRegistryClose(keyParams);
+        WdfObjectDelete(col);
         return STATUS_SUCCESS;
     }
 
@@ -251,33 +289,32 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     // 
     status = WdfRegistryQueryMultiString(
         keyParams,
-        &valueMultiSz,
+        &valueAffectedMultiSz,
         &stringAttributes,
         col
     );
     if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfRegistryQueryMultiString failed: 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfRegistryQueryMultiString failed: 0x%x\n", status));
         return status;
     }
 
-    count = WdfCollectionGetCount(col);
-
     // 
-    // Loop through registry multi-string values
+    // Get affected values
     // 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < WdfCollectionGetCount(col); i++)
     {
         WdfStringGetUnicodeString(WdfCollectionGetItem(col, i), &currentHardwareID);
 
-        KdPrint(("My ID %wZ vs current ID %wZ\n", &myHardwareID, &currentHardwareID));
+        KdPrint((DRIVERNAME "My ID %wZ vs current affected ID %wZ\n", &myHardwareID, &currentHardwareID));
 
         affected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
-        KdPrint(("Are we affected: %d\n", affected));
+        KdPrint((DRIVERNAME "Are we affected: %d\n", affected));
 
         if (affected) break;
     }
 
     WdfRegistryClose(keyParams);
+    WdfObjectDelete(col);
 
     //
     // If Hardware ID wasn't found, report failure so the filter gets unloaded
@@ -302,7 +339,7 @@ BOOLEAN AmIWhitelisted(DWORD Pid)
     // 
     status = WdfDriverOpenParametersRegistryKey(WdfGetDriver(), STANDARD_RIGHTS_READ, WDF_NO_OBJECT_ATTRIBUTES, &keyParams);
     if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfDriverOpenParametersRegistryKey failed: 0x%x\n", status));
+        KdPrint((DRIVERNAME "WdfDriverOpenParametersRegistryKey failed: 0x%x\n", status));
         return FALSE;
     }
 
@@ -311,7 +348,7 @@ BOOLEAN AmIWhitelisted(DWORD Pid)
     // 
     status = RtlUnicodeStringPrintf(&keyPidName, L"Whitelist\\%d", Pid);
     if (!NT_SUCCESS(status)) {
-        KdPrint(("RtlUnicodeStringPrintf failed: 0x%x\n", status));
+        KdPrint((DRIVERNAME "RtlUnicodeStringPrintf failed: 0x%x\n", status));
         WdfRegistryClose(keyParams);
         return FALSE;
     }

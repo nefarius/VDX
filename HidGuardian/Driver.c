@@ -68,7 +68,7 @@ Return Value:
     NTSTATUS status;
     WDF_OBJECT_ATTRIBUTES attributes;
 
-    KdPrint(("Loading HidGuardian"));
+    KdPrint((DRIVERNAME "Loading HidGuardian"));
 
     //
     // Initialize WPP Tracing
@@ -94,12 +94,12 @@ Return Value:
                              );
 
     if (!NT_SUCCESS(status)) {
-        KdPrint(("WdfDriverCreate failed 0x%X", status));
+        KdPrint((DRIVERNAME "WdfDriverCreate failed 0x%X", status));
         WPP_CLEANUP(DriverObject);
         return status;
     }
 
-    KdPrint(("HidGuardian loaded: 0x%X\n", status));
+    KdPrint((DRIVERNAME "HidGuardian loaded: 0x%X\n", status));
 
     return status;
 }

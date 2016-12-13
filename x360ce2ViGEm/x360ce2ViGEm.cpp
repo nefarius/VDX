@@ -128,7 +128,7 @@ int main()
 
         auto finished = high_resolution_clock::now();
 
-        printf("Polling delay: %1lld ms (Frequency: %3.2f Hz)\r",
+        printf("Polling delay: %1lld ms (Frequency: %3.2f Hz)\t\t\r",
             duration_cast<milliseconds>(delay).count(),
             (1.0 / duration_cast<milliseconds>(finished - begin).count()) * 1000);
     }

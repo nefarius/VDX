@@ -99,8 +99,6 @@ VOID HidGuardianEvtIoDefault(
     NTSTATUS                        status;
     BOOLEAN                         ret;
 
-    UNREFERENCED_PARAMETER(Queue);
-
     KdPrint((DRIVERNAME "HidGuardianEvtIoDefault called\n"));
 
     WDF_REQUEST_SEND_OPTIONS_INIT(&options,

@@ -36,9 +36,9 @@ XnaGuardianQueueInitialize(
     _In_ WDFDEVICE Device
 )
 {
-    WDFQUEUE queue;
-    NTSTATUS status;
-    WDF_IO_QUEUE_CONFIG queueConfig;
+    WDFQUEUE                queue;
+    NTSTATUS                status;
+    WDF_IO_QUEUE_CONFIG     queueConfig;
 
     PAGED_CODE();
 
@@ -80,9 +80,9 @@ VOID XnaGuardianEvtIoDefault(
          _In_ WDFREQUEST Request
 )
 {
-    WDF_REQUEST_SEND_OPTIONS options;
-    NTSTATUS status;
-    BOOLEAN ret;
+    WDF_REQUEST_SEND_OPTIONS    options;
+    NTSTATUS                    status;
+    BOOLEAN                     ret;
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDefault called\n"));
 
@@ -122,12 +122,12 @@ VOID XnaGuardianEvtIoDeviceControl(
          _In_ ULONG IoControlCode
 )
 {
-    WDF_REQUEST_SEND_OPTIONS options;
-    NTSTATUS status;
-    BOOLEAN ret;
-    size_t buflen;
-    PDEVICE_CONTEXT pDeviceContext;
-    PVOID pBuffer;
+    WDF_REQUEST_SEND_OPTIONS    options;
+    NTSTATUS                    status;
+    BOOLEAN                     ret;
+    size_t                      buflen;
+    PDEVICE_CONTEXT             pDeviceContext;
+    PVOID                       pBuffer;
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called\n"));
 

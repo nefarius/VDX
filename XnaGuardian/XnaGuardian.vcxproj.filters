@@ -38,9 +38,6 @@
     <ResourceCompile Include="XnaGuardian.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="Driver Files">
       <UniqueIdentifier>{51dec7b8-5572-4bac-a681-53ed768da445}</UniqueIdentifier>
     </Filter>

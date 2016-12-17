@@ -162,7 +162,6 @@ VOID XnaGuardianEvtIoDeviceControl(
         // 
         if (!NT_SUCCESS(status) || buflen < IO_GET_GAMEPAD_STATE_IN_SIZE)
         {
-            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X\n", status));
             break;
         }
 

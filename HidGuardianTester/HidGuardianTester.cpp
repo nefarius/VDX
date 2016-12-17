@@ -23,15 +23,21 @@ int main()
     GUID hidClass;
     HidD_GetHidGuid(&hidClass);
 
+    GUID xnaClass;
+    CLSIDFromString(L"{EC87F1E3-C13B-4100-B5F7-8B84D54260CB}", &xnaClass);
+
+#ifdef HIDGUARDIAN
     HMODULE cerberus = LoadLibrary(L"HidCerberus.Lib.dll");
+
     HidGuardianOpen_t fpOpen = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianOpen"));
     HidGuardianOpen_t fpClose = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianClose"));
     
     fpOpen();
+#endif
 
-    auto deviceInfoSet = SetupDiGetClassDevs(&hidClass, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+    auto deviceInfoSet = SetupDiGetClassDevs(&xnaClass, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
-    while (SetupDiEnumDeviceInterfaces(deviceInfoSet, nullptr, &hidClass, memberIndex++, &deviceInterfaceData))
+    while (SetupDiEnumDeviceInterfaces(deviceInfoSet, nullptr, &xnaClass, memberIndex++, &deviceInterfaceData))
     {
         printf("Found one!\n");
 
@@ -64,10 +70,17 @@ int main()
             FILE_SHARE_READ | FILE_SHARE_WRITE,
             nullptr,
             OPEN_EXISTING,
-            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
+            FILE_ATTRIBUTE_NORMAL,
             nullptr);
 
         printf("hDevice = 0x%p, error = %d\n", hDevice, GetLastError());
+
+        BYTE buffer[2] = { 0, 1 };
+        DWORD retval;
+
+        BOOLEAN ret = DeviceIoControl(hDevice, 0x8001A004, static_cast<LPVOID>(buffer), 2, nullptr, 0, &retval, nullptr);
+
+        printf("DeviceIoControl = %d, error = %d\n", ret, GetLastError());
 
         free(detailDataBuffer);
     }
@@ -77,7 +90,9 @@ int main()
     printf("Done\n");
     getchar();
 
+#ifdef HIDGUARDIAN
     fpClose();
+#endif
 
     return 0;
 }

@@ -143,6 +143,8 @@ VOID XnaGuardianEvtIoDeviceControl(
         // 
     case IOCTL_XINPUT_GET_GAMEPAD_STATE:
 
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_GAMEPAD_STATE\n"));
+
         //
         // Validate provided buffer sizes
         // 
@@ -180,6 +182,8 @@ VOID XnaGuardianEvtIoDeviceControl(
         return;
 
     case IOCTL_XINPUT_EXT_HIDE_GAMEPAD:
+
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_EXT_HIDE_GAMEPAD\n"));
 
         // 
         // Retrieve input buffer

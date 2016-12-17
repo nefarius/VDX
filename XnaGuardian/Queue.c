@@ -77,7 +77,7 @@ XnaGuardianQueueInitialize(
 // 
 VOID XnaGuardianEvtIoDefault(
     _In_ WDFQUEUE Queue,
-         _In_ WDFREQUEST Request
+    _In_ WDFREQUEST Request
 )
 {
     WDF_REQUEST_SEND_OPTIONS    options;
@@ -87,7 +87,7 @@ VOID XnaGuardianEvtIoDefault(
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDefault called\n"));
 
     WDF_REQUEST_SEND_OPTIONS_INIT(&options,
-                                  WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
+        WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
 
     ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(WdfIoQueueGetDevice(Queue)), &options);
 
@@ -102,24 +102,24 @@ VOID XnaGuardianEvtIoDefault(
 VOID
 XnaGuardianEvtIoStop(
     _In_ WDFQUEUE Queue,
-         _In_ WDFREQUEST Request,
-         _In_ ULONG ActionFlags
+    _In_ WDFREQUEST Request,
+    _In_ ULONG ActionFlags
 )
 {
     TraceEvents(TRACE_LEVEL_INFORMATION,
-                                       TRACE_QUEUE,
-                                       "%!FUNC! Queue 0x%p, Request 0x%p ActionFlags %d",
-                                       Queue, Request, ActionFlags);
+        TRACE_QUEUE,
+        "%!FUNC! Queue 0x%p, Request 0x%p ActionFlags %d",
+        Queue, Request, ActionFlags);
 
     return;
 }
 
 VOID XnaGuardianEvtIoDeviceControl(
     _In_ WDFQUEUE Queue,
-         _In_ WDFREQUEST Request,
-         _In_ size_t OutputBufferLength,
-         _In_ size_t InputBufferLength,
-         _In_ ULONG IoControlCode
+    _In_ WDFREQUEST Request,
+    _In_ size_t OutputBufferLength,
+    _In_ size_t InputBufferLength,
+    _In_ ULONG IoControlCode
 )
 {
     WDF_REQUEST_SEND_OPTIONS    options;
@@ -181,8 +181,28 @@ VOID XnaGuardianEvtIoDeviceControl(
 
     case IOCTL_XINPUT_EXT_HIDE_GAMEPAD:
 
+        // 
+        // Retrieve input buffer
+        // 
+        status = WdfRequestRetrieveInputBuffer(Request, 2, &pBuffer, &buflen);
+        if (!NT_SUCCESS(status))
+        {
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X\n", status));
+            WdfRequestComplete(Request, status);
+            return;
+        }
 
-        break;
+        //
+        // Set pad state
+        // 
+        pDeviceContext->PadStates[((PUCHAR)pBuffer)[0]].IsGetStateForbidden = ((PUCHAR)pBuffer)[1];
+
+        //
+        // Complete request
+        // 
+        WdfRequestComplete(Request, STATUS_SUCCESS);
+        return;
+
     default:
         break;
     }
@@ -191,7 +211,7 @@ VOID XnaGuardianEvtIoDeviceControl(
     // Not our business, forward
     // 
     WDF_REQUEST_SEND_OPTIONS_INIT(&options,
-                                  WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
+        WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
 
     ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(WdfIoQueueGetDevice(Queue)), &options);
 

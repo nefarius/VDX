@@ -34,36 +34,36 @@ SOFTWARE.
 NTSTATUS
 XnaGuardianQueueInitialize(
     _In_ WDFDEVICE Device
-    )
+)
 {
     WDFQUEUE queue;
     NTSTATUS status;
     WDF_IO_QUEUE_CONFIG    queueConfig;
 
     PAGED_CODE();
-    
+
     //
     // Configure a default queue so that requests that are not
     // configure-fowarded using WdfDeviceConfigureRequestDispatching to goto
     // other queues get dispatched here.
     //
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(
-         &queueConfig,
+        &queueConfig,
         WdfIoQueueDispatchParallel
-        );
+    );
 
     queueConfig.EvtIoDefault = XnaGuardianEvtIoDefault;
     queueConfig.EvtIoStop = XnaGuardianEvtIoStop;
     queueConfig.EvtIoDeviceControl = XnaGuardianEvtIoDeviceControl;
 
     status = WdfIoQueueCreate(
-                 Device,
-                 &queueConfig,
-                 WDF_NO_OBJECT_ATTRIBUTES,
-                 &queue
-                 );
+        Device,
+        &queueConfig,
+        WDF_NO_OBJECT_ATTRIBUTES,
+        &queue
+    );
 
-    if( !NT_SUCCESS(status) ) {
+    if (!NT_SUCCESS(status)) {
         TraceEvents(TRACE_LEVEL_ERROR, TRACE_QUEUE, "WdfIoQueueCreate failed %!STATUS!", status);
         return status;
     }
@@ -71,6 +71,9 @@ XnaGuardianQueueInitialize(
     return status;
 }
 
+//
+// Forward everything we're not interested in.
+// 
 VOID XnaGuardianEvtIoDefault(
     _In_ WDFQUEUE   Queue,
     _In_ WDFREQUEST Request
@@ -101,10 +104,10 @@ XnaGuardianEvtIoStop(
     _In_ ULONG ActionFlags
 )
 {
-    TraceEvents(TRACE_LEVEL_INFORMATION, 
-                TRACE_QUEUE, 
-                "%!FUNC! Queue 0x%p, Request 0x%p ActionFlags %d", 
-                Queue, Request, ActionFlags);
+    TraceEvents(TRACE_LEVEL_INFORMATION,
+        TRACE_QUEUE,
+        "%!FUNC! Queue 0x%p, Request 0x%p ActionFlags %d",
+        Queue, Request, ActionFlags);
 
     return;
 }
@@ -121,10 +124,6 @@ VOID XnaGuardianEvtIoDeviceControl(
     NTSTATUS                        status;
     BOOLEAN                         ret;
 
-    UNREFERENCED_PARAMETER(OutputBufferLength);
-    UNREFERENCED_PARAMETER(InputBufferLength);
-    UNREFERENCED_PARAMETER(IoControlCode);
-
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called\n"));
 
     //
@@ -133,6 +132,15 @@ VOID XnaGuardianEvtIoDeviceControl(
     switch (IoControlCode)
     {
     case IOCTL_XINPUT_GET_GAMEPAD_STATE:
+
+        //
+        // Filter XInputGetState(...) call
+        // 
+        if (InputBufferLength == 0x03 && OutputBufferLength == 0x1D)
+        {
+
+        }
+
         break;
     default:
         break;

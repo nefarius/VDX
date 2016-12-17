@@ -49,6 +49,7 @@
     <ClInclude Include="Queue.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Trace.h" />
+    <ClInclude Include="XInputInternal.h" />
   </ItemGroup>
   <ItemGroup>
     <Inf Include="XnaGuardian.inf" />

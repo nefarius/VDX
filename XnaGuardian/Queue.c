@@ -25,6 +25,7 @@ SOFTWARE.
 
 #include "driver.h"
 #include "queue.tmh"
+#include "XInputInternal.h"
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, XnaGuardianQueueInitialize)
@@ -116,10 +117,39 @@ VOID XnaGuardianEvtIoDeviceControl(
     _In_ ULONG      IoControlCode
 )
 {
-    UNREFERENCED_PARAMETER(Queue);
-    UNREFERENCED_PARAMETER(Request);
+    WDF_REQUEST_SEND_OPTIONS        options;
+    NTSTATUS                        status;
+    BOOLEAN                         ret;
+
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
     UNREFERENCED_PARAMETER(IoControlCode);
+
+    KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called\n"));
+
+    //
+    // Filter desired I/O-control codes
+    // 
+    switch (IoControlCode)
+    {
+    case IOCTL_XINPUT_GET_GAMEPAD_STATE:
+        break;
+    default:
+        break;
+    }
+
+    //
+    // Not our business, forward
+    // 
+    WDF_REQUEST_SEND_OPTIONS_INIT(&options,
+        WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
+
+    ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(WdfIoQueueGetDevice(Queue)), &options);
+
+    if (ret == FALSE) {
+        status = WdfRequestGetStatus(Request);
+        KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
+        WdfRequestComplete(Request, status);
+    }
 }
 

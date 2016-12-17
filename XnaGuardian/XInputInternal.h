@@ -38,6 +38,8 @@ SOFTWARE.
 #define IOCTL_XINPUT_POWER_DOWN_DEVICE	        0x8000A01C
 #define IOCTL_XINPUT_GET_AUDIO_INFORMATION	    0x8000E020
 
+#define IO_GET_GAMEPAD_STATE_IN_SIZE            0x03
+#define IO_GET_GAMEPAD_STATE_OUT_SIZE           0x1D
 
 //
 // Custom extensions

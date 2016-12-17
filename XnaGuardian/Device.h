@@ -35,14 +35,21 @@ EXTERN_C_START
 // 
 #define CURRENT_PROCESS_ID() ((DWORD)((DWORD_PTR)PsGetCurrentProcessId() & 0xFFFFFFFF))
 
+typedef struct _XINPUT_PAD_STATE_INTERNAL
+{
+    BOOLEAN IsGetStateForbidden;
+
+} XINPUT_PAD_STATE_INTERNAL, *PXINPUT_PAD_STATE_INTERNAL;
+
 //
 // The device context performs the same job as
 // a WDM device extension in the driver frameworks
 //
 typedef struct _DEVICE_CONTEXT
 {
-    WDFMEMORY   HardwareIDMemory;
-    PCWSTR      HardwareID;
+    WDFMEMORY                   HardwareIDMemory;
+    PCWSTR                      HardwareID;
+    XINPUT_PAD_STATE_INTERNAL   PadStates[4];
 
 } DEVICE_CONTEXT, *PDEVICE_CONTEXT;
 

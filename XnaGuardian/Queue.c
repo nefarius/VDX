@@ -38,7 +38,7 @@ XnaGuardianQueueInitialize(
 {
     WDFQUEUE queue;
     NTSTATUS status;
-    WDF_IO_QUEUE_CONFIG    queueConfig;
+    WDF_IO_QUEUE_CONFIG queueConfig;
 
     PAGED_CODE();
 
@@ -63,7 +63,8 @@ XnaGuardianQueueInitialize(
         &queue
     );
 
-    if (!NT_SUCCESS(status)) {
+    if (!NT_SUCCESS(status))
+    {
         TraceEvents(TRACE_LEVEL_ERROR, TRACE_QUEUE, "WdfIoQueueCreate failed %!STATUS!", status);
         return status;
     }
@@ -75,22 +76,23 @@ XnaGuardianQueueInitialize(
 // Forward everything we're not interested in.
 // 
 VOID XnaGuardianEvtIoDefault(
-    _In_ WDFQUEUE   Queue,
-    _In_ WDFREQUEST Request
+    _In_ WDFQUEUE Queue,
+         _In_ WDFREQUEST Request
 )
 {
-    WDF_REQUEST_SEND_OPTIONS        options;
-    NTSTATUS                        status;
-    BOOLEAN                         ret;
+    WDF_REQUEST_SEND_OPTIONS options;
+    NTSTATUS status;
+    BOOLEAN ret;
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDefault called\n"));
 
     WDF_REQUEST_SEND_OPTIONS_INIT(&options,
-        WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
+                                  WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
 
     ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(WdfIoQueueGetDevice(Queue)), &options);
 
-    if (ret == FALSE) {
+    if (ret == FALSE)
+    {
         status = WdfRequestGetStatus(Request);
         KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
         WdfRequestComplete(Request, status);
@@ -100,46 +102,86 @@ VOID XnaGuardianEvtIoDefault(
 VOID
 XnaGuardianEvtIoStop(
     _In_ WDFQUEUE Queue,
-    _In_ WDFREQUEST Request,
-    _In_ ULONG ActionFlags
+         _In_ WDFREQUEST Request,
+         _In_ ULONG ActionFlags
 )
 {
     TraceEvents(TRACE_LEVEL_INFORMATION,
-        TRACE_QUEUE,
-        "%!FUNC! Queue 0x%p, Request 0x%p ActionFlags %d",
-        Queue, Request, ActionFlags);
+                                       TRACE_QUEUE,
+                                       "%!FUNC! Queue 0x%p, Request 0x%p ActionFlags %d",
+                                       Queue, Request, ActionFlags);
 
     return;
 }
 
 VOID XnaGuardianEvtIoDeviceControl(
-    _In_ WDFQUEUE   Queue,
-    _In_ WDFREQUEST Request,
-    _In_ size_t     OutputBufferLength,
-    _In_ size_t     InputBufferLength,
-    _In_ ULONG      IoControlCode
+    _In_ WDFQUEUE Queue,
+         _In_ WDFREQUEST Request,
+         _In_ size_t OutputBufferLength,
+         _In_ size_t InputBufferLength,
+         _In_ ULONG IoControlCode
 )
 {
-    WDF_REQUEST_SEND_OPTIONS        options;
-    NTSTATUS                        status;
-    BOOLEAN                         ret;
+    WDF_REQUEST_SEND_OPTIONS options;
+    NTSTATUS status;
+    BOOLEAN ret;
+    size_t buflen;
+    PDEVICE_CONTEXT pDeviceContext;
+    PVOID pBuffer;
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called\n"));
+
+    pDeviceContext = DeviceGetContext(WdfIoQueueGetDevice(Queue));
 
     //
     // Filter desired I/O-control codes
     // 
     switch (IoControlCode)
     {
-    case IOCTL_XINPUT_GET_GAMEPAD_STATE:
-
         //
         // Filter XInputGetState(...) call
         // 
-        if (InputBufferLength == 0x03 && OutputBufferLength == 0x1D)
-        {
+    case IOCTL_XINPUT_GET_GAMEPAD_STATE:
 
+        //
+        // Validate provided buffer sizes
+        // 
+        if (InputBufferLength != IO_GET_GAMEPAD_STATE_IN_SIZE
+            || OutputBufferLength != IO_GET_GAMEPAD_STATE_OUT_SIZE)
+        {
+            break;
         }
+
+        // 
+        // Retrieve input buffer
+        // 
+        status = WdfRequestRetrieveInputBuffer(Request, IO_GET_GAMEPAD_STATE_IN_SIZE, &pBuffer, &buflen);
+
+        //
+        // Validate input buffer size
+        // 
+        if (!NT_SUCCESS(status) || buflen < IO_GET_GAMEPAD_STATE_IN_SIZE)
+        {
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X\n", status));
+            break;
+        }
+
+        //
+        // Get pad state
+        // 
+        if (!pDeviceContext->PadStates[((PUCHAR)pBuffer)[2]].IsGetStateForbidden)
+        {
+            break;
+        }
+
+        //
+        // Report pad as disconnected
+        // 
+        WdfRequestComplete(Request, STATUS_DEVICE_NOT_CONNECTED);
+        return;
+
+    case IOCTL_XINPUT_EXT_HIDE_GAMEPAD:
+
 
         break;
     default:
@@ -150,14 +192,14 @@ VOID XnaGuardianEvtIoDeviceControl(
     // Not our business, forward
     // 
     WDF_REQUEST_SEND_OPTIONS_INIT(&options,
-        WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
+                                  WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
 
     ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(WdfIoQueueGetDevice(Queue)), &options);
 
-    if (ret == FALSE) {
+    if (ret == FALSE)
+    {
         status = WdfRequestGetStatus(Request);
         KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
         WdfRequestComplete(Request, status);
     }
 }
-

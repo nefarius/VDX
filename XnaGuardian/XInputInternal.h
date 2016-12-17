@@ -25,6 +25,9 @@ SOFTWARE.
 
 #pragma once
 
+//
+// Official I/O-control codes used by XInput1_3.dll
+// 
 #define IOCTL_XINPUT_GET_INFORMATION	        0x80006000
 #define IOCTL_XINPUT_GET_CAPABILITIES	        0x8000E004
 #define IOCTL_XINPUT_GET_LED_STATE	            0x8000E008
@@ -34,3 +37,13 @@ SOFTWARE.
 #define IOCTL_XINPUT_GET_BATTERY_INFORMATION	0x8000E018
 #define IOCTL_XINPUT_POWER_DOWN_DEVICE	        0x8000A01C
 #define IOCTL_XINPUT_GET_AUDIO_INFORMATION	    0x8000E020
+
+
+//
+// Custom extensions
+// 
+#define XINPUT_EXT_TYPE                         0x8001
+#define XINPUT_EXT_CODE                         0x801
+
+#define IOCTL_XINPUT_EXT_HIDE_GAMEPAD           CTL_CODE(XINPUT_EXT_TYPE, XINPUT_EXT_CODE, METHOD_BUFFERED, FILE_WRITE_DATA)
+

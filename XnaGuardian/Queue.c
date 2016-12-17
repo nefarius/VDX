@@ -128,6 +128,7 @@ VOID XnaGuardianEvtIoDeviceControl(
     size_t                      buflen;
     PDEVICE_CONTEXT             pDeviceContext;
     PVOID                       pBuffer;
+    PXINPUT_EXT_HIDE_GAMEPAD    pHidePad;
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called\n"));
 
@@ -188,18 +189,28 @@ VOID XnaGuardianEvtIoDeviceControl(
         // 
         // Retrieve input buffer
         // 
-        status = WdfRequestRetrieveInputBuffer(Request, 2, &pBuffer, &buflen);
-        if (!NT_SUCCESS(status))
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(XINPUT_EXT_HIDE_GAMEPAD), &pBuffer, &buflen);
+        if (!NT_SUCCESS(status) || buflen < sizeof(XINPUT_EXT_HIDE_GAMEPAD))
         {
             KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X\n", status));
             WdfRequestComplete(Request, status);
             return;
         }
 
+        pHidePad = (PXINPUT_EXT_HIDE_GAMEPAD)pBuffer;
+
+        //
+        // Validate padding
+        // 
+        if (pHidePad->Size != sizeof(XINPUT_EXT_HIDE_GAMEPAD))
+        {
+            break;
+        }
+
         //
         // Set pad state
         // 
-        pDeviceContext->PadStates[((PUCHAR)pBuffer)[0]].IsGetStateForbidden = ((PUCHAR)pBuffer)[1];
+        pDeviceContext->PadStates[pHidePad->UserIndex].IsGetStateForbidden = pHidePad->Hidden;
 
         //
         // Complete request

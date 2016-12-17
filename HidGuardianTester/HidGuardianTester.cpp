@@ -5,6 +5,8 @@
 #include <Windows.h>
 #include <SetupAPI.h>
 #include <hidsdi.h>
+#include <initguid.h>
+#include "../XnaGuardian/Public.h"
 
 #pragma comment(lib, "hid.lib")
 
@@ -23,21 +25,18 @@ int main()
     GUID hidClass;
     HidD_GetHidGuid(&hidClass);
 
-    GUID xnaClass;
-    CLSIDFromString(L"{EC87F1E3-C13B-4100-B5F7-8B84D54260CB}", &xnaClass);
-
 #ifdef HIDGUARDIAN
     HMODULE cerberus = LoadLibrary(L"HidCerberus.Lib.dll");
 
     HidGuardianOpen_t fpOpen = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianOpen"));
     HidGuardianOpen_t fpClose = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianClose"));
-    
+
     fpOpen();
 #endif
 
-    auto deviceInfoSet = SetupDiGetClassDevs(&xnaClass, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+    auto deviceInfoSet = SetupDiGetClassDevs(&XUSB_INTERFACE_CLASS_GUID, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
-    while (SetupDiEnumDeviceInterfaces(deviceInfoSet, nullptr, &xnaClass, memberIndex++, &deviceInterfaceData))
+    while (SetupDiEnumDeviceInterfaces(deviceInfoSet, nullptr, &XUSB_INTERFACE_CLASS_GUID, memberIndex++, &deviceInterfaceData))
     {
         printf("Found one!\n");
 
@@ -75,10 +74,20 @@ int main()
 
         printf("hDevice = 0x%p, error = %d\n", hDevice, GetLastError());
 
-        BYTE buffer[2] = { 0, 1 };
         DWORD retval;
 
-        BOOLEAN ret = DeviceIoControl(hDevice, 0x8001A004, static_cast<LPVOID>(buffer), 2, nullptr, 0, &retval, nullptr);
+        XINPUT_EXT_HIDE_GAMEPAD hidePad;
+        XINPUT_EXT_HIDE_GAMEPAD_INIT(&hidePad, 0, TRUE);
+
+        BOOLEAN ret = DeviceIoControl(
+            hDevice,
+            IOCTL_XINPUT_EXT_HIDE_GAMEPAD,
+            static_cast<LPVOID>(&hidePad),
+            hidePad.Size,
+            nullptr,
+            0,
+            &retval,
+            nullptr);
 
         printf("DeviceIoControl = %d, error = %d\n", ret, GetLastError());
 

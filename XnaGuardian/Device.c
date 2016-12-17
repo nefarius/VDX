@@ -66,21 +66,6 @@ XnaGuardianCreateDevice(
         //
         deviceContext = DeviceGetContext(device);
 
-        //
-        // Create a device interface so that applications can find and talk
-        // to us.
-        //
-        status = WdfDeviceCreateDeviceInterface(
-            device,
-            &GUID_DEVINTERFACE_XnaGuardian,
-            NULL // ReferenceString
-        );
-
-        if (!NT_SUCCESS(status)) {
-            KdPrint((DRIVERNAME "WdfDeviceCreateDeviceInterface failed with status 0x%X", status));
-            return status;
-        }
-
         WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
         deviceAttributes.ParentObject = device;
 

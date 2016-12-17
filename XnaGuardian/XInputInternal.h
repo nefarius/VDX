@@ -41,11 +41,3 @@ SOFTWARE.
 #define IO_GET_GAMEPAD_STATE_IN_SIZE            0x03
 #define IO_GET_GAMEPAD_STATE_OUT_SIZE           0x1D
 
-//
-// Custom extensions
-// 
-#define XINPUT_EXT_TYPE                         0x8001
-#define XINPUT_EXT_CODE                         0x801
-
-#define IOCTL_XINPUT_EXT_HIDE_GAMEPAD           CTL_CODE(XINPUT_EXT_TYPE, XINPUT_EXT_CODE, METHOD_BUFFERED, FILE_WRITE_DATA)
-

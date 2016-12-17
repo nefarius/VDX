@@ -23,10 +23,41 @@ SOFTWARE.
 */
 
 
-//
-// Define an Interface Guid so that app can find the device and talk to it.
-//
+// ReSharper disable once CppMissingIncludeGuard
+DEFINE_GUID(XUSB_INTERFACE_CLASS_GUID,
+    0xEC87F1E3, 0xC13B, 0x4100, 0xB5, 0xF7, 0x8B, 0x84, 0xD5, 0x42, 0x60, 0xCB);
+// {EC87F1E3-C13B-4100-B5F7-8B84D54260CB}
 
-DEFINE_GUID (GUID_DEVINTERFACE_XnaGuardian,
-    0x2f6dcf26,0xeb50,0x44ea,0x90,0x93,0x4d,0x83,0x5c,0xdd,0xef,0x2f);
-// {2f6dcf26-eb50-44ea-9093-4d835cddef2f}
+#pragma once
+
+//
+// Custom extensions
+// 
+#define XINPUT_EXT_TYPE                         0x8001
+#define XINPUT_EXT_CODE                         0x801
+
+#define IOCTL_XINPUT_EXT_HIDE_GAMEPAD           CTL_CODE(XINPUT_EXT_TYPE, XINPUT_EXT_CODE, METHOD_BUFFERED, FILE_WRITE_DATA)
+
+
+typedef struct _XINPUT_EXT_HIDE_GAMEPAD
+{
+    IN ULONG Size;
+
+    IN UCHAR UserIndex;
+
+    IN BOOLEAN Hidden;
+
+} XINPUT_EXT_HIDE_GAMEPAD, *PXINPUT_EXT_HIDE_GAMEPAD;
+
+VOID FORCEINLINE XINPUT_EXT_HIDE_GAMEPAD_INIT(
+    _Out_ PXINPUT_EXT_HIDE_GAMEPAD HideGamepad,
+    _In_ UCHAR UserIndex,
+    _In_ BOOLEAN Hidden
+)
+{
+    RtlZeroMemory(HideGamepad, sizeof(XINPUT_EXT_HIDE_GAMEPAD));
+
+    HideGamepad->Size = sizeof(XINPUT_EXT_HIDE_GAMEPAD);
+    HideGamepad->UserIndex = UserIndex;
+    HideGamepad->Hidden = Hidden;
+}

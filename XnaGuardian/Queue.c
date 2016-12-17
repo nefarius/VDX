@@ -53,6 +53,7 @@ XnaGuardianQueueInitialize(
 
     queueConfig.EvtIoDefault = XnaGuardianEvtIoDefault;
     queueConfig.EvtIoStop = XnaGuardianEvtIoStop;
+    queueConfig.EvtIoDeviceControl = XnaGuardianEvtIoDeviceControl;
 
     status = WdfIoQueueCreate(
                  Device,
@@ -105,5 +106,20 @@ XnaGuardianEvtIoStop(
                 Queue, Request, ActionFlags);
 
     return;
+}
+
+VOID XnaGuardianEvtIoDeviceControl(
+    _In_ WDFQUEUE   Queue,
+    _In_ WDFREQUEST Request,
+    _In_ size_t     OutputBufferLength,
+    _In_ size_t     InputBufferLength,
+    _In_ ULONG      IoControlCode
+)
+{
+    UNREFERENCED_PARAMETER(Queue);
+    UNREFERENCED_PARAMETER(Request);
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+    UNREFERENCED_PARAMETER(InputBufferLength);
+    UNREFERENCED_PARAMETER(IoControlCode);
 }
 

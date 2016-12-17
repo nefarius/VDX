@@ -61,8 +61,6 @@ XnaGuardianCreateDevice(
     _Inout_ PWDFDEVICE_INIT DeviceInit
     );
 
-EVT_WDF_DEVICE_FILE_CREATE EvtDeviceFileCreate;
-
 NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext);
 
 BOOLEAN AmIWhitelisted(DWORD Pid);

@@ -30,7 +30,6 @@ SOFTWARE.
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, XnaGuardianCreateDevice)
-#pragma alloc_text (PAGE, EvtDeviceFileCreate)
 #pragma alloc_text (PAGE, AmIAffected)
 #pragma alloc_text (PAGE, AmIWhitelisted)
 #endif
@@ -45,22 +44,11 @@ XnaGuardianCreateDevice(
     PDEVICE_CONTEXT         deviceContext;
     WDFDEVICE               device;
     NTSTATUS                status;
-    WDF_FILEOBJECT_CONFIG   deviceConfig;
     WDFMEMORY               memory;
 
     PAGED_CODE();
 
     WdfFdoInitSetFilter(DeviceInit);
-
-    WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
-    deviceAttributes.SynchronizationScope = WdfSynchronizationScopeNone;
-    WDF_FILEOBJECT_CONFIG_INIT(&deviceConfig, EvtDeviceFileCreate, NULL, NULL);
-
-    WdfDeviceInitSetFileObjectConfig(
-        DeviceInit,
-        &deviceConfig,
-        &deviceAttributes
-    );
 
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&deviceAttributes, DEVICE_CONTEXT);
 
@@ -136,52 +124,6 @@ XnaGuardianCreateDevice(
     }
 
     return status;
-}
-
-//
-// Catches CreateFile(...) calls.
-// 
-VOID EvtDeviceFileCreate(
-    _In_ WDFDEVICE     Device,
-    _In_ WDFREQUEST    Request,
-    _In_ WDFFILEOBJECT FileObject
-)
-{
-    DWORD                           pid;
-    WDF_REQUEST_SEND_OPTIONS        options;
-    NTSTATUS                        status;
-    BOOLEAN                         ret;
-
-    UNREFERENCED_PARAMETER(FileObject);
-
-    PAGED_CODE();
-
-    pid = CURRENT_PROCESS_ID();
-
-    if (AmIWhitelisted(pid))
-    {
-        //
-        // PID is white-listed, pass request down the stack
-        // 
-        WDF_REQUEST_SEND_OPTIONS_INIT(&options,
-            WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
-
-        ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), &options);
-
-        if (ret == FALSE) {
-            status = WdfRequestGetStatus(Request);
-            KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
-            WdfRequestComplete(Request, status);
-        }
-    }
-    else
-    {
-        //
-        // PID is not white-listed, fail the open request
-        // 
-        KdPrint((DRIVERNAME "CreateFile(...) blocked for PID: %d\n", pid));
-        WdfRequestComplete(Request, STATUS_ACCESS_DENIED);
-    }
 }
 
 //

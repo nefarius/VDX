@@ -18,7 +18,7 @@ DefaultDestDir = 12
 1 = %DiskName%,,,""
 
 [SourceDisksFiles]
-HidGuardian.sys  = 1,,
+XnaGuardian.sys  = 1,,
 
 ;*****************************************
 ; Install Section
@@ -34,7 +34,7 @@ HidGuardian.sys  = 1,,
 CopyFiles=Drivers_Dir
 
 [Drivers_Dir]
-HidGuardian.sys
+XnaGuardian.sys
 
 ;-------------- Service installation
 [XnaGuardian_Device.NT.Services]
@@ -46,7 +46,7 @@ DisplayName    = %XnaGuardian.SVCDESC%
 ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
 StartType      = 3               ; SERVICE_DEMAND_START
 ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
-ServiceBinary  = %12%\HidGuardian.sys
+ServiceBinary  = %12%\XnaGuardian.sys
 
 ;
 ;--- XnaGuardian_Device Coinstaller installation ------

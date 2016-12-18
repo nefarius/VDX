@@ -130,10 +130,12 @@ VOID XnaGuardianEvtIoDeviceControl(
     PVOID                           pBuffer;
     PXINPUT_EXT_HIDE_GAMEPAD        pHidePad;
     PXINPUT_EXT_OVERRIDE_GAMEPAD    pOverride;
+    WDFDEVICE                       Device;
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called\n"));
 
-    pDeviceContext = DeviceGetContext(WdfIoQueueGetDevice(Queue));
+    Device = WdfIoQueueGetDevice(Queue);
+    pDeviceContext = DeviceGetContext(Device);
 
     //
     // Filter desired I/O-control codes
@@ -174,7 +176,17 @@ VOID XnaGuardianEvtIoDeviceControl(
         // 
         if (!pDeviceContext->PadStates[((PUCHAR)pBuffer)[2]].IsGetStateForbidden)
         {
-            break;
+            WdfRequestFormatRequestUsingCurrentType(Request);
+            WdfRequestSetCompletionRoutine(Request, XnaGuardianEvtIoDeviceControlCompleted, Device);
+
+            ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS);
+
+            if (!ret) {
+                status = WdfRequestGetStatus(Request);
+                KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
+            }
+
+            return;
         }
 
         //
@@ -268,7 +280,7 @@ VOID XnaGuardianEvtIoDeviceControl(
     WDF_REQUEST_SEND_OPTIONS_INIT(&options,
         WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
 
-    ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(WdfIoQueueGetDevice(Queue)), &options);
+    ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), &options);
 
     if (ret == FALSE)
     {
@@ -276,4 +288,24 @@ VOID XnaGuardianEvtIoDeviceControl(
         KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
         WdfRequestComplete(Request, status);
     }
+}
+
+void XnaGuardianEvtIoDeviceControlCompleted(
+    _In_ WDFREQUEST                     Request,
+    _In_ WDFIOTARGET                    Target,
+    _In_ PWDF_REQUEST_COMPLETION_PARAMS Params,
+    _In_ WDFCONTEXT                     Context
+)
+{
+    NTSTATUS status;
+
+    UNREFERENCED_PARAMETER(Target);
+    UNREFERENCED_PARAMETER(Params);
+    UNREFERENCED_PARAMETER(Context);
+
+    status = WdfRequestGetStatus(Request);
+
+    KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControlCompleted called with status 0x%x\n", status));
+
+    WdfRequestComplete(Request, status);
 }

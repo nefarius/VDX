@@ -39,4 +39,6 @@ EVT_WDF_IO_QUEUE_IO_DEFAULT XnaGuardianEvtIoDefault;
 EVT_WDF_IO_QUEUE_IO_STOP XnaGuardianEvtIoStop;
 EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL XnaGuardianEvtIoDeviceControl;
 
+EVT_WDF_REQUEST_COMPLETION_ROUTINE XnaGuardianEvtIoDeviceControlCompleted;
+
 EXTERN_C_END

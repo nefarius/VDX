@@ -23,6 +23,8 @@ SOFTWARE.
 */
 
 
+#pragma once
+
 #include "public.h"
 #include <ntintsafe.h>
 
@@ -37,7 +39,9 @@ EXTERN_C_START
 
 typedef struct _XINPUT_PAD_STATE_INTERNAL
 {
-    BOOLEAN IsGetStateForbidden;
+    BOOLEAN                     IsGetStateForbidden;
+    XINPUT_GAMEPAD_OVERRIDES    Overrides;
+    XINPUT_GAMEPAD              Gamepad;
 
 } XINPUT_PAD_STATE_INTERNAL, *PXINPUT_PAD_STATE_INTERNAL;
 

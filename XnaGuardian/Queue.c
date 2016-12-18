@@ -122,13 +122,14 @@ VOID XnaGuardianEvtIoDeviceControl(
     _In_ ULONG IoControlCode
 )
 {
-    WDF_REQUEST_SEND_OPTIONS    options;
-    NTSTATUS                    status;
-    BOOLEAN                     ret;
-    size_t                      buflen;
-    PDEVICE_CONTEXT             pDeviceContext;
-    PVOID                       pBuffer;
-    PXINPUT_EXT_HIDE_GAMEPAD    pHidePad;
+    WDF_REQUEST_SEND_OPTIONS        options;
+    NTSTATUS                        status;
+    BOOLEAN                         ret;
+    size_t                          buflen;
+    PDEVICE_CONTEXT                 pDeviceContext;
+    PVOID                           pBuffer;
+    PXINPUT_EXT_HIDE_GAMEPAD        pHidePad;
+    PXINPUT_EXT_OVERRIDE_GAMEPAD    pOverride;
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called\n"));
 
@@ -204,13 +205,52 @@ VOID XnaGuardianEvtIoDeviceControl(
         // 
         if (pHidePad->Size != sizeof(XINPUT_EXT_HIDE_GAMEPAD))
         {
-            break;
+            WdfRequestComplete(Request, STATUS_INVALID_PARAMETER);
+            return;
         }
 
         //
         // Set pad state
         // 
         pDeviceContext->PadStates[pHidePad->UserIndex].IsGetStateForbidden = pHidePad->Hidden;
+
+        //
+        // Complete request
+        // 
+        WdfRequestComplete(Request, STATUS_SUCCESS);
+        return;
+
+    case IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE:
+
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE\n"));
+
+        // 
+        // Retrieve input buffer
+        // 
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(XINPUT_EXT_OVERRIDE_GAMEPAD), &pBuffer, &buflen);
+        if (!NT_SUCCESS(status) || buflen < sizeof(XINPUT_EXT_OVERRIDE_GAMEPAD))
+        {
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X\n", status));
+            WdfRequestComplete(Request, status);
+            return;
+        }
+
+        pOverride = (PXINPUT_EXT_OVERRIDE_GAMEPAD)pBuffer;
+
+        //
+        // Validate padding
+        // 
+        if (pOverride->Size != sizeof(XINPUT_EXT_OVERRIDE_GAMEPAD))
+        {
+            WdfRequestComplete(Request, STATUS_INVALID_PARAMETER);
+            return;
+        }
+
+        //
+        // Set pad overrides
+        // 
+        pDeviceContext->PadStates[pOverride->UserIndex].Overrides = pOverride->Overrides;
+        pDeviceContext->PadStates[pOverride->UserIndex].Gamepad = pOverride->Gamepad;
 
         //
         // Complete request

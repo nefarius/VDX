@@ -205,3 +205,90 @@ VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_BACK(
     OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_BACK;
 }
 
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_LEFT_THUMB(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ BOOLEAN Set
+)
+{
+    if (Set) OverrideGamepad->Gamepad.wButtons |= XINPUT_GAMEPAD_LEFT_THUMB;
+    else OverrideGamepad->Gamepad.wButtons &= ~XINPUT_GAMEPAD_LEFT_THUMB;
+
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB;
+}
+
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_RIGHT_THUMB(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ BOOLEAN Set
+)
+{
+    if (Set) OverrideGamepad->Gamepad.wButtons |= XINPUT_GAMEPAD_RIGHT_THUMB;
+    else OverrideGamepad->Gamepad.wButtons &= ~XINPUT_GAMEPAD_RIGHT_THUMB;
+
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB;
+}
+
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_LEFT_SHOULDER(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ BOOLEAN Set
+)
+{
+    if (Set) OverrideGamepad->Gamepad.wButtons |= XINPUT_GAMEPAD_LEFT_SHOULDER;
+    else OverrideGamepad->Gamepad.wButtons &= ~XINPUT_GAMEPAD_LEFT_SHOULDER;
+
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_LEFT_SHOULDER;
+}
+
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_RIGHT_SHOULDER(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ BOOLEAN Set
+)
+{
+    if (Set) OverrideGamepad->Gamepad.wButtons |= XINPUT_GAMEPAD_RIGHT_SHOULDER;
+    else OverrideGamepad->Gamepad.wButtons &= ~XINPUT_GAMEPAD_RIGHT_SHOULDER;
+
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_RIGHT_SHOULDER;
+}
+
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_A(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ BOOLEAN Set
+)
+{
+    if (Set) OverrideGamepad->Gamepad.wButtons |= XINPUT_GAMEPAD_A;
+    else OverrideGamepad->Gamepad.wButtons &= ~XINPUT_GAMEPAD_A;
+
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_A;
+}
+
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_B(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ BOOLEAN Set
+)
+{
+    if (Set) OverrideGamepad->Gamepad.wButtons |= XINPUT_GAMEPAD_B;
+    else OverrideGamepad->Gamepad.wButtons &= ~XINPUT_GAMEPAD_B;
+
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_B;
+}
+
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_X(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ BOOLEAN Set
+)
+{
+    if (Set) OverrideGamepad->Gamepad.wButtons |= XINPUT_GAMEPAD_X;
+    else OverrideGamepad->Gamepad.wButtons &= ~XINPUT_GAMEPAD_X;
+
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_X;
+}
+
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_Y(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ BOOLEAN Set
+)
+{
+    if (Set) OverrideGamepad->Gamepad.wButtons |= XINPUT_GAMEPAD_Y;
+    else OverrideGamepad->Gamepad.wButtons &= ~XINPUT_GAMEPAD_Y;
+
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_Y;
+}

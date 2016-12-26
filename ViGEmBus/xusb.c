@@ -208,7 +208,7 @@ NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION
 
     // Is later overwritten by actual XInput slot
     xusb->LedNumber = (UCHAR)Description->SerialNo;
-    // This value never changes
+    // Packet size (20 bytes = 0x14)
     xusb->Report[1] = 0x14;
 
     // I/O Queue for pending IRPs

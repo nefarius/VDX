@@ -68,7 +68,7 @@ Return Value:
     NTSTATUS status;
     WDF_OBJECT_ATTRIBUTES attributes;
 
-    KdPrint((DRIVERNAME "Loading XnaGuardian"));
+    KdPrint((DRIVERNAME "Loading XnaGuardian [built: %s %s]\n", __DATE__, __TIME__));
 
     //
     // Initialize WPP Tracing

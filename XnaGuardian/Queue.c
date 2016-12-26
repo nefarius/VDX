@@ -132,40 +132,52 @@ VOID XnaGuardianEvtIoDeviceControl(
     PXINPUT_EXT_OVERRIDE_GAMEPAD    pOverride;
     WDFDEVICE                       Device;
 
-    KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called\n"));
+    KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called with code 0x%X\n", IoControlCode));
+
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+    UNREFERENCED_PARAMETER(InputBufferLength);
 
     Device = WdfIoQueueGetDevice(Queue);
     pDeviceContext = DeviceGetContext(Device);
+
+    KdPrint((DRIVERNAME "Device = 0x%X\n", Device));
 
     //
     // Filter desired I/O-control codes
     // 
     switch (IoControlCode)
     {
+    case IOCTL_XINPUT_GET_INFORMATION:
+
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_INFORMATION\n"));
+
+        break;
+
         //
         // Filter XInputGetState(...) call
         // 
     case IOCTL_XINPUT_GET_GAMEPAD_STATE:
 
         KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_GAMEPAD_STATE\n"));
+        /*
 
         //
         // Validate provided buffer sizes
-        // 
+        //
         if (InputBufferLength != IO_GET_GAMEPAD_STATE_IN_SIZE
             || OutputBufferLength != IO_GET_GAMEPAD_STATE_OUT_SIZE)
         {
             break;
         }
 
-        // 
+        //
         // Retrieve input buffer
-        // 
+        //
         status = WdfRequestRetrieveInputBuffer(Request, IO_GET_GAMEPAD_STATE_IN_SIZE, &pBuffer, &buflen);
 
         //
         // Validate input buffer size
-        // 
+        //
         if (!NT_SUCCESS(status) || buflen < IO_GET_GAMEPAD_STATE_IN_SIZE)
         {
             break;
@@ -173,26 +185,30 @@ VOID XnaGuardianEvtIoDeviceControl(
 
         //
         // Get pad state
-        // 
+        //
         if (!pDeviceContext->PadStates[((PUCHAR)pBuffer)[2]].IsGetStateForbidden)
         {
-            WdfRequestFormatRequestUsingCurrentType(Request);
-            WdfRequestSetCompletionRoutine(Request, XnaGuardianEvtIoDeviceControlCompleted, Device);
 
-            ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS);
-
-            if (!ret) {
-                status = WdfRequestGetStatus(Request);
-                KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
-            }
-
-            return;
         }
 
         //
         // Report pad as disconnected
-        // 
+        //
         WdfRequestComplete(Request, STATUS_DEVICE_NOT_CONNECTED);
+        return;
+
+        */
+
+        WdfRequestFormatRequestUsingCurrentType(Request);
+        WdfRequestSetCompletionRoutine(Request, XnaGuardianEvtIoDeviceControlCompleted, Device);
+
+        ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS);
+
+        if (!ret) {
+            status = WdfRequestGetStatus(Request);
+            KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
+        }
+
         return;
 
     case IOCTL_XINPUT_EXT_HIDE_GAMEPAD:
@@ -297,15 +313,63 @@ void XnaGuardianEvtIoDeviceControlCompleted(
     _In_ WDFCONTEXT                     Context
 )
 {
-    NTSTATUS status;
+    NTSTATUS                    status;
+    PVOID                       buffer;
+    size_t                      buflen;
+    //PXINPUT_GAMEPAD             pGamepad;
+    PDEVICE_CONTEXT             pDeviceContext;
+    //PXINPUT_GAMEPAD_OVERRIDES   pOverrides;
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
-    UNREFERENCED_PARAMETER(Context);
 
     status = WdfRequestGetStatus(Request);
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControlCompleted called with status 0x%x\n", status));
+
+    pDeviceContext = DeviceGetContext(Context);
+
+    status = WdfRequestRetrieveInputBuffer(Request, IO_GET_GAMEPAD_STATE_IN_SIZE, &buffer, &buflen);
+
+    if (NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "[IOCTL] [0x%X] [I] ", Context));
+
+        for (size_t i = 0; i < buflen; i++)
+        {
+            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
+        }
+
+        KdPrint(("\n"));
+    }
+    else
+    {
+        KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X", status));
+    }
+
+    /*
+    status = WdfRequestRetrieveOutputBuffer(Request, IO_GET_GAMEPAD_STATE_OUT_SIZE, &buffer, &buflen);
+
+    KdPrint((DRIVERNAME "buflen = %d\n", buflen));
+
+    if (NT_SUCCESS(status))
+    {
+        pGamepad = (PXINPUT_GAMEPAD)&((PUCHAR)buffer)[11];
+
+        KdPrint((DRIVERNAME "[IOCTL] [0x%X] [O] ", Context));
+
+        for (size_t i = 0; i < buflen; i++)
+        {
+            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
+        }
+
+        KdPrint(("\n"));
+    }
+    else
+    {
+        KdPrint((DRIVERNAME "WdfRequestRetrieveOutputBuffer failed with status 0x%x\n", status));
+    }
+    */
 
     WdfRequestComplete(Request, status);
 }

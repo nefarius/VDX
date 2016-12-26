@@ -72,8 +72,4 @@ XnaGuardianCreateDevice(
     _Inout_ PWDFDEVICE_INIT DeviceInit
     );
 
-NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext);
-
-BOOLEAN AmIWhitelisted(DWORD Pid);
-
 EXTERN_C_END

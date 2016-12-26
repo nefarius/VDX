@@ -53,7 +53,6 @@ XnaGuardianQueueInitialize(
     );
 
     queueConfig.EvtIoDefault = XnaGuardianEvtIoDefault;
-    queueConfig.EvtIoStop = XnaGuardianEvtIoStop;
     queueConfig.EvtIoDeviceControl = XnaGuardianEvtIoDeviceControl;
 
     status = WdfIoQueueCreate(
@@ -97,21 +96,6 @@ VOID XnaGuardianEvtIoDefault(
         KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
         WdfRequestComplete(Request, status);
     }
-}
-
-VOID
-XnaGuardianEvtIoStop(
-    _In_ WDFQUEUE Queue,
-    _In_ WDFREQUEST Request,
-    _In_ ULONG ActionFlags
-)
-{
-    TraceEvents(TRACE_LEVEL_INFORMATION,
-        TRACE_QUEUE,
-        "%!FUNC! Queue 0x%p, Request 0x%p ActionFlags %d",
-        Queue, Request, ActionFlags);
-
-    return;
 }
 
 VOID XnaGuardianEvtIoDeviceControl(

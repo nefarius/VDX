@@ -325,215 +325,41 @@ NTSTATUS UsbPdo_SelectConfiguration(PURB urb, PPDO_DEVICE_DATA pCommon)
     switch (pCommon->TargetType)
     {
     case Xbox360Wired:
-    {
+
         if (urb->UrbHeader.Length < XUSB_CONFIGURATION_SIZE)
         {
             KdPrint((DRIVERNAME ">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Invalid ConfigurationDescriptor\n"));
             return STATUS_INVALID_PARAMETER;
         }
 
-        KdPrint((DRIVERNAME ">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
-            (int)pInfo->Length,
-            (int)pInfo->InterfaceNumber,
-            (int)pInfo->AlternateSetting,
-            pInfo->NumberOfPipes));
-
-        pInfo->Class = 0xFF;
-        pInfo->SubClass = 0x5D;
-        pInfo->Protocol = 0x01;
-
-        pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
-
-        pInfo->Pipes[0].MaximumTransferSize = 0x00400000;
-        pInfo->Pipes[0].MaximumPacketSize = 0x20;
-        pInfo->Pipes[0].EndpointAddress = 0x81;
-        pInfo->Pipes[0].Interval = 0x04;
-        pInfo->Pipes[0].PipeType = 0x03;
-        pInfo->Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0081;
-        pInfo->Pipes[0].PipeFlags = 0x00;
-
-        pInfo->Pipes[1].MaximumTransferSize = 0x00400000;
-        pInfo->Pipes[1].MaximumPacketSize = 0x20;
-        pInfo->Pipes[1].EndpointAddress = 0x01;
-        pInfo->Pipes[1].Interval = 0x08;
-        pInfo->Pipes[1].PipeType = 0x03;
-        pInfo->Pipes[1].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0001;
-        pInfo->Pipes[1].PipeFlags = 0x00;
-
-        pInfo = (PUSBD_INTERFACE_INFORMATION)((PCHAR)pInfo + pInfo->Length);
-
-        KdPrint((DRIVERNAME ">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
-            (int)pInfo->Length,
-            (int)pInfo->InterfaceNumber,
-            (int)pInfo->AlternateSetting,
-            pInfo->NumberOfPipes));
-
-        pInfo->Class = 0xFF;
-        pInfo->SubClass = 0x5D;
-        pInfo->Protocol = 0x03;
-
-        pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
-
-        pInfo->Pipes[0].MaximumTransferSize = 0x00400000;
-        pInfo->Pipes[0].MaximumPacketSize = 0x20;
-        pInfo->Pipes[0].EndpointAddress = 0x82;
-        pInfo->Pipes[0].Interval = 0x04;
-        pInfo->Pipes[0].PipeType = 0x03;
-        pInfo->Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0082;
-        pInfo->Pipes[0].PipeFlags = 0x00;
-
-        pInfo->Pipes[1].MaximumTransferSize = 0x00400000;
-        pInfo->Pipes[1].MaximumPacketSize = 0x20;
-        pInfo->Pipes[1].EndpointAddress = 0x02;
-        pInfo->Pipes[1].Interval = 0x08;
-        pInfo->Pipes[1].PipeType = 0x03;
-        pInfo->Pipes[1].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0002;
-        pInfo->Pipes[1].PipeFlags = 0x00;
-
-        pInfo->Pipes[2].MaximumTransferSize = 0x00400000;
-        pInfo->Pipes[2].MaximumPacketSize = 0x20;
-        pInfo->Pipes[2].EndpointAddress = 0x83;
-        pInfo->Pipes[2].Interval = 0x08;
-        pInfo->Pipes[2].PipeType = 0x03;
-        pInfo->Pipes[2].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0083;
-        pInfo->Pipes[2].PipeFlags = 0x00;
-
-        pInfo->Pipes[3].MaximumTransferSize = 0x00400000;
-        pInfo->Pipes[3].MaximumPacketSize = 0x20;
-        pInfo->Pipes[3].EndpointAddress = 0x03;
-        pInfo->Pipes[3].Interval = 0x08;
-        pInfo->Pipes[3].PipeType = 0x03;
-        pInfo->Pipes[3].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0003;
-        pInfo->Pipes[3].PipeFlags = 0x00;
-
-        pInfo = (PUSBD_INTERFACE_INFORMATION)((PCHAR)pInfo + pInfo->Length);
-
-        KdPrint((DRIVERNAME ">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
-            (int)pInfo->Length,
-            (int)pInfo->InterfaceNumber,
-            (int)pInfo->AlternateSetting,
-            pInfo->NumberOfPipes));
-
-        pInfo->Class = 0xFF;
-        pInfo->SubClass = 0x5D;
-        pInfo->Protocol = 0x02;
-
-        pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
-
-        pInfo->Pipes[0].MaximumTransferSize = 0x00400000;
-        pInfo->Pipes[0].MaximumPacketSize = 0x20;
-        pInfo->Pipes[0].EndpointAddress = 0x84;
-        pInfo->Pipes[0].Interval = 0x04;
-        pInfo->Pipes[0].PipeType = 0x03;
-        pInfo->Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0084;
-        pInfo->Pipes[0].PipeFlags = 0x00;
-
-        pInfo = (PUSBD_INTERFACE_INFORMATION)((PCHAR)pInfo + pInfo->Length);
-
-        KdPrint((DRIVERNAME ">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
-            (int)pInfo->Length,
-            (int)pInfo->InterfaceNumber,
-            (int)pInfo->AlternateSetting,
-            pInfo->NumberOfPipes));
-
-        pInfo->Class = 0xFF;
-        pInfo->SubClass = 0xFD;
-        pInfo->Protocol = 0x13;
-
-        pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
+        Xusb_SelectConfiguration(pInfo);
 
         break;
-    }
+
     case DualShock4Wired:
-    {
+
         if (urb->UrbHeader.Length < DS4_CONFIGURATION_SIZE)
         {
             KdPrint((DRIVERNAME ">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Invalid ConfigurationDescriptor\n"));
             return STATUS_INVALID_PARAMETER;
         }
 
-        KdPrint((DRIVERNAME ">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
-            (int)pInfo->Length,
-            (int)pInfo->InterfaceNumber,
-            (int)pInfo->AlternateSetting,
-            pInfo->NumberOfPipes));
-
-        pInfo->Class = 0x03; // HID
-        pInfo->SubClass = 0x00;
-        pInfo->Protocol = 0x00;
-
-        pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
-
-        pInfo->Pipes[0].MaximumTransferSize = 0x00400000;
-        pInfo->Pipes[0].MaximumPacketSize = 0x40;
-        pInfo->Pipes[0].EndpointAddress = 0x84;
-        pInfo->Pipes[0].Interval = 0x05;
-        pInfo->Pipes[0].PipeType = 0x03;
-        pInfo->Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0084;
-        pInfo->Pipes[0].PipeFlags = 0x00;
-
-        pInfo->Pipes[1].MaximumTransferSize = 0x00400000;
-        pInfo->Pipes[1].MaximumPacketSize = 0x40;
-        pInfo->Pipes[1].EndpointAddress = 0x03;
-        pInfo->Pipes[1].Interval = 0x05;
-        pInfo->Pipes[1].PipeType = 0x03;
-        pInfo->Pipes[1].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0003;
-        pInfo->Pipes[1].PipeFlags = 0x00;
+        Ds4_SelectConfiguration(pInfo);
 
         break;
-    }
+
     case XboxOneWired:
-    {
+
         if (urb->UrbHeader.Length < XGIP_CONFIGURATION_SIZE)
         {
             KdPrint((DRIVERNAME ">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Invalid ConfigurationDescriptor\n"));
             return STATUS_INVALID_PARAMETER;
         }
 
-        KdPrint((DRIVERNAME ">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
-            (int)pInfo->Length,
-            (int)pInfo->InterfaceNumber,
-            (int)pInfo->AlternateSetting,
-            pInfo->NumberOfPipes));
-
-        pInfo->Class = 0xFF;
-        pInfo->SubClass = 0x47;
-        pInfo->Protocol = 0xD0;
-
-        pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
-
-        pInfo->Pipes[0].MaximumTransferSize = 0x00400000;
-        pInfo->Pipes[0].MaximumPacketSize = 0x40;
-        pInfo->Pipes[0].EndpointAddress = 0x81;
-        pInfo->Pipes[0].Interval = 0x04;
-        pInfo->Pipes[0].PipeType = UsbdPipeTypeInterrupt;
-        pInfo->Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0081;
-        pInfo->Pipes[0].PipeFlags = 0x00;
-
-        pInfo->Pipes[1].MaximumTransferSize = 0x00400000;
-        pInfo->Pipes[1].MaximumPacketSize = 0x40;
-        pInfo->Pipes[1].EndpointAddress = 0x01;
-        pInfo->Pipes[1].Interval = 0x04;
-        pInfo->Pipes[1].PipeType = UsbdPipeTypeInterrupt;
-        pInfo->Pipes[1].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0001;
-        pInfo->Pipes[1].PipeFlags = 0x00;
-
-        pInfo = (PUSBD_INTERFACE_INFORMATION)((PCHAR)pInfo + pInfo->Length);
-
-        KdPrint((DRIVERNAME ">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
-            (int)pInfo->Length,
-            (int)pInfo->InterfaceNumber,
-            (int)pInfo->AlternateSetting,
-            pInfo->NumberOfPipes));
-
-        pInfo->Class = 0xFF;
-        pInfo->SubClass = 0x47;
-        pInfo->Protocol = 0xD0;
-
-        pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
+        Xgip_SelectConfiguration(pInfo);
 
         break;
-    }
+
     default:
         return STATUS_UNSUCCESSFUL;
     }

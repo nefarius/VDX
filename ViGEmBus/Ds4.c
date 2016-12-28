@@ -324,6 +324,37 @@ VOID Ds4_GetDeviceDescriptorType(PUSB_DEVICE_DESCRIPTOR pDescriptor, PPDO_DEVICE
     pDescriptor->bNumConfigurations = 0x01;
 }
 
+VOID Ds4_SelectConfiguration(PUSBD_INTERFACE_INFORMATION pInfo)
+{
+    KdPrint((DRIVERNAME ">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
+        (int)pInfo->Length,
+        (int)pInfo->InterfaceNumber,
+        (int)pInfo->AlternateSetting,
+        pInfo->NumberOfPipes));
+
+    pInfo->Class = 0x03; // HID
+    pInfo->SubClass = 0x00;
+    pInfo->Protocol = 0x00;
+
+    pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
+
+    pInfo->Pipes[0].MaximumTransferSize = 0x00400000;
+    pInfo->Pipes[0].MaximumPacketSize = 0x40;
+    pInfo->Pipes[0].EndpointAddress = 0x84;
+    pInfo->Pipes[0].Interval = 0x05;
+    pInfo->Pipes[0].PipeType = 0x03;
+    pInfo->Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0084;
+    pInfo->Pipes[0].PipeFlags = 0x00;
+
+    pInfo->Pipes[1].MaximumTransferSize = 0x00400000;
+    pInfo->Pipes[1].MaximumPacketSize = 0x40;
+    pInfo->Pipes[1].EndpointAddress = 0x03;
+    pInfo->Pipes[1].Interval = 0x05;
+    pInfo->Pipes[1].PipeType = 0x03;
+    pInfo->Pipes[1].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0003;
+    pInfo->Pipes[1].PipeFlags = 0x00;
+}
+
 //
 // Completes pending I/O requests if feeder is too slow.
 // 

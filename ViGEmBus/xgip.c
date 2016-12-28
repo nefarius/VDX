@@ -289,6 +289,51 @@ VOID Xgip_GetDeviceDescriptorType(PUSB_DEVICE_DESCRIPTOR pDescriptor, PPDO_DEVIC
     pDescriptor->bNumConfigurations = 0x01;
 }
 
+VOID Xgip_SelectConfiguration(PUSBD_INTERFACE_INFORMATION pInfo)
+{
+    KdPrint((DRIVERNAME ">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
+        (int)pInfo->Length,
+        (int)pInfo->InterfaceNumber,
+        (int)pInfo->AlternateSetting,
+        pInfo->NumberOfPipes));
+
+    pInfo->Class = 0xFF;
+    pInfo->SubClass = 0x47;
+    pInfo->Protocol = 0xD0;
+
+    pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
+
+    pInfo->Pipes[0].MaximumTransferSize = 0x00400000;
+    pInfo->Pipes[0].MaximumPacketSize = 0x40;
+    pInfo->Pipes[0].EndpointAddress = 0x81;
+    pInfo->Pipes[0].Interval = 0x04;
+    pInfo->Pipes[0].PipeType = UsbdPipeTypeInterrupt;
+    pInfo->Pipes[0].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0081;
+    pInfo->Pipes[0].PipeFlags = 0x00;
+
+    pInfo->Pipes[1].MaximumTransferSize = 0x00400000;
+    pInfo->Pipes[1].MaximumPacketSize = 0x40;
+    pInfo->Pipes[1].EndpointAddress = 0x01;
+    pInfo->Pipes[1].Interval = 0x04;
+    pInfo->Pipes[1].PipeType = UsbdPipeTypeInterrupt;
+    pInfo->Pipes[1].PipeHandle = (USBD_PIPE_HANDLE)0xFFFF0001;
+    pInfo->Pipes[1].PipeFlags = 0x00;
+
+    pInfo = (PUSBD_INTERFACE_INFORMATION)((PCHAR)pInfo + pInfo->Length);
+
+    KdPrint((DRIVERNAME ">> >> >> URB_FUNCTION_SELECT_CONFIGURATION: Length %d, Interface %d, Alternate %d, Pipes %d\n",
+        (int)pInfo->Length,
+        (int)pInfo->InterfaceNumber,
+        (int)pInfo->AlternateSetting,
+        pInfo->NumberOfPipes));
+
+    pInfo->Class = 0xFF;
+    pInfo->SubClass = 0x47;
+    pInfo->Protocol = 0xD0;
+
+    pInfo->InterfaceHandle = (USBD_INTERFACE_HANDLE)0xFFFF0000;
+}
+
 VOID Xgip_SysInitTimerFunc(
     _In_ WDFTIMER Timer
 )

@@ -104,3 +104,4 @@ NTSTATUS Xusb_PreparePdo(PWDFDEVICE_INIT DeviceInit, USHORT VendorId, USHORT Pro
 NTSTATUS Xusb_PrepareHardware(WDFDEVICE Device);
 NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION Description);
 VOID Xusb_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);
+VOID Xusb_GetDeviceDescriptorType(PUSB_DEVICE_DESCRIPTOR pDescriptor, PPDO_DEVICE_DATA pCommon);

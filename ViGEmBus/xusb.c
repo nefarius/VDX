@@ -379,3 +379,21 @@ VOID Xusb_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length)
     RtlCopyBytes(Buffer, XusbDescriptorData, Length);
 }
 
+VOID Xusb_GetDeviceDescriptorType(PUSB_DEVICE_DESCRIPTOR pDescriptor, PPDO_DEVICE_DATA pCommon)
+{
+    pDescriptor->bLength = 0x12;
+    pDescriptor->bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE;
+    pDescriptor->bcdUSB = 0x0200; // USB v2.0
+    pDescriptor->bDeviceClass = 0xFF;
+    pDescriptor->bDeviceSubClass = 0xFF;
+    pDescriptor->bDeviceProtocol = 0xFF;
+    pDescriptor->bMaxPacketSize0 = 0x08;
+    pDescriptor->idVendor = pCommon->VendorId;
+    pDescriptor->idProduct = pCommon->ProductId;
+    pDescriptor->bcdDevice = 0x0114;
+    pDescriptor->iManufacturer = 0x01;
+    pDescriptor->iProduct = 0x02;
+    pDescriptor->iSerialNumber = 0x03;
+    pDescriptor->bNumConfigurations = 0x01;
+}
+

@@ -112,3 +112,4 @@ NTSTATUS Ds4_PreparePdo(PWDFDEVICE_INIT DeviceInit, PUNICODE_STRING DeviceId, PU
 NTSTATUS Ds4_PrepareHardware(WDFDEVICE Device);
 NTSTATUS Ds4_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION Description);
 VOID Ds4_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);
+VOID Ds4_GetDeviceDescriptorType(PUSB_DEVICE_DESCRIPTOR pDescriptor, PPDO_DEVICE_DATA pCommon);

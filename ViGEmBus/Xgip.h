@@ -101,4 +101,5 @@ NTSTATUS Xgip_PreparePdo(
 NTSTATUS Xgip_PrepareHardware(WDFDEVICE Device);
 NTSTATUS Xgip_AssignPdoContext(WDFDEVICE Device);
 VOID Xgip_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length);
+VOID Xgip_GetDeviceDescriptorType(PUSB_DEVICE_DESCRIPTOR pDescriptor, PPDO_DEVICE_DATA pCommon);
 

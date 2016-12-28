@@ -119,58 +119,19 @@ NTSTATUS UsbPdo_GetDeviceDescriptorType(PURB urb, PPDO_DEVICE_DATA pCommon)
     {
     case Xbox360Wired:
 
-        pDescriptor->bLength = 0x12;
-        pDescriptor->bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE;
-        pDescriptor->bcdUSB = 0x0200; // USB v2.0
-        pDescriptor->bDeviceClass = 0xFF;
-        pDescriptor->bDeviceSubClass = 0xFF;
-        pDescriptor->bDeviceProtocol = 0xFF;
-        pDescriptor->bMaxPacketSize0 = 0x08;
-        pDescriptor->idVendor = pCommon->VendorId;
-        pDescriptor->idProduct = pCommon->ProductId;
-        pDescriptor->bcdDevice = 0x0114;
-        pDescriptor->iManufacturer = 0x01;
-        pDescriptor->iProduct = 0x02;
-        pDescriptor->iSerialNumber = 0x03;
-        pDescriptor->bNumConfigurations = 0x01;
+        Xusb_GetDeviceDescriptorType(pDescriptor, pCommon);
 
         break;
 
     case DualShock4Wired:
 
-        pDescriptor->bLength = 0x12;
-        pDescriptor->bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE;
-        pDescriptor->bcdUSB = 0x0200; // USB v2.0
-        pDescriptor->bDeviceClass = 0x00; // per Interface
-        pDescriptor->bDeviceSubClass = 0x00;
-        pDescriptor->bDeviceProtocol = 0x00;
-        pDescriptor->bMaxPacketSize0 = 0x40;
-        pDescriptor->idVendor = pCommon->VendorId;
-        pDescriptor->idProduct = pCommon->ProductId;
-        pDescriptor->bcdDevice = 0x0100;
-        pDescriptor->iManufacturer = 0x01;
-        pDescriptor->iProduct = 0x02;
-        pDescriptor->iSerialNumber = 0x00;
-        pDescriptor->bNumConfigurations = 0x01;
+        Ds4_GetDeviceDescriptorType(pDescriptor, pCommon);
 
         break;
 
     case XboxOneWired:
 
-        pDescriptor->bLength = 0x12;
-        pDescriptor->bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE;
-        pDescriptor->bcdUSB = 0x0200; // USB v2.0
-        pDescriptor->bDeviceClass = 0xFF;
-        pDescriptor->bDeviceSubClass = 0x47;
-        pDescriptor->bDeviceProtocol = 0xD0;
-        pDescriptor->bMaxPacketSize0 = 0x40;
-        pDescriptor->idVendor = pCommon->VendorId;
-        pDescriptor->idProduct = pCommon->ProductId;
-        pDescriptor->bcdDevice = 0x0650;
-        pDescriptor->iManufacturer = 0x01;
-        pDescriptor->iProduct = 0x02;
-        pDescriptor->iSerialNumber = 0x03;
-        pDescriptor->bNumConfigurations = 0x01;
+        Xgip_GetDeviceDescriptorType(pDescriptor, pCommon);
 
         break;
 

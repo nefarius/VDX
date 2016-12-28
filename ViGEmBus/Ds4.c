@@ -306,6 +306,24 @@ VOID Ds4_GetConfigurationDescriptorType(PUCHAR Buffer, ULONG Length)
     RtlCopyBytes(Buffer, Ds4DescriptorData, Length);
 }
 
+VOID Ds4_GetDeviceDescriptorType(PUSB_DEVICE_DESCRIPTOR pDescriptor, PPDO_DEVICE_DATA pCommon)
+{
+    pDescriptor->bLength = 0x12;
+    pDescriptor->bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE;
+    pDescriptor->bcdUSB = 0x0200; // USB v2.0
+    pDescriptor->bDeviceClass = 0x00; // per Interface
+    pDescriptor->bDeviceSubClass = 0x00;
+    pDescriptor->bDeviceProtocol = 0x00;
+    pDescriptor->bMaxPacketSize0 = 0x40;
+    pDescriptor->idVendor = pCommon->VendorId;
+    pDescriptor->idProduct = pCommon->ProductId;
+    pDescriptor->bcdDevice = 0x0100;
+    pDescriptor->iManufacturer = 0x01;
+    pDescriptor->iProduct = 0x02;
+    pDescriptor->iSerialNumber = 0x00;
+    pDescriptor->bNumConfigurations = 0x01;
+}
+
 //
 // Completes pending I/O requests if feeder is too slow.
 // 

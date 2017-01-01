@@ -27,6 +27,8 @@ SOFTWARE.
 
 EXTERN_C_START
 
+#define GAMEPAD_FROM_BUFFER(_buffer_) ((PXINPUT_GAMEPAD)&((PUCHAR)_buffer_)[11])
+
 NTSTATUS
 XnaGuardianQueueInitialize(
     _In_ WDFDEVICE hDevice
@@ -38,6 +40,7 @@ XnaGuardianQueueInitialize(
 EVT_WDF_IO_QUEUE_IO_DEFAULT XnaGuardianEvtIoDefault;
 EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL XnaGuardianEvtIoDeviceControl;
 
-EVT_WDF_REQUEST_COMPLETION_ROUTINE XnaGuardianEvtIoDeviceControlCompleted;
+EVT_WDF_REQUEST_COMPLETION_ROUTINE XInputGetInformationCompleted;
+EVT_WDF_REQUEST_COMPLETION_ROUTINE XInputGetGamepadStateCompleted;
 
 EXTERN_C_END

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<DOCUMENT Type="Advanced Installer" CreateVersion="13.1" version="13.4" Modules="enterprise" RootPath="." Language="en" Id="{91DA3174-5C6A-4203-A926-97344FCA2328}">
+<DOCUMENT Type="Advanced Installer" CreateVersion="13.1" version="13.5" Modules="enterprise" RootPath="." Language="en" Id="{91DA3174-5C6A-4203-A926-97344FCA2328}">
   <COMPONENT cid="caphyon.advinst.msicomp.ProjectOptionsComponent">
     <ROW Name="HiddenItems" Value="AutorunComponent;MultipleInstancesComponent;MsiJavaComponent;MsiAssemblyComponent;ActSyncAppComponent;MsiMergeModsComponent;CPLAppletComponent;GameUxComponent;FirewallExceptionComponent;UserAccountsComponent;MsiClassComponent;WebApplicationsComponent;MsiOdbcDataSrcComponent;SqlConnectionComponent;SharePointSlnComponent;SilverlightSlnComponent"/>
   </COMPONENT>
@@ -16,7 +16,7 @@
     <ROW Property="ARPHELPLINK" Value="https://github.com/nefarius/ViGEm/issues"/>
     <ROW Property="ARPNOMODIFY" MultiBuildValue="DefaultBuild:1"/>
     <ROW Property="ARPNOREPAIR" Value="1"/>
-    <ROW Property="ARPPRODUCTICON" Value="FlutterGem.exe" Type="8"/>
+    <ROW Property="ARPPRODUCTICON" Value="favicon.exe" Type="8"/>
     <ROW Property="ARPURLINFOABOUT" Value="https://github.com/nefarius/ViGEm"/>
     <ROW Property="ARPURLUPDATEINFO" Value="https://github.com/nefarius/ViGEm/releases"/>
     <ROW Property="IAgree" Value="Yes" Type="4" MsiKey="IAgree"/>
@@ -129,7 +129,7 @@
     <ROW BootstrOptKey="GlobalOptions" DownloadFolder="[AppDataFolder][|Manufacturer]\[|ProductName]\prerequisites" Options="4" UpdatesUrl="https://raw.githubusercontent.com/nefarius/ViGEm/master/updates.txt" EulaPathLocId="*" IntroTextPathLocId="*"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.BuildComponent">
-    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="1" PackageFolder="Setup Files" Languages="en" InstallationType="4" CabsLocation="1" PackageType="1" FilesInsideExe="true" ExeIconPath="FlutterGem.ico" ExtractionFolder="[AppDataFolder][|Manufacturer]\[|ProductName] [|ProductVersion]\install" ExtUI="true" UseLargeSchema="true" ExeName="ViGEm_Setup_[|ProductVersion]" MsiPackageType="AI_ALL"/>
+    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="1" PackageFolder="Setup Files" Languages="en" InstallationType="4" CabsLocation="1" PackageType="1" FilesInsideExe="true" ExeIconPath="favicon.ico" ExtractionFolder="[AppDataFolder][|Manufacturer]\[|ProductName] [|ProductVersion]\install" ExtUI="true" UseLargeSchema="true" ExeName="ViGEm_Setup_[|ProductVersion]" MsiPackageType="AI_ALL"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.DictionaryComponent">
     <ROW Path="&lt;AI_DICTS&gt;ui.ail"/>
@@ -262,7 +262,7 @@
     <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
-    <ROW Name="FlutterGem.exe" SourcePath="FlutterGem.ico" Index="0"/>
+    <ROW Name="favicon.exe" SourcePath="favicon.ico" Index="0"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiIniFileComponent">
     <ROW IniFile="AppDir" FileName="VIGEMU~1.INI|ViGEm Updater.ini" DirProperty="APPDIR" Section="General" Key="AppDir" Value="[APPDIR]" Action="0" Component_="updater.exe"/>

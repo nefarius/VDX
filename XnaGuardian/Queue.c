@@ -231,11 +231,36 @@ VOID XnaGuardianEvtIoDeviceControl(
             return;
         }
 
+        // 
+        // Validate range
+        // 
+        if (pOverride->UserIndex < 0 || pOverride->UserIndex > 3)
+        {
+            WdfRequestComplete(Request, STATUS_INVALID_PARAMETER);
+            return;
+        }
+
         //
         // Set pad overrides
         // 
-        pDeviceContext->PadStates[pOverride->UserIndex].Overrides = pOverride->Overrides;
-        pDeviceContext->PadStates[pOverride->UserIndex].Gamepad = pOverride->Gamepad;
+        if (
+            RtlCompareMemory(
+                &pDeviceContext->PadStates[pOverride->UserIndex].Overrides,
+                &pOverride->Overrides,
+                sizeof(ULONG)
+            ) != 0)
+        {
+            pDeviceContext->PadStates[pOverride->UserIndex].Overrides = pOverride->Overrides;
+        }
+        if (
+            RtlCompareMemory(
+                &pDeviceContext->PadStates[pOverride->UserIndex].Gamepad,
+                &pOverride->Gamepad,
+                sizeof(XINPUT_GAMEPAD)
+            ) != 0)
+        {
+            pDeviceContext->PadStates[pOverride->UserIndex].Gamepad = pOverride->Gamepad;
+        }
 
         //
         // Complete request
@@ -303,7 +328,7 @@ void XInputGetGamepadStateCompleted(
     {
         KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X", status));
     }
-    
+
     status = WdfRequestRetrieveOutputBuffer(Request, IO_GET_GAMEPAD_STATE_OUT_SIZE, &buffer, &buflen);
 
     if (NT_SUCCESS(status))
@@ -313,9 +338,9 @@ void XInputGetGamepadStateCompleted(
         //
         // Override buttons
         // 
-        
+
         // D-Pad
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_DPAD_UP) 
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_DPAD_UP)
             pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP);
         if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_DPAD_DOWN)
             pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN);
@@ -355,7 +380,7 @@ void XInputGetGamepadStateCompleted(
         //
         // Override axes
         //
-        
+
         // Triggers
         if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_TRIGGER)
             pGamepad->bLeftTrigger = pPad->Gamepad.bLeftTrigger;

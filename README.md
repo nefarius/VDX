@@ -1,3 +1,5 @@
+![Icon](https://raw.githubusercontent.com/nefarius/ViGEm/master/Installer/favicon.png)
+
 # ViGEm
 Virtual Gamepad Emulation Driver
 

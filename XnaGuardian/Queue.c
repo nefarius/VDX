@@ -275,7 +275,7 @@ void XInputGetGamepadStateCompleted(
     size_t                      buflen;
     PXINPUT_GAMEPAD             pGamepad;
     PDEVICE_CONTEXT             pDeviceContext;
-    //PXINPUT_GAMEPAD_OVERRIDES   pOverrides;
+    PXINPUT_PAD_STATE_INTERNAL  pPad;
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
@@ -285,6 +285,8 @@ void XInputGetGamepadStateCompleted(
     KdPrint((DRIVERNAME "IOCTL_XINPUT_GET_GAMEPAD_STATE called with status 0x%x\n", status));
 
     pDeviceContext = DeviceGetContext(Context);
+    // TODO: experimental, implement pad detection
+    pPad = &pDeviceContext->PadStates[0];
 
     status = WdfRequestRetrieveInputBuffer(Request, IO_GET_GAMEPAD_STATE_IN_SIZE, &buffer, &buflen);
 
@@ -307,16 +309,70 @@ void XInputGetGamepadStateCompleted(
     if (NT_SUCCESS(status))
     {
         pGamepad = GAMEPAD_FROM_BUFFER(buffer);
-        pGamepad->bLeftTrigger = 0xFF;
 
-        KdPrint(("[O] "));
+        //
+        // Override buttons
+        // 
+        
+        // D-Pad
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_DPAD_UP) 
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP);
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_DPAD_DOWN)
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN);
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_DPAD_LEFT)
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT);
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_DPAD_RIGHT)
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT);
 
-        for (size_t i = 0; i < buflen; i++)
-        {
-            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
-        }
+        // Start, Back
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_START)
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_START);
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_BACK)
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_BACK);
 
-        KdPrint(("\n"));
+        // Thumbs
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB)
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB);
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB)
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB);
+
+        // Shoulders
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_SHOULDER)
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER);
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_SHOULDER)
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER);
+
+        // Face
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_A)
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_A);
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_B)
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_B);
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_X)
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_X);
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_Y)
+            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_Y);
+
+        //
+        // Override axes
+        //
+        
+        // Triggers
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_TRIGGER)
+            pGamepad->bLeftTrigger = pPad->Gamepad.bLeftTrigger;
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_TRIGGER)
+            pGamepad->bRightTrigger = pPad->Gamepad.bRightTrigger;
+
+        // Left Thumb
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_X)
+            pGamepad->sThumbLX = pPad->Gamepad.sThumbLX;
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_Y)
+            pGamepad->sThumbLY = pPad->Gamepad.sThumbLY;
+
+        // Right Thumb
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_X)
+            pGamepad->sThumbRX = pPad->Gamepad.sThumbRX;
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y)
+            pGamepad->sThumbRY = pPad->Gamepad.sThumbRY;
     }
     else
     {

@@ -122,7 +122,7 @@ typedef struct _XINPUT_EXT_OVERRIDE_GAMEPAD
 
     IN UCHAR UserIndex;
 
-    IN XINPUT_GAMEPAD_OVERRIDES Overrides;
+    IN ULONG Overrides;
 
     IN XINPUT_GAMEPAD Gamepad;
 

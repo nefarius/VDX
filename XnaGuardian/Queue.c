@@ -118,6 +118,9 @@ VOID XnaGuardianEvtIoDeviceControl(
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called with code 0x%X\n", IoControlCode));
 
+    KdPrint((DRIVERNAME "InputBufferLength = 0x%X\n", InputBufferLength));
+    KdPrint((DRIVERNAME "OutputBufferLength = 0x%X\n", OutputBufferLength));
+
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
 
@@ -135,10 +138,29 @@ VOID XnaGuardianEvtIoDeviceControl(
 
         KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_INFORMATION\n"));
 
-        KdPrint((DRIVERNAME "InputBufferLength = 0x%X\n", InputBufferLength));
-
         WdfRequestFormatRequestUsingCurrentType(Request);
         WdfRequestSetCompletionRoutine(Request, XInputGetInformationCompleted, Device);
+
+        ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS);
+
+        if (!ret) {
+            status = WdfRequestGetStatus(Request);
+            KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
+        }
+
+        return;
+
+    case IOCTL_XINPUT_GET_CAPABILITIES:
+
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_CAPABILITIES\n"));
+        break;
+
+    case IOCTL_XINPUT_GET_LED_STATE:
+
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_LED_STATE %d %d\n", InputBufferLength, OutputBufferLength));
+
+        WdfRequestFormatRequestUsingCurrentType(Request);
+        WdfRequestSetCompletionRoutine(Request, XInputGetLedStateCompleted, Device);
 
         ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS);
 
@@ -167,6 +189,46 @@ VOID XnaGuardianEvtIoDeviceControl(
         }
 
         return;
+
+    case IOCTL_XINPUT_SET_GAMEPAD_STATE:
+
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_SET_GAMEPAD_STATE\n"));
+
+        status = WdfRequestRetrieveInputBuffer(Request, 5, &pBuffer, &buflen);
+
+        KdPrint((DRIVERNAME "[IOCTL_XINPUT_SET_GAMEPAD_STATE] [0x%X] [I] ", Device));
+
+        if (NT_SUCCESS(status))
+        {
+            for (size_t i = 0; i < buflen; i++)
+            {
+                KdPrint(("%02X ", ((PUCHAR)pBuffer)[i]));
+            }
+
+            KdPrint(("\n"));
+        }
+
+        break;
+
+    case IOCTL_XINPUT_WAIT_FOR_GUIDE_BUTTON:
+
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_WAIT_FOR_GUIDE_BUTTON\n"));
+        break;
+
+    case IOCTL_XINPUT_GET_BATTERY_INFORMATION:
+
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_BATTERY_INFORMATION\n"));
+        break;
+
+    case IOCTL_XINPUT_POWER_DOWN_DEVICE:
+
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_POWER_DOWN_DEVICE\n"));
+        break;
+
+    case IOCTL_XINPUT_GET_AUDIO_INFORMATION:
+
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_AUDIO_INFORMATION\n"));
+        break;
 
     case IOCTL_XINPUT_EXT_HIDE_GAMEPAD:
 
@@ -317,7 +379,7 @@ void XInputGetGamepadStateCompleted(
 
     if (NT_SUCCESS(status))
     {
-        KdPrint((DRIVERNAME "[IOCTL] [0x%X] [I] ", Context));
+        KdPrint((DRIVERNAME "[IOCTL_XINPUT_GET_GAMEPAD_STATE] [0x%X] [I] ", Context));
 
         for (size_t i = 0; i < buflen; i++)
         {
@@ -333,6 +395,15 @@ void XInputGetGamepadStateCompleted(
 
     if (NT_SUCCESS(status))
     {
+        KdPrint(("[O] "));
+
+        for (size_t i = 0; i < buflen; i++)
+        {
+            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
+        }
+
+        KdPrint(("\n"));
+
         pGamepad = GAMEPAD_FROM_BUFFER(buffer);
 
         //
@@ -415,6 +486,8 @@ void XInputGetInformationCompleted(
 )
 {
     NTSTATUS                    status;
+    PVOID                       buffer;
+    size_t                      buflen;
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Context);
@@ -423,6 +496,80 @@ void XInputGetInformationCompleted(
     status = WdfRequestGetStatus(Request);
 
     KdPrint((DRIVERNAME "IOCTL_XINPUT_GET_INFORMATION called with status 0x%x\n", status));
+
+    status = WdfRequestRetrieveOutputBuffer(Request, 0x0C, &buffer, &buflen);
+
+    if (NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "IOCTL_XINPUT_GET_INFORMATION [O] "));
+
+        for (size_t i = 0; i < buflen; i++)
+        {
+            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
+        }
+
+        KdPrint(("\n"));
+    }
+    else
+    {
+        KdPrint((DRIVERNAME "WdfRequestRetrieveOutputBuffer failed with status 0x%X", status));
+    }
+
+    WdfRequestComplete(Request, status);
+}
+
+void XInputGetLedStateCompleted(
+    _In_ WDFREQUEST                     Request,
+    _In_ WDFIOTARGET                    Target,
+    _In_ PWDF_REQUEST_COMPLETION_PARAMS Params,
+    _In_ WDFCONTEXT                     Context
+)
+{
+    NTSTATUS                    status;
+    PVOID                       buffer;
+    size_t                      buflen;
+
+    UNREFERENCED_PARAMETER(Target);
+    UNREFERENCED_PARAMETER(Context);
+    UNREFERENCED_PARAMETER(Params);
+
+    status = WdfRequestGetStatus(Request);
+
+    KdPrint((DRIVERNAME "IOCTL_XINPUT_GET_LED_STATE called with status 0x%x\n", status));
+
+    status = WdfRequestRetrieveInputBuffer(Request, 3, &buffer, &buflen);
+
+    if (NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "[IOCTL_XINPUT_GET_LED_STATE] [0x%X] [I] ", Context));
+
+        for (size_t i = 0; i < buflen; i++)
+        {
+            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
+        }
+    }
+    else
+    {
+        KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X", status));
+    }
+
+    status = WdfRequestRetrieveOutputBuffer(Request, 3, &buffer, &buflen);
+
+    if (NT_SUCCESS(status))
+    {
+        KdPrint(("[O] ", Context));
+
+        for (size_t i = 0; i < buflen; i++)
+        {
+            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
+        }
+
+        KdPrint(("\n"));
+    }
+    else
+    {
+        KdPrint((DRIVERNAME "WdfRequestRetrieveOutputBuffer failed with status 0x%X", status));
+    }
 
     WdfRequestComplete(Request, status);
 }

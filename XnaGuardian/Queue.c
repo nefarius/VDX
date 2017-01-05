@@ -115,6 +115,8 @@ VOID XnaGuardianEvtIoDeviceControl(
     PXINPUT_EXT_HIDE_GAMEPAD        pHidePad;
     PXINPUT_EXT_OVERRIDE_GAMEPAD    pOverride;
     WDFDEVICE                       Device;
+    WDF_OBJECT_ATTRIBUTES           requestAttribs;
+    PXINPUT_PAD_IDENTIFIER_CONTEXT  pXInputContext = NULL;
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called with code 0x%X\n", IoControlCode));
 
@@ -178,8 +180,35 @@ VOID XnaGuardianEvtIoDeviceControl(
 
         KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_GAMEPAD_STATE\n"));
 
+        status = WdfRequestRetrieveInputBuffer(Request, IO_GET_GAMEPAD_STATE_IN_SIZE, &pBuffer, &buflen);
+
+        KdPrint((DRIVERNAME "[IOCTL_XINPUT_GET_GAMEPAD_STATE] [0x%X] [I] ", Device));
+
+        if (NT_SUCCESS(status))
+        {
+            for (size_t i = 0; i < buflen; i++)
+            {
+                KdPrint(("%02X ", ((PUCHAR)pBuffer)[i]));
+            }
+
+            KdPrint(("\n"));
+        }
+
         WdfRequestFormatRequestUsingCurrentType(Request);
         WdfRequestSetCompletionRoutine(Request, XInputGetGamepadStateCompleted, Device);
+
+        WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&requestAttribs, XINPUT_PAD_IDENTIFIER_CONTEXT);
+
+        status = WdfObjectAllocateContext(
+            Request,
+            &requestAttribs,
+            (PVOID)&pXInputContext
+        );
+
+        if (NT_SUCCESS(status))
+        {
+            pXInputContext->Index = ((PUCHAR)pBuffer)[2];
+        }
 
         ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS);
 
@@ -363,6 +392,7 @@ void XInputGetGamepadStateCompleted(
     PXINPUT_GAMEPAD             pGamepad;
     PDEVICE_CONTEXT             pDeviceContext;
     PXINPUT_PAD_STATE_INTERNAL  pPad;
+    PXINPUT_PAD_IDENTIFIER_CONTEXT  pXInputContext;
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
@@ -372,24 +402,9 @@ void XInputGetGamepadStateCompleted(
     KdPrint((DRIVERNAME "IOCTL_XINPUT_GET_GAMEPAD_STATE called with status 0x%x\n", status));
 
     pDeviceContext = DeviceGetContext(Context);
-    // TODO: experimental, implement pad detection
-    pPad = &pDeviceContext->PadStates[0];
+    pXInputContext = GetPadIdentifier(Request);
 
-    status = WdfRequestRetrieveInputBuffer(Request, IO_GET_GAMEPAD_STATE_IN_SIZE, &buffer, &buflen);
-
-    if (NT_SUCCESS(status))
-    {
-        KdPrint((DRIVERNAME "[IOCTL_XINPUT_GET_GAMEPAD_STATE] [0x%X] [I] ", Context));
-
-        for (size_t i = 0; i < buflen; i++)
-        {
-            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
-        }
-    }
-    else
-    {
-        KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X", status));
-    }
+    pPad = &pDeviceContext->PadStates[pXInputContext->Index];
 
     status = WdfRequestRetrieveOutputBuffer(Request, IO_GET_GAMEPAD_STATE_OUT_SIZE, &buffer, &buflen);
 

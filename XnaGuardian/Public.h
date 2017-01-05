@@ -106,6 +106,9 @@ typedef enum _XINPUT_GAMEPAD_OVERRIDES
     XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y = 1 << 19
 } XINPUT_GAMEPAD_OVERRIDES, *PXINPUT_GAMEPAD_OVERRIDES;
 
+//
+// State of the gamepad (compatible to XINPUT_GAMEPAD)
+// 
 typedef struct _XINPUT_GAMEPAD {
     USHORT wButtons;
     BYTE   bLeftTrigger;
@@ -116,6 +119,9 @@ typedef struct _XINPUT_GAMEPAD {
     SHORT  sThumbRY;
 } XINPUT_GAMEPAD, *PXINPUT_GAMEPAD;
 
+//
+// Context data for IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE I/O control code
+// 
 typedef struct _XINPUT_EXT_OVERRIDE_GAMEPAD
 {
     IN ULONG Size;

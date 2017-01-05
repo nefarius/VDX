@@ -41,7 +41,7 @@ typedef struct _XINPUT_PAD_STATE_INTERNAL
 {
     BOOLEAN                     IsGetStateForbidden;
     XINPUT_GAMEPAD_OVERRIDES    Overrides;
-    XINPUT_GAMEPAD              Gamepad;
+    XINPUT_GAMEPAD_STATE        Gamepad;
 
 } XINPUT_PAD_STATE_INTERNAL, *PXINPUT_PAD_STATE_INTERNAL;
 

@@ -347,7 +347,7 @@ VOID XnaGuardianEvtIoDeviceControl(
             RtlCompareMemory(
                 &pDeviceContext->PadStates[pOverride->UserIndex].Gamepad,
                 &pOverride->Gamepad,
-                sizeof(XINPUT_GAMEPAD)
+                sizeof(XINPUT_GAMEPAD_STATE)
             ) != 0)
         {
             pDeviceContext->PadStates[pOverride->UserIndex].Gamepad = pOverride->Gamepad;
@@ -389,7 +389,7 @@ void XInputGetGamepadStateCompleted(
     NTSTATUS                    status;
     PVOID                       buffer;
     size_t                      buflen;
-    PXINPUT_GAMEPAD             pGamepad;
+    PXINPUT_GAMEPAD_STATE       pGamepad;
     PDEVICE_CONTEXT             pDeviceContext;
     PXINPUT_PAD_STATE_INTERNAL  pPad;
     PXINPUT_PAD_IDENTIFIER_CONTEXT  pXInputContext;

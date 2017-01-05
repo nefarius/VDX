@@ -27,7 +27,7 @@ SOFTWARE.
 
 EXTERN_C_START
 
-#define GAMEPAD_FROM_BUFFER(_buffer_) ((PXINPUT_GAMEPAD)&((PUCHAR)_buffer_)[11])
+#define GAMEPAD_FROM_BUFFER(_buffer_) ((PXINPUT_GAMEPAD_STATE)&((PUCHAR)_buffer_)[11])
 
 NTSTATUS
 XnaGuardianQueueInitialize(

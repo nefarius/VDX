@@ -26,7 +26,7 @@ SOFTWARE.
 #pragma once
 
 #include "public.h"
-#include <ntintsafe.h>
+#include "XInputInternal.h"
 
 EXTERN_C_START
 
@@ -53,8 +53,8 @@ typedef struct _DEVICE_CONTEXT
 {
     WDFMEMORY                   HardwareIDMemory;
     PCWSTR                      HardwareID;
-    XINPUT_PAD_STATE_INTERNAL   PadStates[4];
     ULONG                       MaxDevices;
+    UCHAR                       LedValues[XINPUT_MAX_DEVICES];
 
 } DEVICE_CONTEXT, *PDEVICE_CONTEXT;
 
@@ -63,7 +63,6 @@ WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DEVICE_CONTEXT, DeviceGetContext)
 typedef struct _XINPUT_PAD_IDENTIFIER_CONTEXT
 {
     ULONG       Index;
-    WDFDEVICE   Device;
 
 } XINPUT_PAD_IDENTIFIER_CONTEXT, *PXINPUT_PAD_IDENTIFIER_CONTEXT;
 

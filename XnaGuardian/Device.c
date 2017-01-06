@@ -31,6 +31,8 @@ SOFTWARE.
 WDFCOLLECTION   FilterDeviceCollection;
 WDFWAITLOCK     FilterDeviceCollectionLock;
 
+XINPUT_PAD_STATE_INTERNAL   PadStates[XINPUT_MAX_DEVICES];
+
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, XnaGuardianCreateDevice)
 #pragma alloc_text (PAGE, XnaGuardianCleanupCallback)

@@ -29,6 +29,8 @@ EXTERN_C_START
 
 #define GAMEPAD_FROM_BUFFER(_buffer_) ((PXINPUT_GAMEPAD_STATE)&((PUCHAR)_buffer_)[11])
 
+extern XINPUT_PAD_STATE_INTERNAL   PadStates[XINPUT_MAX_DEVICES];
+
 NTSTATUS
 XnaGuardianQueueInitialize(
     _In_ WDFDEVICE hDevice

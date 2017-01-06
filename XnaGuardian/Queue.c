@@ -136,6 +136,7 @@ VOID XnaGuardianEvtIoDeviceControl(
     // 
     switch (IoControlCode)
     {
+#pragma region IOCTL_XINPUT_GET_INFORMATION
         //
         // Filter GetDeviceInfoFromInterface(...) call
         // 
@@ -154,6 +155,7 @@ VOID XnaGuardianEvtIoDeviceControl(
         }
 
         return;
+#pragma endregion
 
     case IOCTL_XINPUT_GET_CAPABILITIES:
 
@@ -211,16 +213,27 @@ VOID XnaGuardianEvtIoDeviceControl(
 
         return;
 
+        //
+        // Filter SendLEDState(...) call
+        // 
     case IOCTL_XINPUT_SET_GAMEPAD_STATE:
 
         KdPrint((DRIVERNAME ">> IOCTL_XINPUT_SET_GAMEPAD_STATE\n"));
 
-        status = WdfRequestRetrieveInputBuffer(Request, 5, &pBuffer, &buflen);
+        status = WdfRequestRetrieveInputBuffer(Request, IO_SET_GAMEPAD_STATE_IN_SIZE, &pBuffer, &buflen);
 
         KdPrint((DRIVERNAME "[IOCTL_XINPUT_SET_GAMEPAD_STATE] [0x%X] [I] ", Device));
 
         if (NT_SUCCESS(status))
         {
+            //
+            // Identify LED request
+            // 
+            if (((PUCHAR)pBuffer)[4] == 0x01)
+            {
+                pDeviceContext->LedValues[((PUCHAR)pBuffer)[0]] = ((PUCHAR)pBuffer)[1];
+            }
+
             for (size_t i = 0; i < buflen; i++)
             {
                 KdPrint(("%02X ", ((PUCHAR)pBuffer)[i]));
@@ -251,6 +264,7 @@ VOID XnaGuardianEvtIoDeviceControl(
         KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_AUDIO_INFORMATION\n"));
         break;
 
+#pragma region IOCTL_XINPUT_EXT_HIDE_GAMEPAD
     case IOCTL_XINPUT_EXT_HIDE_GAMEPAD:
 
         KdPrint((DRIVERNAME ">> IOCTL_XINPUT_EXT_HIDE_GAMEPAD\n"));
@@ -280,14 +294,16 @@ VOID XnaGuardianEvtIoDeviceControl(
         //
         // Set pad state
         // 
-        pDeviceContext->PadStates[pHidePad->UserIndex].IsGetStateForbidden = pHidePad->Hidden;
+        PadStates[pHidePad->UserIndex].IsGetStateForbidden = pHidePad->Hidden;
 
         //
         // Complete request
         // 
         WdfRequestComplete(Request, STATUS_SUCCESS);
         return;
+#pragma endregion
 
+#pragma region IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE
     case IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE:
 
         KdPrint((DRIVERNAME ">> IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE\n"));
@@ -328,21 +344,21 @@ VOID XnaGuardianEvtIoDeviceControl(
         // 
         if (
             RtlCompareMemory(
-                &pDeviceContext->PadStates[pOverride->UserIndex].Overrides,
+                &PadStates[pOverride->UserIndex].Overrides,
                 &pOverride->Overrides,
                 sizeof(ULONG)
             ) != 0)
         {
-            pDeviceContext->PadStates[pOverride->UserIndex].Overrides = pOverride->Overrides;
+            PadStates[pOverride->UserIndex].Overrides = pOverride->Overrides;
         }
         if (
             RtlCompareMemory(
-                &pDeviceContext->PadStates[pOverride->UserIndex].Gamepad,
+                &PadStates[pOverride->UserIndex].Gamepad,
                 &pOverride->Gamepad,
                 sizeof(XINPUT_GAMEPAD_STATE)
             ) != 0)
         {
-            pDeviceContext->PadStates[pOverride->UserIndex].Gamepad = pOverride->Gamepad;
+            PadStates[pOverride->UserIndex].Gamepad = pOverride->Gamepad;
         }
 
         //
@@ -350,6 +366,7 @@ VOID XnaGuardianEvtIoDeviceControl(
         // 
         WdfRequestComplete(Request, STATUS_SUCCESS);
         return;
+#pragma endregion
 
     default:
         break;
@@ -426,12 +443,13 @@ void XInputGetGamepadStateCompleted(
     _In_ WDFCONTEXT                     Context
 )
 {
-    NTSTATUS                    status;
-    PVOID                       buffer;
-    size_t                      buflen;
-    PXINPUT_GAMEPAD_STATE       pGamepad;
-    PDEVICE_CONTEXT             pDeviceContext;
-    PXINPUT_PAD_STATE_INTERNAL  pPad;
+    NTSTATUS                        status;
+    PVOID                           buffer;
+    size_t                          buflen;
+    PXINPUT_GAMEPAD_STATE           pGamepad;
+    PDEVICE_CONTEXT                 pDeviceContext;
+    PXINPUT_PAD_STATE_INTERNAL      pPad;
+    LONG                            padIndex = 0;
     PXINPUT_PAD_IDENTIFIER_CONTEXT  pXInputContext;
 
     UNREFERENCED_PARAMETER(Target);
@@ -444,7 +462,34 @@ void XInputGetGamepadStateCompleted(
     pDeviceContext = DeviceGetContext(Context);
     pXInputContext = GetPadIdentifier(Request);
 
-    pPad = &pDeviceContext->PadStates[pXInputContext->Index];
+    KdPrint((DRIVERNAME "pXInputContext->Index = %d\n", pXInputContext->Index));
+
+    if (pDeviceContext->MaxDevices == 0x01)
+    {
+        padIndex = pDeviceContext->LedValues[0] - 0x06;
+    }
+
+    if (pDeviceContext->MaxDevices > 0x01)
+    {
+        padIndex = pDeviceContext->LedValues[pXInputContext->Index] - 0x06;
+    }
+
+    KdPrint((DRIVERNAME "PAD INDEX: %d\n", padIndex));
+
+    if (padIndex < 0 || padIndex > XINPUT_MAX_DEVICES)
+    {
+        WdfRequestComplete(Request, status);
+        return;
+    }
+
+    pPad = &PadStates[padIndex];
+
+    // TODO: test code!
+    if (padIndex == 0x00)
+    {
+        pPad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_A;
+        pPad->Gamepad.wButtons |= XINPUT_GAMEPAD_A;
+    }
 
     status = WdfRequestRetrieveOutputBuffer(Request, IO_GET_GAMEPAD_STATE_OUT_SIZE, &buffer, &buflen);
 
@@ -460,6 +505,8 @@ void XInputGetGamepadStateCompleted(
         KdPrint(("\n"));
 
         pGamepad = GAMEPAD_FROM_BUFFER(buffer);
+
+        KdPrint((DRIVERNAME "pDeviceContext->LedValue = %d\n", pDeviceContext->LedValues[pXInputContext->Index]));
 
         //
         // Override buttons

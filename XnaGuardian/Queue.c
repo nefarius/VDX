@@ -175,17 +175,12 @@ VOID XnaGuardianEvtIoDeviceControl(
         KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_GAMEPAD_STATE\n"));
 
         status = WdfRequestRetrieveInputBuffer(Request, IO_GET_GAMEPAD_STATE_IN_SIZE, &pBuffer, &buflen);
-
-        KdPrint((DRIVERNAME "[IOCTL_XINPUT_GET_GAMEPAD_STATE] [0x%X] [I] ", Device));
-
-        if (NT_SUCCESS(status))
+                
+        if (!NT_SUCCESS(status))
         {
-            for (size_t i = 0; i < buflen; i++)
-            {
-                KdPrint(("%02X ", ((PUCHAR)pBuffer)[i]));
-            }
-
-            KdPrint(("\n"));
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed: 0x%x\n", status));
+            WdfRequestComplete(Request, status);
+            return;
         }
 
         WdfRequestFormatRequestUsingCurrentType(Request);
@@ -201,6 +196,10 @@ VOID XnaGuardianEvtIoDeviceControl(
 
         if (NT_SUCCESS(status))
         {
+            //
+            // 3rd byte contains either always 0x00 on single pad device 
+            // handles or 0x00 to 0x03 for multiple pads per handle.
+            // 
             pXInputContext->Index = ((PUCHAR)pBuffer)[2];
         }
 
@@ -222,8 +221,6 @@ VOID XnaGuardianEvtIoDeviceControl(
 
         status = WdfRequestRetrieveInputBuffer(Request, IO_SET_GAMEPAD_STATE_IN_SIZE, &pBuffer, &buflen);
 
-        KdPrint((DRIVERNAME "[IOCTL_XINPUT_SET_GAMEPAD_STATE] [0x%X] [I] ", Device));
-
         if (NT_SUCCESS(status))
         {
             //
@@ -233,13 +230,6 @@ VOID XnaGuardianEvtIoDeviceControl(
             {
                 pDeviceContext->LedValues[((PUCHAR)pBuffer)[0]] = ((PUCHAR)pBuffer)[1];
             }
-
-            for (size_t i = 0; i < buflen; i++)
-            {
-                KdPrint(("%02X ", ((PUCHAR)pBuffer)[i]));
-            }
-
-            KdPrint(("\n"));
         }
 
         break;
@@ -415,18 +405,11 @@ void XInputGetInformationCompleted(
 
     if (NT_SUCCESS(status))
     {
+        //
+        // 3rd byte in buffer contains the maximum supported devices 
+        // on the current handle (typically either 0x01 or 0x04).
+        // 
         pDeviceContext->MaxDevices = (ULONG)((PUCHAR)buffer)[2];
-
-        KdPrint((DRIVERNAME "pDeviceContext->MaxDevices = %d\n", pDeviceContext->MaxDevices));
-
-        KdPrint((DRIVERNAME "IOCTL_XINPUT_GET_INFORMATION [O] "));
-
-        for (size_t i = 0; i < buflen; i++)
-        {
-            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
-        }
-
-        KdPrint(("\n"));
     }
     else
     {
@@ -448,9 +431,9 @@ void XInputGetGamepadStateCompleted(
     size_t                          buflen;
     PXINPUT_GAMEPAD_STATE           pGamepad;
     PDEVICE_CONTEXT                 pDeviceContext;
+    PXINPUT_PAD_IDENTIFIER_CONTEXT  pRequestContext;
     PXINPUT_PAD_STATE_INTERNAL      pPad;
     LONG                            padIndex = 0;
-    PXINPUT_PAD_IDENTIFIER_CONTEXT  pXInputContext;
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
@@ -460,53 +443,50 @@ void XInputGetGamepadStateCompleted(
     KdPrint((DRIVERNAME "IOCTL_XINPUT_GET_GAMEPAD_STATE called with status 0x%x\n", status));
 
     pDeviceContext = DeviceGetContext(Context);
-    pXInputContext = GetPadIdentifier(Request);
+    pRequestContext = GetPadIdentifier(Request);
 
-    KdPrint((DRIVERNAME "pXInputContext->Index = %d\n", pXInputContext->Index));
-
+    //
+    // When MaxDevices equals 1, the first array item can 
+    // either contain zero or the assigned LED state value.
+    // 
     if (pDeviceContext->MaxDevices == 0x01)
     {
-        padIndex = pDeviceContext->LedValues[0] - 0x06;
+        padIndex = pDeviceContext->LedValues[0] - XINPUT_LED_OFFSET;
     }
 
+    //
+    // When MaxDevices is greater than 1, the request context
+    // contains the pad index on the current device handle.
+    // 
     if (pDeviceContext->MaxDevices > 0x01)
     {
-        padIndex = pDeviceContext->LedValues[pXInputContext->Index] - 0x06;
+        padIndex = pDeviceContext->LedValues[pRequestContext->Index] - XINPUT_LED_OFFSET;
     }
 
     KdPrint((DRIVERNAME "PAD INDEX: %d\n", padIndex));
 
+    //
+    // Check bounds and just complete request on error
+    // 
     if (padIndex < 0 || padIndex > XINPUT_MAX_DEVICES)
     {
         WdfRequestComplete(Request, status);
         return;
     }
 
+    //
+    // Get global pad override data
+    // 
     pPad = &PadStates[padIndex];
-
-    // TODO: test code!
-    if (padIndex == 0x00)
-    {
-        pPad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_A;
-        pPad->Gamepad.wButtons |= XINPUT_GAMEPAD_A;
-    }
 
     status = WdfRequestRetrieveOutputBuffer(Request, IO_GET_GAMEPAD_STATE_OUT_SIZE, &buffer, &buflen);
 
     if (NT_SUCCESS(status))
     {
-        KdPrint(("[O] "));
-
-        for (size_t i = 0; i < buflen; i++)
-        {
-            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
-        }
-
-        KdPrint(("\n"));
-
+        //
+        // Extract XINPUT_GAMEPAD structure from buffer
+        // 
         pGamepad = GAMEPAD_FROM_BUFFER(buffer);
-
-        KdPrint((DRIVERNAME "pDeviceContext->LedValue = %d\n", pDeviceContext->LedValues[pXInputContext->Index]));
 
         //
         // Override buttons
@@ -577,6 +557,9 @@ void XInputGetGamepadStateCompleted(
         KdPrint((DRIVERNAME "WdfRequestRetrieveOutputBuffer failed with status 0x%x\n", status));
     }
 
+    //
+    // Always complete
+    // 
     WdfRequestComplete(Request, status);
 }
 

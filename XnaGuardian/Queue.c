@@ -159,19 +159,8 @@ VOID XnaGuardianEvtIoDeviceControl(
 
     case IOCTL_XINPUT_GET_LED_STATE:
 
-        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_LED_STATE %d %d\n", InputBufferLength, OutputBufferLength));
-
-        WdfRequestFormatRequestUsingCurrentType(Request);
-        WdfRequestSetCompletionRoutine(Request, XInputGetLedStateCompleted, Device);
-
-        ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS);
-
-        if (!ret) {
-            status = WdfRequestGetStatus(Request);
-            KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
-        }
-
-        return;
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_LED_STATE\n"));
+        break;
 
         //
         // Filter XInputGetState(...) call
@@ -517,62 +506,6 @@ void XInputGetInformationCompleted(
     if (NT_SUCCESS(status))
     {
         KdPrint((DRIVERNAME "IOCTL_XINPUT_GET_INFORMATION [O] "));
-
-        for (size_t i = 0; i < buflen; i++)
-        {
-            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
-        }
-
-        KdPrint(("\n"));
-    }
-    else
-    {
-        KdPrint((DRIVERNAME "WdfRequestRetrieveOutputBuffer failed with status 0x%X", status));
-    }
-
-    WdfRequestComplete(Request, status);
-}
-
-void XInputGetLedStateCompleted(
-    _In_ WDFREQUEST                     Request,
-    _In_ WDFIOTARGET                    Target,
-    _In_ PWDF_REQUEST_COMPLETION_PARAMS Params,
-    _In_ WDFCONTEXT                     Context
-)
-{
-    NTSTATUS                    status;
-    PVOID                       buffer;
-    size_t                      buflen;
-
-    UNREFERENCED_PARAMETER(Target);
-    UNREFERENCED_PARAMETER(Context);
-    UNREFERENCED_PARAMETER(Params);
-
-    status = WdfRequestGetStatus(Request);
-
-    KdPrint((DRIVERNAME "IOCTL_XINPUT_GET_LED_STATE called with status 0x%x\n", status));
-
-    status = WdfRequestRetrieveInputBuffer(Request, 3, &buffer, &buflen);
-
-    if (NT_SUCCESS(status))
-    {
-        KdPrint((DRIVERNAME "[IOCTL_XINPUT_GET_LED_STATE] [0x%X] [I] ", Context));
-
-        for (size_t i = 0; i < buflen; i++)
-        {
-            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
-        }
-    }
-    else
-    {
-        KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X", status));
-    }
-
-    status = WdfRequestRetrieveOutputBuffer(Request, 3, &buffer, &buflen);
-
-    if (NT_SUCCESS(status))
-    {
-        KdPrint(("[O] ", Context));
 
         for (size_t i = 0; i < buflen; i++)
         {

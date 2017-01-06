@@ -57,11 +57,6 @@ typedef struct _DEVICE_CONTEXT
 
 } DEVICE_CONTEXT, *PDEVICE_CONTEXT;
 
-//
-// This macro will generate an inline function called DeviceGetContext
-// which will be used to get a pointer to the device context memory
-// in a type safe manner.
-//
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DEVICE_CONTEXT, DeviceGetContext)
 
 typedef struct _XINPUT_PAD_IDENTIFIER_CONTEXT

@@ -28,8 +28,12 @@ SOFTWARE.
 #define NTSTRSAFE_LIB
 #include <ntstrsafe.h>
 
+WDFCOLLECTION   FilterDeviceCollection;
+WDFWAITLOCK     FilterDeviceCollectionLock;
+
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, XnaGuardianCreateDevice)
+#pragma alloc_text (PAGE, XnaGuardianCleanupCallback)
 #endif
 
 
@@ -49,6 +53,8 @@ XnaGuardianCreateDevice(
     WdfFdoInitSetFilter(DeviceInit);
 
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&deviceAttributes, DEVICE_CONTEXT);
+
+    deviceAttributes.EvtCleanupCallback = XnaGuardianCleanupCallback;
 
     status = WdfDeviceCreate(&DeviceInit, &deviceAttributes, &device);
 
@@ -89,6 +95,17 @@ XnaGuardianCreateDevice(
         deviceContext->HardwareID = WdfMemoryGetBuffer(memory, NULL);
 
         //
+        // Add this device to the FilterDevice collection.
+        //
+        WdfWaitLockAcquire(FilterDeviceCollectionLock, NULL);
+
+        status = WdfCollectionAdd(FilterDeviceCollection, device);
+        if (!NT_SUCCESS(status)) {
+            KdPrint((DRIVERNAME "WdfCollectionAdd failed with status code 0x%x\n", status));
+        }
+        WdfWaitLockRelease(FilterDeviceCollectionLock);
+
+        //
         // Initialize the I/O Package and any Queues
         //
         status = XnaGuardianQueueInitialize(device);
@@ -101,4 +118,27 @@ XnaGuardianCreateDevice(
 
     return status;
 }
+
+//
+// Called on filter unload.
+// 
+#pragma warning(push)
+#pragma warning(disable:28118) // this callback will run at IRQL=PASSIVE_LEVEL
+_Use_decl_annotations_
+VOID XnaGuardianCleanupCallback(
+    _In_ WDFOBJECT Device
+)
+{
+    PAGED_CODE();
+
+    KdPrint((DRIVERNAME "XnaGuardianCleanupCallback called\n"));
+
+    WdfWaitLockAcquire(FilterDeviceCollectionLock, NULL);
+
+    WdfCollectionRemove(FilterDeviceCollection, Device);
+
+    WdfWaitLockRelease(FilterDeviceCollectionLock);
+}
+#pragma warning(pop) // enable 28118 again
+
 

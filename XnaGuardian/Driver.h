@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 
+#pragma once
 #define INITGUID
 
 #include <ntddk.h>
@@ -35,6 +36,9 @@ SOFTWARE.
 #define DRIVERNAME "XnaGuardian: "
 
 EXTERN_C_START
+
+extern WDFCOLLECTION   FilterDeviceCollection;
+extern WDFWAITLOCK     FilterDeviceCollectionLock;
 
 //
 // WDFDRIVER Events

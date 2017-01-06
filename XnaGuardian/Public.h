@@ -298,3 +298,58 @@ VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_Y(
 
     OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_Y;
 }
+
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_LEFT_TRIGGER(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ UCHAR Value
+)
+{
+    OverrideGamepad->Gamepad.bLeftTrigger = Value;
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_LEFT_TRIGGER;
+}
+
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_RIGHT_TRIGGER(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ UCHAR Value
+)
+{
+    OverrideGamepad->Gamepad.bRightTrigger = Value;
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_RIGHT_TRIGGER;
+}
+
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_LEFT_THUMB_X(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ SHORT Value
+)
+{
+    OverrideGamepad->Gamepad.sThumbLX = Value;
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_X;
+}
+
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_LEFT_THUMB_Y(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ SHORT Value
+)
+{
+    OverrideGamepad->Gamepad.sThumbLY = Value;
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_Y;
+}
+
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_RIGHT_THUMB_X(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ SHORT Value
+)
+{
+    OverrideGamepad->Gamepad.sThumbRX = Value;
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_X;
+}
+
+VOID FORCEINLINE XINPUT_EXT_OVERRIDE_GAMEPAD_RIGHT_THUMB_Y(
+    _Out_ PXINPUT_EXT_OVERRIDE_GAMEPAD OverrideGamepad,
+    _In_ SHORT Value
+)
+{
+    OverrideGamepad->Gamepad.sThumbRX = Value;
+    OverrideGamepad->Overrides |= XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y;
+}
+

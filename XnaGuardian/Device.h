@@ -54,6 +54,7 @@ typedef struct _DEVICE_CONTEXT
     WDFMEMORY                   HardwareIDMemory;
     PCWSTR                      HardwareID;
     XINPUT_PAD_STATE_INTERNAL   PadStates[4];
+    ULONG                       MaxDevices;
 
 } DEVICE_CONTEXT, *PDEVICE_CONTEXT;
 

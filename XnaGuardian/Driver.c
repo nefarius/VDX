@@ -37,7 +37,7 @@ NTSTATUS
 DriverEntry(
     _In_ PDRIVER_OBJECT  DriverObject,
     _In_ PUNICODE_STRING RegistryPath
-    )
+)
 /*++
 
 Routine Description:
@@ -73,7 +73,7 @@ Return Value:
     //
     // Initialize WPP Tracing
     //
-    WPP_INIT_TRACING( DriverObject, RegistryPath );
+    WPP_INIT_TRACING(DriverObject, RegistryPath);
 
     //
     // Register a cleanup callback so that we can call WPP_CLEANUP when
@@ -83,19 +83,41 @@ Return Value:
     attributes.EvtCleanupCallback = XnaGuardianEvtDriverContextCleanup;
 
     WDF_DRIVER_CONFIG_INIT(&config,
-                           XnaGuardianEvtDeviceAdd
-                           );
+        XnaGuardianEvtDeviceAdd
+    );
 
     status = WdfDriverCreate(DriverObject,
-                             RegistryPath,
-                             &attributes,
-                             &config,
-                             WDF_NO_HANDLE
-                             );
+        RegistryPath,
+        &attributes,
+        &config,
+        WDF_NO_HANDLE
+    );
 
     if (!NT_SUCCESS(status)) {
         KdPrint((DRIVERNAME "WdfDriverCreate failed 0x%X", status));
         WPP_CLEANUP(DriverObject);
+        return status;
+    }
+
+    //
+    // Create device collection
+    // 
+    status = WdfCollectionCreate(WDF_NO_OBJECT_ATTRIBUTES,
+        &FilterDeviceCollection);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfCollectionCreate failed with status 0x%x\n", status));
+        return status;
+    }
+
+    // 
+    // Create device collection lock
+    // 
+    status = WdfWaitLockCreate(WDF_NO_OBJECT_ATTRIBUTES,
+        &FilterDeviceCollectionLock);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfWaitLockCreate failed with status 0x%x\n", status));
         return status;
     }
 
@@ -108,7 +130,7 @@ NTSTATUS
 XnaGuardianEvtDeviceAdd(
     _In_    WDFDRIVER       Driver,
     _Inout_ PWDFDEVICE_INIT DeviceInit
-    )
+)
 /*++
 Routine Description:
 
@@ -146,7 +168,7 @@ Return Value:
 VOID
 XnaGuardianEvtDriverContextCleanup(
     _In_ WDFOBJECT DriverObject
-    )
+)
 /*++
 Routine Description:
 
@@ -164,13 +186,13 @@ Return Value:
 {
     UNREFERENCED_PARAMETER(DriverObject);
 
-    PAGED_CODE ();
+    PAGED_CODE();
 
     TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "%!FUNC! Entry");
 
     //
     // Stop WPP Tracing
     //
-    WPP_CLEANUP( WdfDriverWdmGetDriverObject( (WDFDRIVER) DriverObject) );
+    WPP_CLEANUP(WdfDriverWdmGetDriverObject((WDFDRIVER)DriverObject));
 
 }

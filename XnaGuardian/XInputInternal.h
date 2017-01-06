@@ -40,4 +40,5 @@ SOFTWARE.
 
 #define IO_GET_GAMEPAD_STATE_IN_SIZE            0x03
 #define IO_GET_GAMEPAD_STATE_OUT_SIZE           0x1D
+#define IO_GET_INFORMATION_OUT_SIZE             0x0C
 

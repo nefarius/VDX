@@ -246,28 +246,26 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
         &stringAttributes,
         col
     );
-    if (!NT_SUCCESS(status)) {
-        KdPrint((DRIVERNAME "WdfRegistryQueryMultiString failed: 0x%x\n", status));
-        return status;
-    }
-
-    // 
-    // Get exempted values
-    // 
-    for (i = 0; i < WdfCollectionGetCount(col); i++)
+    if (NT_SUCCESS(status))
     {
-        WdfStringGetUnicodeString(WdfCollectionGetItem(col, i), &currentHardwareID);
-
-        KdPrint((DRIVERNAME "My ID %wZ vs current exempted ID %wZ\n", &myHardwareID, &currentHardwareID));
-
-        affected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
-        KdPrint((DRIVERNAME "Are we exempted: %d\n", affected));
-
-        if (affected)
+        // 
+        // Get exempted values
+        // 
+        for (i = 0; i < WdfCollectionGetCount(col); i++)
         {
-            WdfRegistryClose(keyParams);
-            WdfObjectDelete(col);
-            return STATUS_DEVICE_FEATURE_NOT_SUPPORTED;
+            WdfStringGetUnicodeString(WdfCollectionGetItem(col, i), &currentHardwareID);
+
+            KdPrint((DRIVERNAME "My ID %wZ vs current exempted ID %wZ\n", &myHardwareID, &currentHardwareID));
+
+            affected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
+            KdPrint((DRIVERNAME "Are we exempted: %d\n", affected));
+
+            if (affected)
+            {
+                WdfRegistryClose(keyParams);
+                WdfObjectDelete(col);
+                return STATUS_DEVICE_FEATURE_NOT_SUPPORTED;
+            }
         }
     }
 

@@ -1,5 +1,8 @@
 # HidCerberus.Lib
 API library for IPC with [HidCerberus.Srv](../HidCerberus.Srv).
+
+![Disclaimer](http://nefarius.at/public/Alpha-Disclaimer.png)
+
 ## How to use
 ### Native C/C++
 Dynamically declare the `HidGuardianOpen()` and `HidGuardianClose()` functions and call them:

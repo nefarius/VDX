@@ -1,6 +1,8 @@
 # XnaGuardian
 Adds various extension requests to `XnaComposite` class devices.
 
+![Disclaimer](http://nefarius.at/public/Alpha-Disclaimer.png)
+
 ## The Problem
 TDB
 

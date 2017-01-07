@@ -76,14 +76,17 @@ int main()
 
         DWORD retval;
 
-        XINPUT_EXT_HIDE_GAMEPAD hidePad;
-        XINPUT_EXT_HIDE_GAMEPAD_INIT(&hidePad, 0, TRUE);
+        XINPUT_EXT_OVERRIDE_GAMEPAD gamepad;
+        XINPUT_EXT_OVERRIDE_GAMEPAD_INIT(&gamepad, 0);
+
+        XINPUT_EXT_OVERRIDE_GAMEPAD_A(&gamepad, TRUE);
+        XINPUT_EXT_OVERRIDE_GAMEPAD_Y(&gamepad, TRUE);
 
         BOOLEAN ret = DeviceIoControl(
             hDevice,
-            IOCTL_XINPUT_EXT_HIDE_GAMEPAD,
-            static_cast<LPVOID>(&hidePad),
-            hidePad.Size,
+            IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE,
+            static_cast<LPVOID>(&gamepad),
+            gamepad.Size,
             nullptr,
             0,
             &retval,

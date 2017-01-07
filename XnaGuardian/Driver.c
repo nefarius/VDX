@@ -99,6 +99,17 @@ Return Value:
         return status;
     }
 
+    // 
+    // Create pad states lock
+    // 
+    status = WdfWaitLockCreate(WDF_NO_OBJECT_ATTRIBUTES,
+        &PadStatesLock);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfWaitLockCreate failed with status 0x%x\n", status));
+        return status;
+    }
+
     KdPrint((DRIVERNAME "XnaGuardian loaded: 0x%X\n", status));
 
     return status;

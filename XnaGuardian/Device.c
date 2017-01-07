@@ -58,17 +58,6 @@ XnaGuardianCreateDevice(
 
     if (NT_SUCCESS(status))
     {
-        // 
-        // Create pad states lock
-        // 
-        status = WdfWaitLockCreate(WDF_NO_OBJECT_ATTRIBUTES,
-            &PadStatesLock);
-        if (!NT_SUCCESS(status))
-        {
-            KdPrint((DRIVERNAME "WdfWaitLockCreate failed with status 0x%x\n", status));
-            return status;
-        }
-
         //
         // Initialize the I/O Package and any Queues
         //

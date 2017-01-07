@@ -17,3 +17,4 @@ This repository contains projects related to USB device emulation and HID device
 - [HidGuardian](../../tree/master/HidGuardian) - a Windows kernel-mode filter driver which can hide HID devices from user-mode applications.
 - [HidCerberus.Srv](../../tree/master/HidCerberus.Srv) - a Windows Service handling white-listed processes for interaction with `HidGuardian`.
 - [HidCerberus.Lib](../../tree/master/HidCerberus.Lib) - a Windows user-mode library for interaction with `HidCerberus.Srv`.
+- [XnaGuardian](../../tree/master/XnaGuardian) - a Windows kernel-mode driver which introduces additional requests to common `XnaComposite` devices.

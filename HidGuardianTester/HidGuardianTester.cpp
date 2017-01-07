@@ -25,6 +25,38 @@ int main()
     GUID hidClass;
     HidD_GetHidGuid(&hidClass);
 
+    hDevice = CreateFile(L"\\\\.\\XnaGuardian",
+        GENERIC_READ | GENERIC_WRITE,
+        0,
+        nullptr,
+        OPEN_EXISTING,
+        0,
+        nullptr);
+
+    printf("hDevice = 0x%p, error = %d\n", hDevice, GetLastError());
+
+    DWORD retval;
+
+    XINPUT_EXT_OVERRIDE_GAMEPAD gamepad;
+    XINPUT_EXT_OVERRIDE_GAMEPAD_INIT(&gamepad, 0);
+
+    XINPUT_EXT_OVERRIDE_GAMEPAD_A(&gamepad, TRUE);
+    XINPUT_EXT_OVERRIDE_GAMEPAD_Y(&gamepad, TRUE);
+
+    BOOLEAN ret = DeviceIoControl(
+        hDevice,
+        IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE,
+        static_cast<LPVOID>(&gamepad),
+        gamepad.Size,
+        nullptr,
+        0,
+        &retval,
+        nullptr);
+
+    printf("DeviceIoControl = %d, error = %d\n", ret, GetLastError());
+    getchar();
+    return 0;
+
 #ifdef HIDGUARDIAN
     HMODULE cerberus = LoadLibrary(L"HidCerberus.Lib.dll");
 

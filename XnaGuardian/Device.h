@@ -51,8 +51,6 @@ typedef struct _XINPUT_PAD_STATE_INTERNAL
 //
 typedef struct _DEVICE_CONTEXT
 {
-    WDFMEMORY                   HardwareIDMemory;
-    PCWSTR                      HardwareID;
     ULONG                       MaxDevices;
     UCHAR                       LedValues[XINPUT_MAX_DEVICES];
 

@@ -291,7 +291,9 @@ VOID XnaGuardianEvtIoDeviceControl(
         //
         // Set pad state
         // 
+        WdfWaitLockAcquire(PadStatesLock, NULL);
         PadStates[pHidePad->UserIndex].IsGetStateForbidden = pHidePad->Hidden;
+        WdfWaitLockRelease(PadStatesLock);
 
         //
         // Complete request
@@ -339,6 +341,7 @@ VOID XnaGuardianEvtIoDeviceControl(
         //
         // Set pad overrides
         // 
+        WdfWaitLockAcquire(PadStatesLock, NULL);
         if (
             RtlCompareMemory(
                 &PadStates[pOverride->UserIndex].Overrides,
@@ -357,6 +360,7 @@ VOID XnaGuardianEvtIoDeviceControl(
         {
             PadStates[pOverride->UserIndex].Gamepad = pOverride->Gamepad;
         }
+        WdfWaitLockRelease(PadStatesLock);
 
         //
         // Complete request
@@ -485,7 +489,9 @@ void XInputGetGamepadStateCompleted(
     //
     // Get global pad override data
     // 
+    WdfWaitLockAcquire(PadStatesLock, NULL);
     pPad = &PadStates[padIndex];
+    WdfWaitLockRelease(PadStatesLock);
 
     status = WdfRequestRetrieveOutputBuffer(Request, IO_GET_GAMEPAD_STATE_OUT_SIZE, &buffer, &buflen);
 
@@ -495,6 +501,8 @@ void XInputGetGamepadStateCompleted(
         // Extract XINPUT_GAMEPAD structure from buffer
         // 
         pGamepad = GAMEPAD_FROM_BUFFER(buffer);
+
+        WdfWaitLockAcquire(PadStatesLock, NULL);
 
         //
         // Override buttons
@@ -559,6 +567,8 @@ void XInputGetGamepadStateCompleted(
             pGamepad->sThumbRX = pPad->Gamepad.sThumbRX;
         if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y)
             pGamepad->sThumbRY = pPad->Gamepad.sThumbRY;
+
+        WdfWaitLockRelease(PadStatesLock);
     }
     else
     {

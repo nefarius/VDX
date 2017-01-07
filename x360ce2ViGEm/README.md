@@ -1,6 +1,8 @@
 # x360ce to ViGEm sample application
 Adds ViGEm support to unmodified x360ce application.
 
+![Disclaimer](http://nefarius.at/public/Alpha-Disclaimer.png)
+
 *Work in progress*, no downloads available yet.
 
 ## How to use

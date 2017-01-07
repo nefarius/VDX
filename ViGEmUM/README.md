@@ -1,5 +1,6 @@
 # ViGEm User-Mode DLL
-*Work in progress*
+
+![Disclaimer](http://nefarius.at/public/Alpha-Disclaimer.png)
 
 ## API documentation
 

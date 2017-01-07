@@ -120,9 +120,6 @@ VOID XnaGuardianEvtIoDeviceControl(
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called with code 0x%X\n", IoControlCode));
 
-    KdPrint((DRIVERNAME "InputBufferLength = 0x%X\n", InputBufferLength));
-    KdPrint((DRIVERNAME "OutputBufferLength = 0x%X\n", OutputBufferLength));
-
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
 
@@ -167,6 +164,7 @@ VOID XnaGuardianEvtIoDeviceControl(
         KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_LED_STATE\n"));
         break;
 
+#pragma region IOCTL_XINPUT_GET_GAMEPAD_STATE
         //
         // Filter GetLatestDeviceInfo(...) call
         // 
@@ -211,7 +209,9 @@ VOID XnaGuardianEvtIoDeviceControl(
         }
 
         return;
+#pragma endregion
 
+#pragma region IOCTL_XINPUT_SET_GAMEPAD_STATE
         //
         // Filter SendLEDState(...) call
         // 
@@ -233,6 +233,7 @@ VOID XnaGuardianEvtIoDeviceControl(
         }
 
         break;
+#pragma endregion 
 
     case IOCTL_XINPUT_WAIT_FOR_GUIDE_BUTTON:
 

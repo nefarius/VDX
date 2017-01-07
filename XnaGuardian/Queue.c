@@ -409,7 +409,7 @@ void XInputGetInformationCompleted(
         // 3rd byte in buffer contains the maximum supported devices 
         // on the current handle (typically either 0x01 or 0x04).
         // 
-        pDeviceContext->MaxDevices = (ULONG)((PUCHAR)buffer)[2];
+        pDeviceContext->MaxDevices = MAX_DEVICES_FROM_BUFFER(buffer);
     }
     else
     {

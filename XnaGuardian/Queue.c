@@ -31,6 +31,9 @@ SOFTWARE.
 #pragma alloc_text (PAGE, XnaGuardianQueueInitialize)
 #endif
 
+//
+// Sets up the default I/O queue.
+// 
 NTSTATUS
 XnaGuardianQueueInitialize(
     _In_ WDFDEVICE Device
@@ -98,6 +101,9 @@ VOID XnaGuardianEvtIoDefault(
     }
 }
 
+//
+// Hooks into DeviceIoControl(...) calls
+// 
 VOID XnaGuardianEvtIoDeviceControl(
     _In_ WDFQUEUE Queue,
     _In_ WDFREQUEST Request,
@@ -420,6 +426,9 @@ void XInputGetInformationCompleted(
     WdfRequestComplete(Request, status);
 }
 
+//
+// Filter GetLatestDeviceInfo(...) result
+// 
 void XInputGetGamepadStateCompleted(
     _In_ WDFREQUEST                     Request,
     _In_ WDFIOTARGET                    Target,
@@ -463,8 +472,6 @@ void XInputGetGamepadStateCompleted(
     {
         padIndex = pDeviceContext->LedValues[pRequestContext->Index] - XINPUT_LED_OFFSET;
     }
-
-    KdPrint((DRIVERNAME "PAD INDEX: %d\n", padIndex));
 
     //
     // Check bounds and just complete request on error

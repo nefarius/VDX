@@ -43,6 +43,5 @@ SOFTWARE.
 #define IO_GET_INFORMATION_OUT_SIZE             0x0C
 #define IO_SET_GAMEPAD_STATE_IN_SIZE            0x05
 
-#define XINPUT_MAX_DEVICES                      0x04
 #define XINPUT_LED_OFFSET                       0x06
 

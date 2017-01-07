@@ -25,16 +25,95 @@ SOFTWARE.
 
 #include "stdafx.h"
 #include "XInputExtensions.h"
+#include <winioctl.h>
+#include "XnaGuardianShared.h"
 
+HANDLE                          g_hGuardian = INVALID_HANDLE_VALUE;
+XINPUT_EXT_OVERRIDE_GAMEPAD     PadOverrides[XINPUT_MAX_DEVICES];
+
+DWORD OpenGuardian()
+{
+    if (g_hGuardian != INVALID_HANDLE_VALUE)
+    {
+        return ERROR_SUCCESS;
+    }
+
+    g_hGuardian = CreateFile(XNA_GUARDIAN_DEVICE_PATH,
+        GENERIC_READ, // Only read access
+        0, // FILE_SHARE_READ | FILE_SHARE_WRITE
+        nullptr, // no SECURITY_ATTRIBUTES structure
+        OPEN_EXISTING, // No special create flags
+        0, // No special attributes
+        nullptr); // No template file
+
+    if (g_hGuardian != INVALID_HANDLE_VALUE)
+    {
+        return ERROR_SUCCESS;
+    }
+
+    return GetLastError();
+}
 
 XINPUTEXTENSIONS_API DWORD XInputOverrideSetMask(DWORD dwUserIndex, DWORD dwMask)
 {
-    return ERROR_SUCCESS;
+    PXINPUT_EXT_OVERRIDE_GAMEPAD    pPad = nullptr;
+    DWORD                           retval = 0;
+
+    if (dwUserIndex < 0 || dwUserIndex >= XINPUT_MAX_DEVICES) return ERROR_BAD_ARGUMENTS;
+
+    if (!SUCCEEDED(HRESULT_FROM_WIN32(OpenGuardian()))) return GetLastError();
+
+    pPad = &PadOverrides[dwUserIndex];
+
+    XINPUT_EXT_OVERRIDE_GAMEPAD_INIT(pPad, dwUserIndex);
+
+    pPad->UserIndex = dwUserIndex;
+    pPad->Overrides = dwMask;
+
+    auto ret = DeviceIoControl(
+        g_hGuardian,
+        IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE,
+        static_cast<LPVOID>(pPad),
+        pPad->Size,
+        nullptr,
+        0,
+        &retval,
+        nullptr);
+
+    if (ret == 0) return ERROR_SUCCESS;
+
+    return GetLastError();
 }
 
 XINPUTEXTENSIONS_API DWORD XInputOverrideSetState(DWORD dwUserIndex, PXINPUT_GAMEPAD pGamepad)
 {
-    return ERROR_SUCCESS;
+    PXINPUT_EXT_OVERRIDE_GAMEPAD    pPad = nullptr;
+    DWORD                           retval = 0;
+
+    if (dwUserIndex < 0 || dwUserIndex >= XINPUT_MAX_DEVICES) return ERROR_BAD_ARGUMENTS;
+
+    if (!SUCCEEDED(HRESULT_FROM_WIN32(OpenGuardian()))) return GetLastError();
+
+    pPad = &PadOverrides[dwUserIndex];
+
+    XINPUT_EXT_OVERRIDE_GAMEPAD_INIT(pPad, dwUserIndex);
+
+    pPad->UserIndex = dwUserIndex;
+    pPad->Gamepad = *reinterpret_cast<PXINPUT_GAMEPAD_STATE>(pGamepad);
+
+    auto ret = DeviceIoControl(
+        g_hGuardian,
+        IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE,
+        static_cast<LPVOID>(pPad),
+        pPad->Size,
+        nullptr,
+        0,
+        &retval,
+        nullptr);
+
+    if (ret == 0) return ERROR_SUCCESS;
+
+    return GetLastError();
 }
 
 

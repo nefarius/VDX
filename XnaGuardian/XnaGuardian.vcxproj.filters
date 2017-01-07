@@ -33,6 +33,9 @@
     <ClInclude Include="XInputInternal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\XnaGuardianShared.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="XnaGuardian.rc" />
@@ -46,6 +49,9 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{d463691a-a0af-45ba-b7e9-4a71ec82cd63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Common">
+      <UniqueIdentifier>{7fc7e7cc-50d4-4e96-927f-b438a11337f2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

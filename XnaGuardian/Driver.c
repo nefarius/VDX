@@ -110,6 +110,26 @@ Return Value:
         return status;
     }
 
+    status = WdfCollectionCreate(WDF_NO_OBJECT_ATTRIBUTES,
+        &FilterDeviceCollection);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfCollectionCreate failed with status 0x%x\n", status));
+        return status;
+    }
+
+    //
+    // The wait-lock object has the driver object as a default parent.
+    //
+
+    status = WdfWaitLockCreate(WDF_NO_OBJECT_ATTRIBUTES,
+        &FilterDeviceCollectionLock);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfWaitLockCreate failed with status 0x%x\n", status));
+        return status;
+    }
+
     KdPrint((DRIVERNAME "XnaGuardian loaded: 0x%X\n", status));
 
     return status;

@@ -31,7 +31,6 @@ SOFTWARE.
 EXTERN_C_START
 
 #define MAX_HARDWARE_ID_SIZE        0xFF
-#define SYMBOLIC_NAME_STRING        L"\\DosDevices\\XnaGuardian"
 
 //
 // Returns the current caller process id.
@@ -76,6 +75,5 @@ XnaGuardianCreateDevice(
     );
 
 EVT_WDF_OBJECT_CONTEXT_CLEANUP XnaGuardianCleanupCallback;
-EVT_WDF_DEVICE_FILE_CREATE XnaGuardianFileCreate;
 
 EXTERN_C_END

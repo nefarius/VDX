@@ -27,6 +27,7 @@ SOFTWARE.
 #include "device.tmh"
 #define NTSTRSAFE_LIB
 #include <ntstrsafe.h>
+#include "Sideband.h"
 
 XINPUT_PAD_STATE_INTERNAL   PadStates[XINPUT_MAX_DEVICES];
 WDFWAITLOCK                 PadStatesLock;
@@ -34,7 +35,6 @@ WDFWAITLOCK                 PadStatesLock;
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, XnaGuardianCreateDevice)
 #pragma alloc_text (PAGE, XnaGuardianCleanupCallback)
-#pragma alloc_text (PAGE, XnaGuardianFileCreate)
 #endif
 
 
@@ -46,26 +46,10 @@ XnaGuardianCreateDevice(
     WDF_OBJECT_ATTRIBUTES   deviceAttributes;
     WDFDEVICE               device;
     NTSTATUS                status;
-    WDF_FILEOBJECT_CONFIG   deviceConfig;
-    DECLARE_CONST_UNICODE_STRING(FilterDeviceSymlinkName, SYMBOLIC_NAME_STRING);
 
     PAGED_CODE();
 
     WdfFdoInitSetFilter(DeviceInit);
-
-    WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
-    deviceAttributes.SynchronizationScope = WdfSynchronizationScopeNone;
-    WDF_FILEOBJECT_CONFIG_INIT(
-        &deviceConfig,
-        XnaGuardianFileCreate,
-        WDF_NO_EVENT_CALLBACK,
-        WDF_NO_EVENT_CALLBACK // No cleanup callback function
-    );
-    WdfDeviceInitSetFileObjectConfig(
-        DeviceInit,
-        &deviceConfig,
-        &deviceAttributes
-    );
 
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&deviceAttributes, DEVICE_CONTEXT);
 
@@ -84,14 +68,6 @@ XnaGuardianCreateDevice(
             KdPrint((DRIVERNAME "XnaGuardianQueueInitialize failed with status 0x%X", status));
             return status;
         }
-
-        //
-        // Expose symbolic link to user-mode
-        // 
-        status = WdfDeviceCreateSymbolicLink(device,
-            &FilterDeviceSymlinkName);
-
-        status = (NT_SUCCESS(status) || status == STATUS_OBJECT_NAME_COLLISION) ? STATUS_SUCCESS : status;
     }
     else
     {
@@ -111,35 +87,33 @@ VOID XnaGuardianCleanupCallback(
     _In_ WDFOBJECT Device
 )
 {
+    ULONG   count;
+
     PAGED_CODE();
 
-    UNREFERENCED_PARAMETER(Device);
+    KdPrint((DRIVERNAME "Entered XnaGuardianCleanupCallback\n"));
 
-    KdPrint((DRIVERNAME "XnaGuardianCleanupCallback called\n"));
+    WdfWaitLockAcquire(FilterDeviceCollectionLock, NULL);
+
+    count = WdfCollectionGetCount(FilterDeviceCollection);
+
+    if (count == 1)
+    {
+        //
+        // We are the last instance. So let us delete the control-device
+        // so that driver can unload when the FilterDevice is deleted.
+        // We absolutely have to do the deletion of control device with
+        // the collection lock acquired because we implicitly use this
+        // lock to protect ControlDevice global variable. We need to make
+        // sure another thread doesn't attempt to create while we are
+        // deleting the device.
+        //
+        FilterDeleteControlDevice((WDFDEVICE)Device);
+    }
+
+    WdfCollectionRemove(FilterDeviceCollection, Device);
+
+    WdfWaitLockRelease(FilterDeviceCollectionLock);
 }
 #pragma warning(pop) // enable 28118 again
-
-//
-// Called on CreateFile(...)
-// 
-VOID XnaGuardianFileCreate(
-    _In_ WDFDEVICE     Device,
-    _In_ WDFREQUEST    Request,
-    _In_ WDFFILEOBJECT FileObject
-)
-{
-    PAGED_CODE();
-
-    UNREFERENCED_PARAMETER(Device);
-    UNREFERENCED_PARAMETER(FileObject);
-
-    KdPrint((DRIVERNAME "XnaGuardianFileCreate called\n"));
-
-    //
-    // Successfully handling this request allows user-mode
-    // applications to talk directly to the driver whereas 
-    // XUSB22.sys would deny them from symbolic links.
-    // 
-    WdfRequestComplete(Request, STATUS_SUCCESS);
-}
 

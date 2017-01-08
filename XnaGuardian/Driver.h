@@ -35,6 +35,10 @@ SOFTWARE.
 
 #define DRIVERNAME "XnaGuardian: "
 
+extern WDFCOLLECTION   FilterDeviceCollection;
+extern WDFWAITLOCK     FilterDeviceCollectionLock;
+extern WDFDEVICE       ControlDevice;
+
 EXTERN_C_START
 
 //

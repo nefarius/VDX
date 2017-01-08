@@ -48,6 +48,11 @@ DWORD OpenGuardian()
 
     if (g_hGuardian != INVALID_HANDLE_VALUE)
     {
+        for (auto i = 0; i < XINPUT_MAX_DEVICES; i++)
+        {
+            XINPUT_EXT_OVERRIDE_GAMEPAD_INIT(&PadOverrides[i], i);
+        }
+
         return ERROR_SUCCESS;
     }
 
@@ -65,9 +70,6 @@ XINPUTEXTENSIONS_API DWORD XInputOverrideSetMask(DWORD dwUserIndex, DWORD dwMask
 
     pPad = &PadOverrides[dwUserIndex];
 
-    XINPUT_EXT_OVERRIDE_GAMEPAD_INIT(pPad, dwUserIndex);
-
-    pPad->UserIndex = dwUserIndex;
     pPad->Overrides = dwMask;
 
     auto ret = DeviceIoControl(
@@ -90,15 +92,14 @@ XINPUTEXTENSIONS_API DWORD XInputOverrideSetState(DWORD dwUserIndex, PXINPUT_GAM
     PXINPUT_EXT_OVERRIDE_GAMEPAD    pPad = nullptr;
     DWORD                           retval = 0;
 
+    if (!pGamepad) return ERROR_BAD_ARGUMENTS;
+
     if (dwUserIndex < 0 || dwUserIndex >= XINPUT_MAX_DEVICES) return ERROR_BAD_ARGUMENTS;
 
     if (!SUCCEEDED(HRESULT_FROM_WIN32(OpenGuardian()))) return GetLastError();
 
     pPad = &PadOverrides[dwUserIndex];
 
-    XINPUT_EXT_OVERRIDE_GAMEPAD_INIT(pPad, dwUserIndex);
-
-    pPad->UserIndex = dwUserIndex;
     pPad->Gamepad = *reinterpret_cast<PXINPUT_GAMEPAD_STATE>(pGamepad);
 
     auto ret = DeviceIoControl(

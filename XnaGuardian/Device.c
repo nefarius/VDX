@@ -68,6 +68,35 @@ XnaGuardianCreateDevice(
             KdPrint((DRIVERNAME "XnaGuardianQueueInitialize failed with status 0x%X", status));
             return status;
         }
+
+        //
+        // Add this device to the FilterDevice collection.
+        //
+        WdfWaitLockAcquire(FilterDeviceCollectionLock, NULL);
+
+        //
+        // WdfCollectionAdd takes a reference on the item object and removes
+        // it when you call WdfCollectionRemove.
+        //
+        status = WdfCollectionAdd(FilterDeviceCollection, device);
+        if (!NT_SUCCESS(status)) {
+            KdPrint((DRIVERNAME "WdfCollectionAdd failed with status code 0x%x\n", status));
+        }
+        WdfWaitLockRelease(FilterDeviceCollectionLock);
+
+        //
+        // Create a control device
+        //
+        status = FilterCreateControlDevice(device);
+        if (!NT_SUCCESS(status)) {
+            KdPrint((DRIVERNAME "FilterCreateControlDevice failed with status 0x%x\n",
+                status));
+            //
+            // Let us not fail AddDevice just because we weren't able to create the
+            // control device.
+            //
+            status = STATUS_SUCCESS;
+        }
     }
     else
     {

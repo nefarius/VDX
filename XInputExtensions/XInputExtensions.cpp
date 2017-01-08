@@ -39,7 +39,7 @@ DWORD OpenGuardian()
     }
 
     g_hGuardian = CreateFile(XNA_GUARDIAN_DEVICE_PATH,
-        GENERIC_READ, // Only read access
+        GENERIC_READ | GENERIC_WRITE,
         0, // FILE_SHARE_READ | FILE_SHARE_WRITE
         nullptr, // no SECURITY_ATTRIBUTES structure
         OPEN_EXISTING, // No special create flags
@@ -80,7 +80,7 @@ XINPUTEXTENSIONS_API DWORD XInputOverrideSetMask(DWORD dwUserIndex, DWORD dwMask
         &retval,
         nullptr);
 
-    if (ret == 0) return ERROR_SUCCESS;
+    if (ret > 0) return ERROR_SUCCESS;
 
     return GetLastError();
 }
@@ -111,7 +111,7 @@ XINPUTEXTENSIONS_API DWORD XInputOverrideSetState(DWORD dwUserIndex, PXINPUT_GAM
         &retval,
         nullptr);
 
-    if (ret == 0) return ERROR_SUCCESS;
+    if (ret > 0) return ERROR_SUCCESS;
 
     return GetLastError();
 }

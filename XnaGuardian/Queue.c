@@ -118,8 +118,6 @@ VOID XnaGuardianEvtIoDeviceControl(
     size_t                          buflen;
     PDEVICE_CONTEXT                 pDeviceContext;
     PVOID                           pBuffer;
-    PXINPUT_EXT_HIDE_GAMEPAD        pHidePad;
-    PXINPUT_EXT_OVERRIDE_GAMEPAD    pOverride;
     WDFDEVICE                       Device;
     WDF_OBJECT_ATTRIBUTES           requestAttribs;
     PXINPUT_PAD_IDENTIFIER_CONTEXT  pXInputContext = NULL;
@@ -260,114 +258,6 @@ VOID XnaGuardianEvtIoDeviceControl(
 
         KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_AUDIO_INFORMATION\n"));
         break;
-
-#pragma region IOCTL_XINPUT_EXT_HIDE_GAMEPAD
-    case IOCTL_XINPUT_EXT_HIDE_GAMEPAD:
-
-        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_EXT_HIDE_GAMEPAD\n"));
-
-        // 
-        // Retrieve input buffer
-        // 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(XINPUT_EXT_HIDE_GAMEPAD), &pBuffer, &buflen);
-        if (!NT_SUCCESS(status) || buflen < sizeof(XINPUT_EXT_HIDE_GAMEPAD))
-        {
-            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X\n", status));
-            WdfRequestComplete(Request, status);
-            return;
-        }
-
-        pHidePad = (PXINPUT_EXT_HIDE_GAMEPAD)pBuffer;
-
-        //
-        // Validate padding
-        // 
-        if (pHidePad->Size != sizeof(XINPUT_EXT_HIDE_GAMEPAD))
-        {
-            WdfRequestComplete(Request, STATUS_INVALID_PARAMETER);
-            return;
-        }
-
-        //
-        // Set pad state
-        // 
-        WdfWaitLockAcquire(PadStatesLock, NULL);
-        PadStates[pHidePad->UserIndex].IsGetStateForbidden = pHidePad->Hidden;
-        WdfWaitLockRelease(PadStatesLock);
-
-        //
-        // Complete request
-        // 
-        WdfRequestComplete(Request, STATUS_SUCCESS);
-        return;
-#pragma endregion
-
-#pragma region IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE
-    case IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE:
-
-        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE\n"));
-
-        // 
-        // Retrieve input buffer
-        // 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(XINPUT_EXT_OVERRIDE_GAMEPAD), &pBuffer, &buflen);
-        if (!NT_SUCCESS(status) || buflen < sizeof(XINPUT_EXT_OVERRIDE_GAMEPAD))
-        {
-            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X\n", status));
-            WdfRequestComplete(Request, status);
-            return;
-        }
-
-        pOverride = (PXINPUT_EXT_OVERRIDE_GAMEPAD)pBuffer;
-
-        //
-        // Validate padding
-        // 
-        if (pOverride->Size != sizeof(XINPUT_EXT_OVERRIDE_GAMEPAD))
-        {
-            WdfRequestComplete(Request, STATUS_INVALID_PARAMETER);
-            return;
-        }
-
-        // 
-        // Validate range
-        // 
-        if (pOverride->UserIndex < 0 || pOverride->UserIndex > 3)
-        {
-            WdfRequestComplete(Request, STATUS_INVALID_PARAMETER);
-            return;
-        }
-
-        //
-        // Set pad overrides
-        // 
-        WdfWaitLockAcquire(PadStatesLock, NULL);
-        if (
-            RtlCompareMemory(
-                &PadStates[pOverride->UserIndex].Overrides,
-                &pOverride->Overrides,
-                sizeof(ULONG)
-            ) != 0)
-        {
-            PadStates[pOverride->UserIndex].Overrides = pOverride->Overrides;
-        }
-        if (
-            RtlCompareMemory(
-                &PadStates[pOverride->UserIndex].Gamepad,
-                &pOverride->Gamepad,
-                sizeof(XINPUT_GAMEPAD_STATE)
-            ) != 0)
-        {
-            PadStates[pOverride->UserIndex].Gamepad = pOverride->Gamepad;
-        }
-        WdfWaitLockRelease(PadStatesLock);
-
-        //
-        // Complete request
-        // 
-        WdfRequestComplete(Request, STATUS_SUCCESS);
-        return;
-#pragma endregion
 
     default:
         break;

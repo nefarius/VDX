@@ -1,9 +1,9 @@
 #include "Sideband.h"
 #include <wdmsec.h>
 
-WDFCOLLECTION               FilterDeviceCollection;
-WDFWAITLOCK                 FilterDeviceCollectionLock;
-WDFDEVICE                   ControlDevice = NULL;
+WDFCOLLECTION   FilterDeviceCollection;
+WDFWAITLOCK     FilterDeviceCollectionLock;
+WDFDEVICE       ControlDevice = NULL;
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, FilterCreateControlDevice)
@@ -189,12 +189,127 @@ VOID XnaGuardianSidebandIoDeviceControl(
     _In_ ULONG      IoControlCode
 )
 {
+    NTSTATUS                        status = STATUS_INVALID_PARAMETER;
+    size_t                          buflen;
+    PVOID                           pBuffer;
+    PXINPUT_EXT_HIDE_GAMEPAD        pHidePad;
+    PXINPUT_EXT_OVERRIDE_GAMEPAD    pOverride;
+
+    KdPrint((DRIVERNAME "XnaGuardianSidebandIoDeviceControl called with code 0x%X\n", IoControlCode));
+
     UNREFERENCED_PARAMETER(Queue);
-    UNREFERENCED_PARAMETER(Request);
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
-    UNREFERENCED_PARAMETER(IoControlCode);
+
+    switch (IoControlCode)
+    {
+#pragma region IOCTL_XINPUT_EXT_HIDE_GAMEPAD
+    case IOCTL_XINPUT_EXT_HIDE_GAMEPAD:
+
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_EXT_HIDE_GAMEPAD\n"));
+
+        // 
+        // Retrieve input buffer
+        // 
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(XINPUT_EXT_HIDE_GAMEPAD), &pBuffer, &buflen);
+        if (!NT_SUCCESS(status) || buflen < sizeof(XINPUT_EXT_HIDE_GAMEPAD))
+        {
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X\n", status));
+            break;
+        }
+
+        pHidePad = (PXINPUT_EXT_HIDE_GAMEPAD)pBuffer;
+
+        //
+        // Validate padding
+        // 
+        if (pHidePad->Size != sizeof(XINPUT_EXT_HIDE_GAMEPAD))
+        {
+            status = STATUS_INVALID_PARAMETER;
+            break;
+        }
+
+        //
+        // Set pad state
+        // 
+        WdfWaitLockAcquire(PadStatesLock, NULL);
+        PadStates[pHidePad->UserIndex].IsGetStateForbidden = pHidePad->Hidden;
+        WdfWaitLockRelease(PadStatesLock);
+
+        status = STATUS_SUCCESS;
+
+        break;
+#pragma endregion
+
+#pragma region IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE
+    case IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE:
+
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE\n"));
+
+        // 
+        // Retrieve input buffer
+        // 
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(XINPUT_EXT_OVERRIDE_GAMEPAD), &pBuffer, &buflen);
+        if (!NT_SUCCESS(status) || buflen < sizeof(XINPUT_EXT_OVERRIDE_GAMEPAD))
+        {
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X\n", status));
+            break;
+        }
+
+        pOverride = (PXINPUT_EXT_OVERRIDE_GAMEPAD)pBuffer;
+
+        //
+        // Validate padding
+        // 
+        if (pOverride->Size != sizeof(XINPUT_EXT_OVERRIDE_GAMEPAD))
+        {
+            status =  STATUS_INVALID_PARAMETER;
+            break;
+        }
+
+        // 
+        // Validate range
+        // 
+        if (pOverride->UserIndex < 0 || pOverride->UserIndex > 3)
+        {
+            status = STATUS_INVALID_PARAMETER;
+            break;
+        }
+
+        //
+        // Set pad overrides
+        // 
+        WdfWaitLockAcquire(PadStatesLock, NULL);
+        if (
+            RtlCompareMemory(
+                &PadStates[pOverride->UserIndex].Overrides,
+                &pOverride->Overrides,
+                sizeof(ULONG)
+            ) != 0)
+        {
+            PadStates[pOverride->UserIndex].Overrides = pOverride->Overrides;
+        }
+        if (
+            RtlCompareMemory(
+                &PadStates[pOverride->UserIndex].Gamepad,
+                &pOverride->Gamepad,
+                sizeof(XINPUT_GAMEPAD_STATE)
+            ) != 0)
+        {
+            PadStates[pOverride->UserIndex].Gamepad = pOverride->Gamepad;
+        }
+        WdfWaitLockRelease(PadStatesLock);
+
+        status = STATUS_SUCCESS;
+
+        break;
+#pragma endregion
+
+    default:
+        break;
+    }
+
+    WdfRequestComplete(Request, status);
 }
 #pragma warning(pop) // enable 28118 again
-
 

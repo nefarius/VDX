@@ -17,6 +17,7 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
 LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
+#pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -70,7 +71,7 @@ BEGIN
             VALUE "FileDescription", "HidGuardian Class Filter Driver"
 VALUE "FileVersion", "1.2.3.0"
             VALUE "InternalName", "HidGuardian.sys"
-            VALUE "LegalCopyright", "Copyright (C) Benjamin Höglinger 2016"
+            VALUE "LegalCopyright", "Copyright (C) Benjamin Hoeglinger 2016"
             VALUE "OriginalFilename", "HidGuardian.sys"
             VALUE "ProductName", "HidGuardian Class Filter Driver"
 VALUE "ProductVersion", "1.2.3.0"

@@ -84,6 +84,9 @@ XINPUTEXTENSIONS_API DWORD XInputOverrideSetMask(DWORD dwUserIndex, DWORD dwMask
 
     if (ret > 0) return ERROR_SUCCESS;
 
+    CloseHandle(g_hGuardian);
+    g_hGuardian = nullptr;
+
     return GetLastError();
 }
 
@@ -113,6 +116,9 @@ XINPUTEXTENSIONS_API DWORD XInputOverrideSetState(DWORD dwUserIndex, PXINPUT_GAM
         nullptr);
 
     if (ret > 0) return ERROR_SUCCESS;
+
+    CloseHandle(g_hGuardian);
+    g_hGuardian = nullptr;
 
     return GetLastError();
 }

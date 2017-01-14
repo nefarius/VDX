@@ -11,3 +11,4 @@ honestus --version-from-file version.txt --target-file "%solution%\ViGEmBus\ViGE
 honestus --version-from-file version.txt --target-file "%solution%\x360ce2ViGEm\x360ce2ViGEm.rc" --resource.file-version --resource.product-version
 honestus --version-from-file version.txt --target-file "%solution%\XnaGuardian\XnaGuardian.rc" --resource.file-version --resource.product-version
 honestus --version-from-file version.txt --target-file "%solution%\XnaGuardian\XnaGuardian.vcxproj" --vcxproj.inf-time-stamp
+honestus --version-from-file version.txt --target-file "%solution%\XInputExtensions\XInputExtensions.rc" --resource.file-version --resource.product-version

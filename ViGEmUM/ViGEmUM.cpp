@@ -46,10 +46,11 @@ VIGEM_API VIGEM_ERROR vigem_init()
     deviceInterfaceData.cbSize = sizeof(deviceInterfaceData);
     DWORD memberIndex = 0;
     DWORD requiredSize = 0;
-    VIGEM_ERROR error = VIGEM_ERROR_BUS_NOT_FOUND;
+    auto error = VIGEM_ERROR_BUS_NOT_FOUND;
 
     auto deviceInfoSet = SetupDiGetClassDevs(&GUID_DEVINTERFACE_BUSENUM_VIGEM, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
+    // enumerate device instances
     while (SetupDiEnumDeviceInterfaces(deviceInfoSet, nullptr, &GUID_DEVINTERFACE_BUSENUM_VIGEM, memberIndex, &deviceInterfaceData))
     {
         // get required target buffer size
@@ -68,6 +69,7 @@ VIGEM_API VIGEM_ERROR vigem_init()
             continue;
         }
 
+        // close previously opened handle
         if (g_hViGEmBus != INVALID_HANDLE_VALUE)
         {
             CloseHandle(g_hViGEmBus);
@@ -82,9 +84,36 @@ VIGEM_API VIGEM_ERROR vigem_init()
             FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
             nullptr);
 
-        free(detailDataBuffer);
+        if (g_hViGEmBus != INVALID_HANDLE_VALUE)
+        {
+            DWORD transfered = 0;
+            OVERLAPPED lOverlapped = { 0 };
+            lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
-        error = VIGEM_ERROR_NONE;
+            VIGEM_CHECK_VERSION version;
+            VIGEM_CHECK_VERSION_INIT(&version, VIGEM_COMMON_VERSION);
+
+            // send compiled library version to driver to check compatibility
+            DeviceIoControl(g_hViGEmBus, IOCTL_VIGEM_CHECK_VERSION, &version, version.Size, nullptr, 0, &transfered, &lOverlapped);
+
+            // wait for result
+            if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
+            {
+                error = VIGEM_ERROR_NONE;
+            }
+            else
+            {
+                error = VIGEM_ERROR_BUS_VERSION_MISMATCH;
+            }
+
+            CloseHandle(lOverlapped.hEvent);
+        }
+        else
+        {
+            error = VIGEM_ERROR_BUS_ACCESS_FAILED;
+        }
+
+        free(detailDataBuffer);
 
         break;
     }
@@ -190,7 +219,7 @@ VIGEM_API VIGEM_ERROR vigem_target_plugin(
             Target->State = VIGEM_TARGET_CONNECTED;
             CloseHandle(lOverlapped.hEvent);
 
-            if(Type == XboxOneWired)
+            if (Type == XboxOneWired)
             {
                 // TODO: fix this!
                 Sleep(500);

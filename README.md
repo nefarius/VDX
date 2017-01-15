@@ -19,3 +19,7 @@ This repository contains projects related to USB device emulation and HID device
 - [HidCerberus.Lib](../../tree/master/HidCerberus.Lib) - a Windows user-mode library for interaction with `HidCerberus.Srv`.
 - [XnaGuardian](../../tree/master/XnaGuardian) - a Windows kernel-mode driver which introduces additional requests to common `XnaComposite` devices.
 - [XInputExtensions](../../tree/master/XInputExtensions) - a Windows user-mode library for interaction with the `XnaGuardian` driver.
+
+## Sponsors
+- [3dRudder](https://www.3drudder.com/eu/)
+- [Wohlfeil.IT e.U.](https://wohlfeil.it/)

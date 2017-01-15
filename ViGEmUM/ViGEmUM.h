@@ -70,7 +70,6 @@ typedef enum _VIGEM_TARGET_STATE
 typedef struct _VIGEM_TARGET
 {
     IN ULONG Size;
-    IN USHORT Version;
     IN ULONG SerialNo;
     IN VIGEM_TARGET_STATE State;
     IN USHORT VendorId;
@@ -87,7 +86,6 @@ VOID FORCEINLINE VIGEM_TARGET_INIT(
     RtlZeroMemory(Target, sizeof(VIGEM_TARGET));
 
     Target->Size = sizeof(VIGEM_TARGET);
-    Target->Version = VIGEM_COMMON_VERSION;
     Target->State = VIGEM_TARGET_INITIALIZED;
 }
 

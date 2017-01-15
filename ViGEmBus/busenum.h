@@ -44,9 +44,6 @@ SOFTWARE.
 #include "Xgip.h"
 
 
-#pragma once
-
-
 #pragma region Macros
 
 #define MAX_INSTANCE_ID_LEN             80

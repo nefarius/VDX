@@ -49,6 +49,7 @@ VOID Bus_EvtIoDeviceControl(
     PDS4_REQUEST_NOTIFICATION   ds4Notify = NULL;
     PXGIP_SUBMIT_REPORT         xgipSubmit = NULL;
     PXGIP_SUBMIT_INTERRUPT      xgipInterrupt = NULL;
+    PVIGEM_CHECK_VERSION        pCheckVersion = NULL;
 
     Device = WdfIoQueueGetDevice(Queue);
 
@@ -56,6 +57,25 @@ VOID Bus_EvtIoDeviceControl(
 
     switch (IoControlCode)
     {
+#pragma region IOCTL_VIGEM_CHECK_VERSION
+    case IOCTL_VIGEM_CHECK_VERSION:
+
+        KdPrint((DRIVERNAME "IOCTL_VIGEM_CHECK_VERSION\n"));
+
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(VIGEM_CHECK_VERSION), (PVOID)&pCheckVersion, &length);
+
+        if (!NT_SUCCESS(status) || length != sizeof(VIGEM_CHECK_VERSION))
+        {
+            status = STATUS_INVALID_PARAMETER;
+            break;
+        }
+
+        status = (pCheckVersion->Version == VIGEM_COMMON_VERSION) ? STATUS_SUCCESS : STATUS_NOT_SUPPORTED;
+
+        break;
+#pragma endregion 
+
+#pragma region IOCTL_VIGEM_PLUGIN_TARGET
     case IOCTL_VIGEM_PLUGIN_TARGET:
 
         KdPrint((DRIVERNAME "IOCTL_VIGEM_PLUGIN_TARGET\n"));
@@ -63,7 +83,9 @@ VOID Bus_EvtIoDeviceControl(
         status = Bus_PlugInDevice(Device, Request, FALSE, &length);
 
         break;
+#pragma endregion 
 
+#pragma region IOCTL_VIGEM_UNPLUG_TARGET
     case IOCTL_VIGEM_UNPLUG_TARGET:
 
         KdPrint((DRIVERNAME "IOCTL_VIGEM_UNPLUG_TARGET\n"));
@@ -71,7 +93,9 @@ VOID Bus_EvtIoDeviceControl(
         status = Bus_UnPlugDevice(Device, Request, FALSE, &length);
 
         break;
+#pragma endregion 
 
+#pragma region IOCTL_XUSB_SUBMIT_REPORT
     case IOCTL_XUSB_SUBMIT_REPORT:
 
         KdPrint((DRIVERNAME "IOCTL_XUSB_SUBMIT_REPORT\n"));
@@ -97,7 +121,9 @@ VOID Bus_EvtIoDeviceControl(
         }
 
         break;
+#pragma endregion 
 
+#pragma region IOCTL_XUSB_REQUEST_NOTIFICATION
     case IOCTL_XUSB_REQUEST_NOTIFICATION:
 
         KdPrint((DRIVERNAME "IOCTL_XUSB_REQUEST_NOTIFICATION\n"));
@@ -130,7 +156,9 @@ VOID Bus_EvtIoDeviceControl(
         }
 
         break;
+#pragma endregion 
 
+#pragma region IOCTL_DS4_SUBMIT_REPORT
     case IOCTL_DS4_SUBMIT_REPORT:
 
         KdPrint((DRIVERNAME "IOCTL_DS4_SUBMIT_REPORT\n"));
@@ -156,7 +184,9 @@ VOID Bus_EvtIoDeviceControl(
         }
 
         break;
+#pragma endregion 
 
+#pragma region IOCTL_DS4_REQUEST_NOTIFICATION
     case IOCTL_DS4_REQUEST_NOTIFICATION:
 
         KdPrint((DRIVERNAME "IOCTL_DS4_REQUEST_NOTIFICATION\n"));
@@ -189,7 +219,9 @@ VOID Bus_EvtIoDeviceControl(
         }
 
         break;
+#pragma endregion 
 
+#pragma region IOCTL_XGIP_SUBMIT_REPORT
     case IOCTL_XGIP_SUBMIT_REPORT:
 
         KdPrint((DRIVERNAME "IOCTL_XGIP_SUBMIT_REPORT\n"));
@@ -215,7 +247,9 @@ VOID Bus_EvtIoDeviceControl(
         }
 
         break;
+#pragma endregion 
 
+#pragma region IOCTL_XGIP_SUBMIT_INTERRUPT
     case IOCTL_XGIP_SUBMIT_INTERRUPT:
 
         KdPrint((DRIVERNAME "IOCTL_XGIP_SUBMIT_INTERRUPT\n"));
@@ -241,6 +275,7 @@ VOID Bus_EvtIoDeviceControl(
         }
 
         break;
+#pragma endregion 
 
     default:
         KdPrint((DRIVERNAME "UNKNOWN IOCTL CODE 0x%x\n", IoControlCode));

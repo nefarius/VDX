@@ -31,8 +31,8 @@ SOFTWARE.
 #include <ntstrsafe.h>
 #include <ntintsafe.h>
 #include <initguid.h>
-#include "driver.h"
-#include "public.h"
+#include "ViGEmBusDriver.h"
+#include "ViGEmBusShared.h"
 #include "Queue.h"
 #include <usb.h>
 #include <usbbusif.h>

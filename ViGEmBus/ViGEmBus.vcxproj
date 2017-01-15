@@ -251,8 +251,8 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\driver.h" />
-    <ClInclude Include="..\Common\public.h" />
+    <ClInclude Include="..\Common\ViGEmBusDriver.h" />
+    <ClInclude Include="..\Common\ViGEmBusShared.h" />
     <ClInclude Include="busenum.h" />
     <ClInclude Include="Context.h" />
     <ClInclude Include="Ds4.h" />

@@ -30,7 +30,7 @@ SOFTWARE.
 #endif
 
 #include <initguid.h>
-#include <public.h>
+#include <ViGEmBusShared.h>
 
 #ifdef VIGEM_EXPORTS
 #define VIGEM_API __declspec(dllexport)

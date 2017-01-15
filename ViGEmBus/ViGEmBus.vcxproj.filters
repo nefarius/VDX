@@ -30,14 +30,8 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\public.h">
-      <Filter>Header Files\Common</Filter>
-    </ClInclude>
     <ClInclude Include="busenum.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\driver.h">
-      <Filter>Header Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="Queue.h">
       <Filter>Header Files</Filter>
@@ -59,6 +53,12 @@
     </ClInclude>
     <ClInclude Include="Xgip.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\ViGEmBusShared.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\ViGEmBusDriver.h">
+      <Filter>Header Files\Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

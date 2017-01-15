@@ -33,4 +33,4 @@ DEFINE_GUID(GUID_VIGEM_INTERFACE_STANDARD,
 DECLARE_GLOBAL_CONST_UNICODE_STRING(VigemNtDeviceName, L"\\Device\\ViGEmBus");
 DECLARE_GLOBAL_CONST_UNICODE_STRING(VigemDosDeviceName, L"\\DosDevices\\ViGEmBus");
 
-#include "public.h"
+#include "ViGEmBusShared.h"

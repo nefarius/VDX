@@ -218,7 +218,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\public.h" />
+    <ClInclude Include="..\Common\ViGEmBusShared.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="ViGEmUM.h" />

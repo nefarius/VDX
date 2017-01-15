@@ -27,7 +27,7 @@
     <ClInclude Include="ViGEmUM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\public.h">
+    <ClInclude Include="..\Common\ViGEmBusShared.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
   </ItemGroup>

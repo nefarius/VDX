@@ -53,6 +53,9 @@ XnaGuardianCreateDevice(
 
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&deviceAttributes, DEVICE_CONTEXT);
 
+    //
+    // Required for sideband clean-up
+    // 
     deviceAttributes.EvtCleanupCallback = XnaGuardianCleanupCallback;
 
     status = WdfDeviceCreate(&DeviceInit, &deviceAttributes, &device);

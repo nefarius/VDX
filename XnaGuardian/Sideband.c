@@ -288,7 +288,7 @@ VOID XnaGuardianSidebandIoDeviceControl(
         // 
         if (pOverride->Size != sizeof(XINPUT_EXT_OVERRIDE_GAMEPAD))
         {
-            status =  STATUS_INVALID_PARAMETER;
+            status = STATUS_INVALID_PARAMETER;
             break;
         }
 

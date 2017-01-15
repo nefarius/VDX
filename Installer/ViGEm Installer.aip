@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <DOCUMENT Type="Advanced Installer" CreateVersion="13.1" version="13.5" Modules="enterprise" RootPath="." Language="en" Id="{91DA3174-5C6A-4203-A926-97344FCA2328}">
   <COMPONENT cid="caphyon.advinst.msicomp.ProjectOptionsComponent">
-    <ROW Name="HiddenItems" Value="AutorunComponent;MultipleInstancesComponent;MsiJavaComponent;MsiAssemblyComponent;ActSyncAppComponent;MsiMergeModsComponent;CPLAppletComponent;GameUxComponent;FirewallExceptionComponent;UserAccountsComponent;MsiClassComponent;WebApplicationsComponent;MsiOdbcDataSrcComponent;SqlConnectionComponent;SharePointSlnComponent;SilverlightSlnComponent"/>
+    <ROW Name="HiddenItems" Value="AutorunComponent;MultipleInstancesComponent;MsiJavaComponent;MsiAssemblyComponent;ActSyncAppComponent;MsiMergeModsComponent;CPLAppletComponent;GameUxComponent;FirewallExceptionComponent;UserAccountsComponent;MsiClassComponent;WebApplicationsComponent;MsiOdbcDataSrcComponent;SqlConnectionComponent;SharePointSlnComponent;SilverlightSlnComponent;AppXAppDetailsComponent;AppXCapabilitiesComponent;AppXDependenciesComponent;AppXProductDetailsComponent;AppXVisualAssetsComponent;AppXAppDeclarationsComponent;AppXUriRulesComponent"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
     <ROW Property="AI_BITMAP_DISPLAY_MODE" Value="0"/>
@@ -14,17 +14,16 @@
     <ROW Property="ALLUSERS" Value="1"/>
     <ROW Property="ARPCOMMENTS" Value="[|ProductName]" ValueLocId="*"/>
     <ROW Property="ARPHELPLINK" Value="https://github.com/nefarius/ViGEm/issues"/>
-    <ROW Property="ARPNOMODIFY" MultiBuildValue="DefaultBuild:1"/>
     <ROW Property="ARPNOREPAIR" Value="1"/>
     <ROW Property="ARPPRODUCTICON" Value="favicon.exe" Type="8"/>
     <ROW Property="ARPURLINFOABOUT" Value="https://github.com/nefarius/ViGEm"/>
     <ROW Property="ARPURLUPDATEINFO" Value="https://github.com/nefarius/ViGEm/releases"/>
     <ROW Property="IAgree" Value="Yes" Type="4" MsiKey="IAgree"/>
     <ROW Property="Manufacturer" Value="Nefarius Software Solutions"/>
-    <ROW Property="ProductCode" Value="1033:{297FD34F-EAF5-4CE2-A09A-29DA939C96CB} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{AB01CBB5-9B89-4E69-ADC2-E44014CEAA4C} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Virtual Gamepad Emulation Driver"/>
-    <ROW Property="ProductVersion" Value="1.2.3" Type="32"/>
+    <ROW Property="ProductVersion" Value="1.3.0" Type="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;AI_SETUPEXEPATH;SETUPEXEDIR"/>
     <ROW Property="UpgradeCode" Value="{28B1991F-E0E1-4ED5-9FD9-86D640B2A4F4}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -43,20 +42,21 @@
   <COMPONENT cid="caphyon.advinst.msicomp.MsiDirsComponent">
     <ROW Directory="AI_Bin32_Dir" Directory_Parent="APPDIR" DefaultDir="32-bit"/>
     <ROW Directory="APPDIR" Directory_Parent="TARGETDIR" DefaultDir="APPDIR:." IsPseudoRoot="1"/>
+    <ROW Directory="Assets" Directory_Parent="TARGETDIR" DefaultDir="Assets" IsPseudoRoot="1"/>
+    <ROW Directory="DesktopFolder" Directory_Parent="TARGETDIR" DefaultDir="DESKTO~1|DesktopFolder" IsPseudoRoot="1"/>
+    <ROW Directory="Drivers_1_Dir" Directory_Parent="AI_Bin32_Dir" DefaultDir="Drivers"/>
+    <ROW Directory="Drivers_Dir" Directory_Parent="APPDIR" DefaultDir="Drivers"/>
     <ROW Directory="HidCerberus.Lib_Dir" Directory_Parent="APPDIR" DefaultDir="HIDCER~1.LIB|HidCerberus.Lib"/>
     <ROW Directory="HidCerberus.Srv_1_Dir" Directory_Parent="AI_Bin32_Dir" DefaultDir="HIDCER~1.SRV|HidCerberus.Srv"/>
     <ROW Directory="HidCerberus.Srv_Dir" Directory_Parent="APPDIR" DefaultDir="HIDCER~1.SRV|HidCerberus.Srv"/>
-    <ROW Directory="HidGuardian_1_Dir" Directory_Parent="AI_Bin32_Dir" DefaultDir="HIDGUA~1|HidGuardian"/>
-    <ROW Directory="HidGuardian_Dir" Directory_Parent="APPDIR" DefaultDir="HIDGUA~1|HidGuardian"/>
     <ROW Directory="SHORTCUTDIR" Directory_Parent="TARGETDIR" DefaultDir="SHORTC~1|SHORTCUTDIR" IsPseudoRoot="1"/>
     <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
-    <ROW Directory="ViGEmBus_1_Dir" Directory_Parent="AI_Bin32_Dir" DefaultDir="ViGEmBus"/>
-    <ROW Directory="ViGEmBus_Dir" Directory_Parent="APPDIR" DefaultDir="ViGEmBus"/>
     <ROW Directory="x64_Dir" Directory_Parent="HidCerberus.Lib_Dir" DefaultDir="x64"/>
     <ROW Directory="x86_Dir" Directory_Parent="HidCerberus.Lib_Dir" DefaultDir="x86"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
     <ROW Component="AI_ExePath" ComponentId="{34B087AF-3EC0-4772-936B-C9E25C5C2CFB}" Directory_="APPDIR" Attributes="260" KeyPath="AI_ExePath"/>
+    <ROW Component="Assets" ComponentId="{9A85F5EA-E11B-45BC-9AFF-E2FFCF107FF5}" Directory_="Assets" Attributes="0"/>
     <ROW Component="HidCerberus.Lib.dll" ComponentId="{60A4DFCF-3485-4E34-9405-9EFA9F8FB472}" Directory_="HidCerberus.Srv_Dir" Attributes="256" Condition="VersionNT64" KeyPath="HidCerberus.Lib.dll"/>
     <ROW Component="HidCerberus.Lib.dll_1" ComponentId="{F394E827-70A7-4B60-8724-DCE6984FED81}" Directory_="x64_Dir" Attributes="256" KeyPath="HidCerberus.Lib.dll_1"/>
     <ROW Component="HidCerberus.Lib.dll_2" ComponentId="{106EF65C-559D-43A2-A3AC-18C4096042B3}" Directory_="x86_Dir" Attributes="0" KeyPath="HidCerberus.Lib.dll_2"/>
@@ -65,33 +65,39 @@
     <ROW Component="HidCerberus.Srv.exe.config" ComponentId="{026EBA8B-9DEE-4CA3-B270-173B6B2548B6}" Directory_="HidCerberus.Srv_Dir" Attributes="0" KeyPath="HidCerberus.Srv.exe.config" Type="0"/>
     <ROW Component="HidCerberus.Srv.exe.config_1" ComponentId="{2FBF17A8-589D-4767-8256-A81F8171AEAB}" Directory_="HidCerberus.Srv_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="HidCerberus.Srv.exe.config_1" Type="0"/>
     <ROW Component="HidCerberus.Srv.exe_1" ComponentId="{2A881340-1A6F-4D4B-B5C3-29C42885437D}" Directory_="HidCerberus.Srv_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="HidCerberus.Srv.exe_1"/>
-    <ROW Component="HidGuardian.inf" ComponentId="{6F5AE00E-77A7-48B3-8F25-CDE8BE553BB7}" Directory_="HidGuardian_Dir" Attributes="256" Condition="VersionNT64" KeyPath="HidGuardian.inf"/>
-    <ROW Component="HidGuardian.inf_1" ComponentId="{723CD8BD-E7CE-4F1C-A799-8A6038261C05}" Directory_="HidGuardian_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="HidGuardian.inf_1"/>
+    <ROW Component="HidGuardian.inf" ComponentId="{051F0690-64A8-494A-BE45-EF07ED839B4F}" Directory_="Drivers_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="HidGuardian.inf"/>
+    <ROW Component="HidGuardian.inf_2" ComponentId="{670196DB-8A77-44CA-9193-5CEF13448ED3}" Directory_="Drivers_Dir" Attributes="256" Condition="VersionNT64" KeyPath="HidGuardian.inf_2"/>
+    <ROW Component="HidGuardian.sys" ComponentId="{F2C5767C-E43C-413C-B62B-11BFAC030215}" Directory_="Drivers_Dir" Attributes="256" Condition="VersionNT64" KeyPath="HidGuardian.sys_2"/>
+    <ROW Component="HidGuardian.sys_1" ComponentId="{14C41089-34DB-4768-B9B5-D9754C8D7571}" Directory_="Drivers_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="HidGuardian.sys"/>
     <ROW Component="ProductInformation" ComponentId="{6F164CA5-5A20-4991-AC46-684AFBEB8AF9}" Directory_="APPDIR" Attributes="4" KeyPath="Version"/>
-    <ROW Component="ViGEmBus.inf" ComponentId="{240D5245-A7E3-4A5C-B7E6-65727120C656}" Directory_="ViGEmBus_Dir" Attributes="256" Condition="VersionNT64" KeyPath="ViGEmBus.inf"/>
-    <ROW Component="ViGEmBus.sys_1" ComponentId="{3256ECAB-7DE0-4448-A796-B527177B320E}" Directory_="ViGEmBus_Dir" Attributes="256" Condition="VersionNT64" KeyPath="ViGEmBus.sys_1"/>
-    <ROW Component="ViGEmBus.sys_3" ComponentId="{18E589E7-15BE-41C3-8149-C0179913E9A1}" Directory_="ViGEmBus_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="ViGEmBus.sys_3"/>
-    <ROW Component="WdfCoinstaller01009.dll" ComponentId="{FBD6BD07-601B-40C9-A665-D3915E48B651}" Directory_="HidGuardian_Dir" Attributes="256" Condition="VersionNT64" KeyPath="WdfCoinstaller01009.dll"/>
-    <ROW Component="WdfCoinstaller01009.dll_1" ComponentId="{B8EF9DFB-9A7A-4B3B-A4F0-A2DD8F40B95C}" Directory_="HidGuardian_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="WdfCoinstaller01009.dll_1"/>
-    <ROW Component="WdfCoinstaller01011.dll" ComponentId="{6D02F371-5CFD-4E65-9AC8-41A62FEC1F98}" Directory_="ViGEmBus_Dir" Attributes="256" Condition="VersionNT64" KeyPath="WdfCoinstaller01011.dll"/>
-    <ROW Component="WdfCoinstaller01011.dll_1" ComponentId="{0AE182BC-CB62-4AD7-8A28-0A23D43E9614}" Directory_="ViGEmBus_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="WdfCoinstaller01011.dll_1"/>
+    <ROW Component="ViGEmBus.inf" ComponentId="{CF3D471C-7743-4D91-A5D2-DF1A5258C4DB}" Directory_="Drivers_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="ViGEmBus.inf"/>
+    <ROW Component="ViGEmBus.inf_1" ComponentId="{E9D8CC4E-7DCA-492B-A105-2622804524F9}" Directory_="Drivers_Dir" Attributes="0" KeyPath="ViGEmBus.inf_2"/>
+    <ROW Component="ViGEmBus.sys" ComponentId="{EE2CB30B-535C-4023-A00B-9D9D2D1B5F09}" Directory_="Drivers_Dir" Attributes="256" KeyPath="ViGEmBus.sys"/>
+    <ROW Component="ViGEmBus.sys_1" ComponentId="{44E33BCC-7F38-4FC3-8321-D71E7AF23BC7}" Directory_="Drivers_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="ViGEmBus.sys_1"/>
+    <ROW Component="WdfCoinstaller01009.dll" ComponentId="{43BA3464-1F20-4C92-84FE-DC93B3DE134A}" Directory_="Drivers_1_Dir" Attributes="0" KeyPath="WdfCoinstaller01009.dll"/>
+    <ROW Component="WdfCoinstaller01009.dll_2" ComponentId="{E5E63D9A-2D5D-436A-8CF3-648C67EFE0B9}" Directory_="Drivers_Dir" Attributes="256" KeyPath="WdfCoinstaller01009.dll_2"/>
+    <ROW Component="XnaGuardian.inf" ComponentId="{C94952EF-7182-409F-872D-807963FA68C3}" Directory_="Drivers_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="XnaGuardian.inf_1"/>
+    <ROW Component="XnaGuardian.inf_1" ComponentId="{5CBFEDE9-9C7A-4054-BDF5-0D8D8D71FDC2}" Directory_="Drivers_Dir" Attributes="256" Condition="VersionNT64" KeyPath="XnaGuardian.inf"/>
     <ROW Component="devcon.exe" ComponentId="{D83C8257-F6B3-401F-9DD9-FFD4B9CD6B62}" Directory_="APPDIR" Attributes="256" Condition="VersionNT64" KeyPath="devcon.exe"/>
     <ROW Component="devcon.exe_1" ComponentId="{D4E878B1-02D5-481F-B3C7-76518C8251BB}" Directory_="AI_Bin32_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="devcon.exe_1"/>
-    <ROW Component="hidguardian.cat" ComponentId="{D0AD1762-70D4-47E6-88FB-83A5E84D5D81}" Directory_="HidGuardian_Dir" Attributes="256" Condition="VersionNT64" KeyPath="HidGuardian.sys" Type="0"/>
-    <ROW Component="hidguardian.cat_1" ComponentId="{AFCCA786-F6A3-47BB-96AC-B9332FEF9977}" Directory_="HidGuardian_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="HidGuardian.sys_1" Type="0"/>
-    <ROW Component="hidguardian.cat_2" ComponentId="{C026AE03-0BA6-4799-BFC9-C4F5AB1E3FE2}" Directory_="HidGuardian_Dir" Attributes="256" Condition="VersionNT64" KeyPath="hidguardian.cat"/>
-    <ROW Component="hidguardian.cat_3" ComponentId="{BF86F361-F62D-4B80-9544-3024D4FC8A08}" Directory_="HidGuardian_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="hidguardian.cat_1"/>
+    <ROW Component="hidguardian.cat" ComponentId="{7E586314-9548-4964-9C78-9246F5B85E63}" Directory_="Drivers_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="XnaGuardian.sys_1" Type="0"/>
+    <ROW Component="hidguardian.cat_4" ComponentId="{24A16970-74DE-44BA-B79F-E9AAAC42EBF9}" Directory_="Drivers_Dir" Attributes="256" Condition="VersionNT64" KeyPath="XnaGuardian.sys" Type="0"/>
+    <ROW Component="hidguardian.cat_5" ComponentId="{09D41DF6-4983-4217-9752-27C55C1246C4}" Directory_="Drivers_Dir" Attributes="256" Condition="VersionNT64" KeyPath="hidguardian.cat_2"/>
+    <ROW Component="hidguardian.cat_6" ComponentId="{ACD2B149-E414-4D44-B9A6-730CF580690A}" Directory_="Drivers_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="hidguardian.cat"/>
     <ROW Component="log4net.dll" ComponentId="{65477BFB-5F48-4EB4-A304-3D7AB2354CB6}" Directory_="HidCerberus.Srv_Dir" Attributes="256" Condition="VersionNT64" KeyPath="log4net.dll"/>
     <ROW Component="log4net.dll_1" ComponentId="{626D587F-E4DC-4F6F-8FD3-6829EB9827FF}" Directory_="HidCerberus.Srv_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="log4net.dll_1"/>
     <ROW Component="updater.exe" ComponentId="{9BB656CD-AC1F-4698-9317-EED953A98E56}" Directory_="APPDIR" Attributes="0" KeyPath="updater.exe"/>
-    <ROW Component="vigembus.cat" ComponentId="{02AB8E23-D63F-4C5C-B39F-BBF34E9BB1FE}" Directory_="ViGEmBus_Dir" Attributes="256" Condition="VersionNT64" KeyPath="vigembus.cat"/>
-    <ROW Component="vigembus.cat_1" ComponentId="{D5F950A5-0851-45A5-88A7-212CB5AC60F8}" Directory_="ViGEmBus_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="ViGEmBus.inf_1"/>
-    <ROW Component="vigembus.cat_2" ComponentId="{40BD2FB8-E7F0-40A5-88BF-C9A65DE62526}" Directory_="ViGEmBus_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="vigembus.cat_1"/>
+    <ROW Component="vigembus.cat" ComponentId="{94100547-CFB8-4C35-AA52-715D69F74084}" Directory_="Drivers_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="vigembus.cat"/>
+    <ROW Component="vigembus.cat_3" ComponentId="{87D28A28-779B-4CD0-926B-BE0212D124C6}" Directory_="Drivers_Dir" Attributes="0" KeyPath="vigembus.cat_2"/>
+    <ROW Component="xnaguardian.cat" ComponentId="{71EA6315-6E81-4752-BF6B-E079402DEF60}" Directory_="Drivers_1_Dir" Attributes="0" Condition="NOT VersionNT64" KeyPath="xnaguardian.cat_1"/>
+    <ROW Component="xnaguardian.cat_1" ComponentId="{0A14D386-257C-4EA3-87F6-AF68146A8141}" Directory_="Drivers_Dir" Attributes="256" Condition="VersionNT64" KeyPath="xnaguardian.cat"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
-    <ROW Feature="Feature" Title="Virtual Gamepad Emulation Driver" Description="Description" Display="9" Level="1" Directory_="APPDIR" Attributes="16" Components="AI_ExePath ViGEmBus.inf ViGEmBus.sys_1 ViGEmBus.sys_3 WdfCoinstaller01011.dll WdfCoinstaller01011.dll_1 devcon.exe devcon.exe_1 vigembus.cat vigembus.cat_1 vigembus.cat_2"/>
-    <ROW Feature="HidGuardian" Title="HidGuardian Components" Description="HidGuardian" Display="11" Level="1" Directory_="APPDIR" Attributes="0" Components="AI_ExePath HidCerberus.Lib.dll HidCerberus.Lib.dll_1 HidCerberus.Lib.dll_2 HidCerberus.Lib.dll_3 HidCerberus.Srv.exe HidCerberus.Srv.exe.config HidCerberus.Srv.exe.config_1 HidCerberus.Srv.exe_1 HidGuardian.inf HidGuardian.inf_1 WdfCoinstaller01009.dll WdfCoinstaller01009.dll_1 hidguardian.cat hidguardian.cat_1 hidguardian.cat_2 hidguardian.cat_3 log4net.dll log4net.dll_1"/>
-    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="0" Level="1" Directory_="APPDIR" Attributes="0" Components="AI_ExePath ProductInformation updater.exe"/>
+    <ROW Feature="AiAppXAssets" Title="AiAppXAssets" Description="Description" Display="9" Level="0" Directory_="APPDIR" Attributes="0"/>
+    <ROW Feature="HidGuardian" Title="HidGuardian Components" Description="HidGuardian" Display="5" Level="1" Directory_="APPDIR" Attributes="0" Components="AI_ExePath HidCerberus.Lib.dll HidCerberus.Lib.dll_1 HidCerberus.Lib.dll_2 HidCerberus.Lib.dll_3 HidCerberus.Srv.exe HidCerberus.Srv.exe.config HidCerberus.Srv.exe.config_1 HidCerberus.Srv.exe_1 HidGuardian.inf HidGuardian.inf_2 HidGuardian.sys HidGuardian.sys_1 hidguardian.cat_5 hidguardian.cat_6 log4net.dll log4net.dll_1"/>
+    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="0" Level="1" Directory_="APPDIR" Attributes="0" Components="AI_ExePath Assets ProductInformation WdfCoinstaller01009.dll WdfCoinstaller01009.dll_2 devcon.exe devcon.exe_1 updater.exe"/>
+    <ROW Feature="ViGEmBus" Title="Virtual Gamepad Emulation Driver" Description="ViGEmBus" Display="3" Level="1" Directory_="APPDIR" Attributes="0" Components="AI_ExePath ViGEmBus.inf ViGEmBus.inf_1 ViGEmBus.sys ViGEmBus.sys_1 vigembus.cat vigembus.cat_3"/>
+    <ROW Feature="XnaGuardian" Title="XnaGuardian Components" Description="XnaGuardian" Display="7" Level="1" Directory_="APPDIR" Attributes="0" Components="XnaGuardian.inf XnaGuardian.inf_1 hidguardian.cat hidguardian.cat_4 xnaguardian.cat xnaguardian.cat_1"/>
     <ATTRIBUTE name="CurrentFeature" value="MainFeature"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
@@ -101,29 +107,33 @@
     <ROW File="HidCerberus.Lib.dll_3" Component_="HidCerberus.Lib.dll_3" FileName="HIDCER~1.DLL|HidCerberus.Lib.dll" Attributes="0" SourcePath="..\HidCerberus.Srv\bin\x86\Release\HidCerberus.Lib.dll" SelfReg="false" NextFile="HidCerberus.Srv.exe_1"/>
     <ROW File="HidCerberus.Srv.exe" Component_="HidCerberus.Srv.exe" FileName="HIDCER~1.EXE|HidCerberus.Srv.exe" Attributes="0" SourcePath="..\HidCerberus.Srv\bin\x64\Release\HidCerberus.Srv.exe" SelfReg="false" NextFile="log4net.dll" DigSign="true"/>
     <ROW File="HidCerberus.Srv.exe.config" Component_="HidCerberus.Srv.exe.config" FileName="HIDCER~1.CON|HidCerberus.Srv.exe.config" Attributes="0" SourcePath="..\HidCerberus.Srv\bin\x64\Release\HidCerberus.Srv.exe.config" SelfReg="false" NextFile="HidCerberus.Lib.dll_3"/>
-    <ROW File="HidCerberus.Srv.exe.config_1" Component_="HidCerberus.Srv.exe.config_1" FileName="HIDCER~1.CON|HidCerberus.Srv.exe.config" Attributes="0" SourcePath="..\HidCerberus.Srv\bin\x86\Release\HidCerberus.Srv.exe.config" SelfReg="false"/>
+    <ROW File="HidCerberus.Srv.exe.config_1" Component_="HidCerberus.Srv.exe.config_1" FileName="HIDCER~1.CON|HidCerberus.Srv.exe.config" Attributes="0" SourcePath="..\HidCerberus.Srv\bin\x86\Release\HidCerberus.Srv.exe.config" SelfReg="false" NextFile="hidguardian.cat_2"/>
     <ROW File="HidCerberus.Srv.exe_1" Component_="HidCerberus.Srv.exe_1" FileName="HIDCER~1.EXE|HidCerberus.Srv.exe" Attributes="0" SourcePath="..\HidCerberus.Srv\bin\x86\Release\HidCerberus.Srv.exe" SelfReg="false" NextFile="log4net.dll_1" DigSign="true"/>
-    <ROW File="HidGuardian.inf" Component_="HidGuardian.inf" FileName="HIDGUA~1.INF|HidGuardian.inf" Attributes="0" SourcePath="..\x64\Release\HidGuardian\HidGuardian.inf" SelfReg="false" NextFile="HidGuardian.sys"/>
-    <ROW File="HidGuardian.inf_1" Component_="HidGuardian.inf_1" FileName="HIDGUA~1.INF|HidGuardian.inf" Attributes="0" SourcePath="..\Release\HidGuardian\HidGuardian.inf" SelfReg="false" NextFile="HidGuardian.sys_1"/>
-    <ROW File="HidGuardian.sys" Component_="hidguardian.cat" FileName="HIDGUA~1.SYS|HidGuardian.sys" Attributes="0" SourcePath="..\x64\Release\HidGuardian\HidGuardian.sys" SelfReg="false" NextFile="WdfCoinstaller01009.dll"/>
-    <ROW File="HidGuardian.sys_1" Component_="hidguardian.cat_1" FileName="HIDGUA~1.SYS|HidGuardian.sys" Attributes="0" SourcePath="..\Release\HidGuardian\HidGuardian.sys" SelfReg="false" NextFile="WdfCoinstaller01009.dll_1"/>
-    <ROW File="ViGEmBus.inf" Component_="ViGEmBus.inf" FileName="ViGEmBus.inf" Attributes="0" SourcePath="..\x64\Release\ViGEmBus\ViGEmBus.inf" SelfReg="false" NextFile="devcon.exe_1"/>
-    <ROW File="ViGEmBus.inf_1" Component_="vigembus.cat_1" FileName="ViGEmBus.inf" Attributes="0" SourcePath="..\Release\ViGEmBus\ViGEmBus.inf" SelfReg="false" NextFile="hidguardian.cat"/>
-    <ROW File="ViGEmBus.sys_1" Component_="ViGEmBus.sys_1" FileName="ViGEmBus.sys" Attributes="0" SourcePath="..\x64\Release\ViGEmBus\ViGEmBus.sys" SelfReg="false" NextFile="WdfCoinstaller01011.dll"/>
-    <ROW File="ViGEmBus.sys_3" Component_="ViGEmBus.sys_3" FileName="ViGEmBus.sys" Attributes="0" SourcePath="..\Release\ViGEmBus\ViGEmBus.sys" SelfReg="false" NextFile="WdfCoinstaller01011.dll_1"/>
-    <ROW File="WdfCoinstaller01009.dll" Component_="WdfCoinstaller01009.dll" FileName="WDFCOI~1.DLL|WdfCoinstaller01009.dll" Attributes="0" SourcePath="..\x64\Release\HidGuardian\WdfCoinstaller01009.dll" SelfReg="false" NextFile="hidguardian.cat_1"/>
-    <ROW File="WdfCoinstaller01009.dll_1" Component_="WdfCoinstaller01009.dll_1" FileName="WDFCOI~1.DLL|WdfCoinstaller01009.dll" Attributes="0" SourcePath="..\Release\HidGuardian\WdfCoinstaller01009.dll" SelfReg="false" NextFile="HidCerberus.Lib.dll_1"/>
-    <ROW File="WdfCoinstaller01011.dll" Component_="WdfCoinstaller01011.dll" FileName="WDFCOI~1.DLL|WdfCoinstaller01011.dll" Attributes="0" SourcePath="..\x64\Release\ViGEmBus\WdfCoinstaller01011.dll" SelfReg="false" NextFile="vigembus.cat"/>
-    <ROW File="WdfCoinstaller01011.dll_1" Component_="WdfCoinstaller01011.dll_1" FileName="WDFCOI~1.DLL|WdfCoinstaller01011.dll" Attributes="0" SourcePath="..\Release\ViGEmBus\WdfCoinstaller01011.dll" SelfReg="false" NextFile="updater.exe"/>
-    <ROW File="devcon.exe" Component_="devcon.exe" FileName="devcon.exe" Attributes="0" SourcePath="C:\Program Files (x86)\Windows Kits\10\Tools\x64\devcon.exe" SelfReg="false" NextFile="ViGEmBus.sys_1" DigSign="true"/>
-    <ROW File="devcon.exe_1" Component_="devcon.exe_1" FileName="devcon.exe" Attributes="0" SourcePath="C:\Program Files (x86)\Windows Kits\10\Tools\x86\devcon.exe" SelfReg="false" NextFile="ViGEmBus.sys_3" DigSign="true"/>
-    <ROW File="hidguardian.cat" Component_="hidguardian.cat_2" FileName="HIDGUA~1.CAT|hidguardian.cat" Attributes="0" SourcePath="..\x64\Release\HidGuardian\hidguardian.cat" SelfReg="false" NextFile="HidGuardian.inf"/>
-    <ROW File="hidguardian.cat_1" Component_="hidguardian.cat_3" FileName="HIDGUA~1.CAT|hidguardian.cat" Attributes="0" SourcePath="..\Release\HidGuardian\hidguardian.cat" SelfReg="false" NextFile="HidGuardian.inf_1"/>
+    <ROW File="HidGuardian.inf" Component_="HidGuardian.inf" FileName="HIDGUA~1.INF|HidGuardian.inf" Attributes="0" SourcePath="..\Release\ViGEm Drivers Redistributable\HidGuardian.inf" SelfReg="false" NextFile="HidGuardian.sys"/>
+    <ROW File="HidGuardian.inf_2" Component_="HidGuardian.inf_2" FileName="HIDGUA~1.INF|HidGuardian.inf" Attributes="0" SourcePath="..\x64\Release\ViGEm Drivers Redistributable\HidGuardian.inf" SelfReg="false" NextFile="HidGuardian.sys_2"/>
+    <ROW File="HidGuardian.sys" Component_="HidGuardian.sys_1" FileName="HIDGUA~1.SYS|HidGuardian.sys" Attributes="0" SourcePath="..\Release\ViGEm Drivers Redistributable\HidGuardian.sys" SelfReg="false" NextFile="vigembus.cat"/>
+    <ROW File="HidGuardian.sys_2" Component_="HidGuardian.sys" FileName="HIDGUA~1.SYS|HidGuardian.sys" Attributes="0" SourcePath="..\x64\Release\ViGEm Drivers Redistributable\HidGuardian.sys" SelfReg="false" NextFile="vigembus.cat_2"/>
+    <ROW File="ViGEmBus.inf" Component_="ViGEmBus.inf" FileName="ViGEmBus.inf" Attributes="0" SourcePath="..\Release\ViGEm Drivers Redistributable\ViGEmBus.inf" SelfReg="false" NextFile="ViGEmBus.sys_1"/>
+    <ROW File="ViGEmBus.inf_2" Component_="ViGEmBus.inf_1" FileName="ViGEmBus.inf" Attributes="0" SourcePath="..\x64\Release\ViGEm Drivers Redistributable\ViGEmBus.inf" SelfReg="false" NextFile="ViGEmBus.sys"/>
+    <ROW File="ViGEmBus.sys" Component_="ViGEmBus.sys" FileName="ViGEmBus.sys" Attributes="0" SourcePath="..\x64\Release\ViGEm Drivers Redistributable\ViGEmBus.sys" SelfReg="false" NextFile="WdfCoinstaller01009.dll_2"/>
+    <ROW File="ViGEmBus.sys_1" Component_="ViGEmBus.sys_1" FileName="ViGEmBus.sys" Attributes="0" SourcePath="..\Release\ViGEm Drivers Redistributable\ViGEmBus.sys" SelfReg="false" NextFile="WdfCoinstaller01009.dll"/>
+    <ROW File="WdfCoinstaller01009.dll" Component_="WdfCoinstaller01009.dll" FileName="WDFCOI~1.DLL|WdfCoinstaller01009.dll" Attributes="0" SourcePath="..\Release\ViGEm Drivers Redistributable\WdfCoinstaller01009.dll" SelfReg="false" NextFile="xnaguardian.cat_1"/>
+    <ROW File="WdfCoinstaller01009.dll_2" Component_="WdfCoinstaller01009.dll_2" FileName="WDFCOI~1.DLL|WdfCoinstaller01009.dll" Attributes="0" SourcePath="..\x64\Release\ViGEm Drivers Redistributable\WdfCoinstaller01009.dll" SelfReg="false" NextFile="xnaguardian.cat"/>
+    <ROW File="XnaGuardian.inf" Component_="XnaGuardian.inf_1" FileName="XNAGUA~1.INF|XnaGuardian.inf" Attributes="0" SourcePath="..\x64\Release\ViGEm Drivers Redistributable\XnaGuardian.inf" SelfReg="false" NextFile="XnaGuardian.sys"/>
+    <ROW File="XnaGuardian.inf_1" Component_="XnaGuardian.inf" FileName="XNAGUA~1.INF|XnaGuardian.inf" Attributes="0" SourcePath="..\Release\ViGEm Drivers Redistributable\XnaGuardian.inf" SelfReg="false" NextFile="XnaGuardian.sys_1"/>
+    <ROW File="XnaGuardian.sys" Component_="hidguardian.cat_4" FileName="XNAGUA~1.SYS|XnaGuardian.sys" Attributes="0" SourcePath="..\x64\Release\ViGEm Drivers Redistributable\XnaGuardian.sys" SelfReg="false" NextFile="hidguardian.cat"/>
+    <ROW File="XnaGuardian.sys_1" Component_="hidguardian.cat" FileName="XNAGUA~1.SYS|XnaGuardian.sys" Attributes="0" SourcePath="..\Release\ViGEm Drivers Redistributable\XnaGuardian.sys" SelfReg="false"/>
+    <ROW File="devcon.exe" Component_="devcon.exe" FileName="devcon.exe" Attributes="0" SourcePath="C:\Program Files (x86)\Windows Kits\10\Tools\x64\devcon.exe" SelfReg="false" NextFile="devcon.exe_1" DigSign="true"/>
+    <ROW File="devcon.exe_1" Component_="devcon.exe_1" FileName="devcon.exe" Attributes="0" SourcePath="C:\Program Files (x86)\Windows Kits\10\Tools\x86\devcon.exe" SelfReg="false" NextFile="updater.exe" DigSign="true"/>
+    <ROW File="hidguardian.cat" Component_="hidguardian.cat_6" FileName="HIDGUA~1.CAT|hidguardian.cat" Attributes="0" SourcePath="..\Release\ViGEm Drivers Redistributable\hidguardian.cat" SelfReg="false" NextFile="HidGuardian.inf"/>
+    <ROW File="hidguardian.cat_2" Component_="hidguardian.cat_5" FileName="HIDGUA~1.CAT|hidguardian.cat" Attributes="0" SourcePath="..\x64\Release\ViGEm Drivers Redistributable\hidguardian.cat" SelfReg="false" NextFile="HidGuardian.inf_2"/>
     <ROW File="log4net.dll" Component_="log4net.dll" FileName="log4net.dll" Attributes="0" SourcePath="..\HidCerberus.Srv\bin\x64\Release\log4net.dll" SelfReg="false" NextFile="HidCerberus.Srv.exe.config"/>
     <ROW File="log4net.dll_1" Component_="log4net.dll_1" FileName="log4net.dll" Attributes="0" SourcePath="..\HidCerberus.Srv\bin\x86\Release\log4net.dll" SelfReg="false" NextFile="HidCerberus.Srv.exe.config_1"/>
-    <ROW File="updater.exe" Component_="updater.exe" FileName="VIGEMU~1.EXE|ViGEm Updater.exe" Version="65535.65535.65535.65535" Attributes="0" SourcePath="&lt;AI_STUBS&gt;updater.exe" SelfReg="false" NextFile="vigembus.cat_1" DigSign="true"/>
-    <ROW File="vigembus.cat" Component_="vigembus.cat" FileName="vigembus.cat" Attributes="0" SourcePath="..\x64\Release\ViGEmBus\vigembus.cat" SelfReg="false" NextFile="ViGEmBus.inf"/>
-    <ROW File="vigembus.cat_1" Component_="vigembus.cat_2" FileName="vigembus.cat" Attributes="0" SourcePath="..\Release\ViGEmBus\vigembus.cat" SelfReg="false" NextFile="ViGEmBus.inf_1"/>
+    <ROW File="updater.exe" Component_="updater.exe" FileName="VIGEMU~1.EXE|ViGEm Updater.exe" Version="65535.65535.65535.65535" Attributes="0" SourcePath="&lt;AI_STUBS&gt;updater.exe" SelfReg="false" NextFile="HidCerberus.Lib.dll_1" DigSign="true"/>
+    <ROW File="vigembus.cat" Component_="vigembus.cat" FileName="vigembus.cat" Attributes="0" SourcePath="..\Release\ViGEm Drivers Redistributable\vigembus.cat" SelfReg="false" NextFile="ViGEmBus.inf"/>
+    <ROW File="vigembus.cat_2" Component_="vigembus.cat_3" FileName="vigembus.cat" Attributes="0" SourcePath="..\x64\Release\ViGEm Drivers Redistributable\vigembus.cat" SelfReg="false" NextFile="ViGEmBus.inf_2"/>
+    <ROW File="xnaguardian.cat" Component_="xnaguardian.cat_1" FileName="XNAGUA~1.CAT|xnaguardian.cat" Attributes="0" SourcePath="..\x64\Release\ViGEm Drivers Redistributable\xnaguardian.cat" SelfReg="false" NextFile="XnaGuardian.inf"/>
+    <ROW File="xnaguardian.cat_1" Component_="xnaguardian.cat" FileName="XNAGUA~1.CAT|xnaguardian.cat" Attributes="0" SourcePath="..\Release\ViGEm Drivers Redistributable\xnaguardian.cat" SelfReg="false" NextFile="XnaGuardian.inf_1"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.BootstrOptComponent">
     <ROW BootstrOptKey="GlobalOptions" DownloadFolder="[AppDataFolder][|Manufacturer]\[|ProductName]\prerequisites" Options="4" UpdatesUrl="https://raw.githubusercontent.com/nefarius/ViGEm/master/updates.txt" EulaPathLocId="*" IntroTextPathLocId="*"/>
@@ -160,16 +170,6 @@
     <ROW Action="AI_DeleteRLzma" Description="Deleting files extracted from archive" DescriptionLocId="ActionText.Description.AI_DeleteLzma" TemplateLocId="-"/>
     <ROW Action="AI_ExtractFiles" Description="Extracting files from archive" DescriptionLocId="ActionText.Description.AI_ExtractLzma" TemplateLocId="-"/>
     <ROW Action="AI_ExtractLzma" Description="Extracting files from archive" DescriptionLocId="ActionText.Description.AI_ExtractLzma" TemplateLocId="-"/>
-    <ROW Action="AI_ProcessTasks" Description="Generating actions to schedule tasks on the local computer:" Template="Task Name: [1]" DescriptionLocId="ActionText.Description.AI_ProcessTasks" TemplateLocId="ActionText.Template.AI_ProcessTasks"/>
-    <ROW Action="AI_ProcessTasks2" Description="Generating actions to schedule tasks on the local computer:" Template="Task Name: [1]" DescriptionLocId="ActionText.Description.AI_ProcessTasks" TemplateLocId="ActionText.Template.AI_ProcessTasks"/>
-    <ROW Action="AI_RemoveTasks" Description="Removing scheduled task from the local computer" Template="Task Name: [1]" DescriptionLocId="ActionText.Description.AI_RemoveTasks" TemplateLocId="ActionText.Template.AI_RemoveTasks"/>
-    <ROW Action="AI_RemoveTasks2" Description="Removing scheduled task from the local computer" Template="Task Name: [1]" DescriptionLocId="ActionText.Description.AI_RemoveTasks" TemplateLocId="ActionText.Template.AI_RemoveTasks"/>
-    <ROW Action="AI_RollbackTasks" Description="Rolling back scheduled task on the local computer" Template="Task Name: [1]" DescriptionLocId="ActionText.Description.AI_RollbackTasks" TemplateLocId="ActionText.Template.AI_RollbackTasks"/>
-    <ROW Action="AI_RollbackTasks2" Description="Rolling back scheduled task on the local computer" Template="Task Name: [1]" DescriptionLocId="ActionText.Description.AI_RollbackTasks" TemplateLocId="ActionText.Template.AI_RollbackTasks"/>
-    <ROW Action="AI_ScheduleTasks" Description="Scheduling task on the local computer" Template="Task Name: [1]" DescriptionLocId="ActionText.Description.AI_ScheduleTasks" TemplateLocId="ActionText.Template.AI_ScheduleTasks"/>
-    <ROW Action="AI_ScheduleTasks2" Description="Scheduling task on the local computer" Template="Task Name: [1]" DescriptionLocId="ActionText.Description.AI_ScheduleTasks" TemplateLocId="ActionText.Template.AI_ScheduleTasks"/>
-    <ROW Action="AI_UninstallTasks" Description="Generating actions to remove scheduled tasks from the local computer:" DescriptionLocId="ActionText.Description.AI_UninstallTasks"/>
-    <ROW Action="AI_UninstallTasks2" Description="Generating actions to remove scheduled tasks from the local computer:" DescriptionLocId="ActionText.Description.AI_UninstallTasks"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiAppSearchComponent">
     <ROW Property="AI_SETUPEXEPATH" Signature_="AI_EXE_PATH_CU" Builds="DefaultBuild"/>
@@ -178,8 +178,6 @@
   <COMPONENT cid="caphyon.advinst.msicomp.MsiBinaryComponent">
     <ROW Name="Prereq.dll" SourcePath="&lt;AI_CUSTACTS&gt;Prereq.dll"/>
     <ROW Name="aicustact.dll" SourcePath="&lt;AI_CUSTACTS&gt;aicustact.dll"/>
-    <ROW Name="aischeduler.dll" SourcePath="&lt;AI_CUSTACTS&gt;aischeduler.dll"/>
-    <ROW Name="aischeduler2.dll" SourcePath="&lt;AI_CUSTACTS&gt;aischeduler2.dll"/>
     <ROW Name="lzmaextractor.dll" SourcePath="&lt;AI_CUSTACTS&gt;lzmaextractor.dll"/>
     <ROW Name="viewer.exe" SourcePath="&lt;AI_CUSTACTS&gt;viewer.exe"/>
   </COMPONENT>
@@ -214,6 +212,9 @@
     <ROW Dialog_="ConfigureDlg" Control_="Tab" Event="SpawnDialog" Argument="CustomizePage" Condition="( AiTabPage ) AND ( 1 )" Ordering="0"/>
     <ROW Dialog_="ConfigureDlg" Control_="Tab" Event="SpawnDialog" Argument="FolderPage" Condition="( AiTabPage ) AND ( NOT Installed )" Ordering="1"/>
   </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCreateFolderComponent">
+    <ROW Directory_="Assets" Component_="Assets" ManualDelete="false"/>
+  </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCustActComponent">
     <ROW Action="AI_BACKUP_AI_SETUPEXEPATH" Type="51" Source="AI_SETUPEXEPATH_ORIGINAL" Target="[AI_SETUPEXEPATH]"/>
     <ROW Action="AI_DATA_SETTER" Type="51" Source="AI_ExtractFiles" Target="[AI_SETUPEXEPATH]"/>
@@ -231,32 +232,26 @@
     <ROW Action="AI_FindExeLzma" Type="1" Source="lzmaextractor.dll" Target="FindEXE"/>
     <ROW Action="AI_InstallModeCheck" Type="1" Source="aicustact.dll" Target="UpdateInstallMode" WithoutSeq="true"/>
     <ROW Action="AI_PREPARE_UPGRADE" Type="65" Source="aicustact.dll" Target="PrepareUpgrade"/>
-    <ROW Action="AI_ProcessTasks" Type="1" Source="aischeduler.dll" Target="ProcessTasks"/>
-    <ROW Action="AI_ProcessTasks2" Type="1" Source="aischeduler2.dll" Target="ProcessTasks"/>
     <ROW Action="AI_REDIRECT_32BIT_FOLDER" Type="51" Source="AI_Bin32_Dir" Target="[APPDIR]"/>
     <ROW Action="AI_REDIRECT_32BIT_SH_FOLDER" Type="51" Source="AI_Sh32_Dir" Target="[SHORTCUTDIR]"/>
     <ROW Action="AI_RESTORE_AI_SETUPEXEPATH" Type="51" Source="AI_SETUPEXEPATH" Target="[AI_SETUPEXEPATH_ORIGINAL]"/>
     <ROW Action="AI_RESTORE_LOCATION" Type="65" Source="aicustact.dll" Target="RestoreLocation"/>
-    <ROW Action="AI_RemoveTasks" Type="11265" Source="aischeduler.dll" Target="DeleteTasks" WithoutSeq="true"/>
-    <ROW Action="AI_RemoveTasks2" Type="11265" Source="aischeduler2.dll" Target="DeleteTasks" WithoutSeq="true"/>
     <ROW Action="AI_ResolveKnownFolders" Type="1" Source="aicustact.dll" Target="AI_ResolveKnownFolders"/>
-    <ROW Action="AI_RollbackTasks" Type="11521" Source="aischeduler.dll" Target="DeleteTasks" WithoutSeq="true"/>
-    <ROW Action="AI_RollbackTasks2" Type="11521" Source="aischeduler2.dll" Target="DeleteTasks" WithoutSeq="true"/>
     <ROW Action="AI_SETPROGRAMFILES" Type="51" Source="AI_ProgramFiles" Target="[ProgramFilesFolder]"/>
     <ROW Action="AI_SETPROGRAMFILES64" Type="51" Source="AI_ProgramFiles" Target="[ProgramFiles64Folder]"/>
     <ROW Action="AI_SHOW_LOG" Type="65" Source="aicustact.dll" Target="LaunchLogFile" WithoutSeq="true"/>
     <ROW Action="AI_STORE_LOCATION" Type="51" Source="ARPINSTALLLOCATION" Target="[APPDIR]"/>
-    <ROW Action="AI_ScheduleTasks" Type="11265" Source="aischeduler.dll" Target="ScheduleTasks" WithoutSeq="true"/>
-    <ROW Action="AI_ScheduleTasks2" Type="11265" Source="aischeduler2.dll" Target="ScheduleTasks" WithoutSeq="true"/>
     <ROW Action="AI_UPDATER_UNINSTALL" Type="82" Source="updater.exe" Target="/clean silent"/>
-    <ROW Action="AI_UninstallTasks" Type="1" Source="aischeduler.dll" Target="UninstallTasks"/>
-    <ROW Action="AI_UninstallTasks2" Type="1" Source="aischeduler2.dll" Target="UninstallTasks"/>
-    <ROW Action="InstallHidGuardian" Type="66" Source="viewer.exe" Target="/RunAsAdmin /HideWindow /dir &quot;[APPDIR]&quot; &quot;[APPDIR]devcon.exe&quot; install &quot;[APPDIR]HidGuardian\HidGuardian.inf&quot; Root\HidGuardian" Options="1"/>
+    <ROW Action="InstallHidGuardian" Type="66" Source="viewer.exe" Target="/RunAsAdmin /HideWindow /dir &quot;[APPDIR]&quot; &quot;[APPDIR]devcon.exe&quot; install &quot;[APPDIR]Drivers\HidGuardian.inf&quot; Root\HidGuardian" Options="1"/>
     <ROW Action="InstallHidGuardianClassFilter" Type="66" Source="viewer.exe" Target="/RunAsAdmin /HideWindow /dir &quot;[APPDIR]&quot; &quot;[APPDIR]devcon.exe&quot; classfilter HIDClass upper -HidGuardian" Options="1"/>
-    <ROW Action="InstallViGEmBus" Type="2" Source="viewer.exe" Target="/RunAsAdmin /HideWindow /dir &quot;[APPDIR]&quot; &quot;[APPDIR]devcon.exe&quot; install &quot;[APPDIR]ViGEmBus\ViGEmBus.inf&quot; Root\ViGEmBus" Options="1"/>
+    <ROW Action="InstallViGEmBus" Type="2" Source="viewer.exe" Target="/RunAsAdmin /HideWindow /dir &quot;[APPDIR]&quot; &quot;[APPDIR]devcon.exe&quot; install &quot;[APPDIR]Drivers\ViGEmBus.inf&quot; Root\ViGEmBus" Options="1"/>
+    <ROW Action="InstallXnaGuardian" Type="66" Source="viewer.exe" Target="/RunAsAdmin /HideWindow /dir &quot;[APPDIR]&quot; &quot;[APPDIR]devcon.exe&quot; install &quot;[APPDIR]Drivers\XnaGuardian.inf&quot; Root\XnaGuardian" Options="1"/>
+    <ROW Action="InstallXnaGuardianClassFilter" Type="66" Source="viewer.exe" Target="/RunAsAdmin /HideWindow /dir &quot;[APPDIR]&quot; &quot;[APPDIR]devcon.exe&quot; classfilter XnaComposite upper -XnaGuardian" Options="1"/>
     <ROW Action="RemoveHidGuardian" Type="66" Source="viewer.exe" Target="/RunAsAdmin /HideWindow /dir &quot;[APPDIR]&quot; &quot;[APPDIR]devcon.exe&quot; remove Root\HidGuardian" Options="1"/>
     <ROW Action="RemoveHidGuardianClassFilter" Type="66" Source="viewer.exe" Target="/RunAsAdmin /HideWindow /dir &quot;[APPDIR]&quot; &quot;[APPDIR]devcon.exe&quot; classfilter HIDClass upper !HidGuardian" Options="1"/>
     <ROW Action="RemoveViGEmBus" Type="66" Source="viewer.exe" Target="/RunAsAdmin /HideWindow /dir &quot;[APPDIR]&quot; &quot;[APPDIR]devcon.exe&quot; remove Root\ViGEmBus" Options="1"/>
+    <ROW Action="RemoveXnaGuardian" Type="66" Source="viewer.exe" Target="/RunAsAdmin /HideWindow /dir &quot;[APPDIR]&quot; &quot;[APPDIR]devcon.exe&quot; remove Root\XnaGuardian" Options="1"/>
+    <ROW Action="RemoveXnaGuardianClassFilter" Type="66" Source="viewer.exe" Target="/RunAsAdmin /HideWindow /dir &quot;[APPDIR]&quot; &quot;[APPDIR]devcon.exe&quot; classfilter XnaComposite upper !XnaGuardian" Options="1"/>
     <ROW Action="SET_APPDIR" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]" MultiBuildTarget="DefaultBuild:[AI_ProgramFiles][Manufacturer]\[ProductName]"/>
     <ROW Action="SET_SHORTCUTDIR" Type="307" Source="SHORTCUTDIR" Target="[ProgramMenuFolder][ProductName]"/>
     <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
@@ -287,13 +282,9 @@
     <ROW Action="AI_REDIRECT_32BIT_SH_FOLDER" Condition="NOT VersionNT64 AND NOT AI_Disable32BitRedirection" Sequence="799"/>
     <ROW Action="AI_SETPROGRAMFILES64" Condition="VersionNT64" Sequence="748"/>
     <ROW Action="AI_SETPROGRAMFILES" Condition="NOT VersionNT64" Sequence="749"/>
-    <ROW Action="InstallViGEmBus" Condition="( NOT Installed ) AND ( NOT Installed )" Sequence="6601"/>
+    <ROW Action="InstallViGEmBus" Condition="( NOT Installed ) AND ( (&amp;ViGEmBus = 3) AND NOT (!ViGEmBus = 3) )" Sequence="6601"/>
     <ROW Action="RemoveViGEmBus" Condition="( Installed AND ( REMOVE = &quot;ALL&quot; OR AI_INSTALL_MODE = &quot;Remove&quot; ) ) AND ( Installed )" Sequence="1601"/>
     <ROW Action="AI_UPDATER_UNINSTALL" Condition="($updater.exe = 2) AND (?updater.exe = 3) AND NOT (UPGRADINGPRODUCTCODE)" Sequence="1551"/>
-    <ROW Action="AI_ProcessTasks" Condition="REMOVE&lt;&gt;&quot;ALL&quot;" Sequence="1623"/>
-    <ROW Action="AI_UninstallTasks" Condition="REMOVE=&quot;ALL&quot;" Sequence="1698"/>
-    <ROW Action="AI_ProcessTasks2" Condition="(VersionNT &gt;= 600) AND (REMOVE&lt;&gt;&quot;ALL&quot;)" Sequence="1624"/>
-    <ROW Action="AI_UninstallTasks2" Condition="(VersionNT &gt;= 600) AND (REMOVE=&quot;ALL&quot;)" Sequence="1699"/>
     <ROW Action="AI_BACKUP_AI_SETUPEXEPATH" Sequence="99" Builds="DefaultBuild"/>
     <ROW Action="AI_RESTORE_AI_SETUPEXEPATH" Condition="AI_SETUPEXEPATH_ORIGINAL" Sequence="101" Builds="DefaultBuild"/>
     <ROW Action="AI_DeleteCadLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="199" Builds="DefaultBuild"/>
@@ -310,6 +301,10 @@
     <ROW Action="InstallHidGuardianClassFilter" Condition="( NOT Installed ) AND ( (&amp;HidGuardian = 3) AND NOT (!HidGuardian = 3) )" Sequence="6603"/>
     <ROW Action="RemoveHidGuardianClassFilter" Condition="( Installed AND ( REMOVE = &quot;ALL&quot; OR AI_INSTALL_MODE = &quot;Remove&quot; ) ) AND ( (&amp;HidGuardian = 2) AND (!HidGuardian = 3) )" Sequence="1602"/>
     <ROW Action="RemoveHidGuardian" Condition="( Installed AND ( REMOVE = &quot;ALL&quot; OR AI_INSTALL_MODE = &quot;Remove&quot; ) ) AND ( (&amp;HidGuardian = 2) AND (!HidGuardian = 3) )" Sequence="1603"/>
+    <ROW Action="InstallXnaGuardian" Condition="( NOT Installed ) AND ( (&amp;XnaGuardian = 3) AND NOT (!XnaGuardian = 3) )" Sequence="6604"/>
+    <ROW Action="InstallXnaGuardianClassFilter" Condition="( NOT Installed ) AND ( (&amp;XnaGuardian = 3) AND NOT (!XnaGuardian = 3) )" Sequence="6605"/>
+    <ROW Action="RemoveXnaGuardian" Condition="( Installed AND ( REMOVE = &quot;ALL&quot; OR AI_INSTALL_MODE = &quot;Remove&quot; ) ) AND ( (&amp;XnaGuardian = 2) AND (!XnaGuardian = 3) )" Sequence="1605"/>
+    <ROW Action="RemoveXnaGuardianClassFilter" Condition="( Installed AND ( REMOVE = &quot;ALL&quot; OR AI_INSTALL_MODE = &quot;Remove&quot; ) ) AND ( (&amp;XnaGuardian = 2) AND (!XnaGuardian = 3) )" Sequence="1604"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiInstallUISequenceComponent">
     <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="747"/>
@@ -348,6 +343,9 @@
   <COMPONENT cid="caphyon.advinst.msicomp.MsiServInstComponent">
     <ROW ServiceInstall="HidCerberus.Srv.exe" Name="HidCerberusService" DisplayName="HidGuardian Whitelisting Service" ServiceType="16" StartType="2" ErrorControl="1" Component_="HidCerberus.Srv.exe" Description="Enables user-mode applications to white-list their process ID so they can access HID devices hidden by HidGuardian.sys"/>
   </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
+    <ROW Shortcut="CheckforViGEmUpdates" Directory_="DesktopFolder" Name="CHECKF~1|Check for ViGEm Updates" Component_="updater.exe" Target="[#updater.exe]" Hotkey="0" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
+  </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiThemeComponent">
     <ATTRIBUTE name="UsedTheme" value="graphite"/>
   </COMPONENT>
@@ -355,10 +353,7 @@
     <ROW UpgradeCode="[|UpgradeCode]" VersionMin="0.0.1" VersionMax="[|ProductVersion]" Attributes="257" ActionProperty="OLDPRODUCTS"/>
     <ROW UpgradeCode="[|UpgradeCode]" VersionMin="[|ProductVersion]" Attributes="2" ActionProperty="AI_NEWERPRODUCTFOUND"/>
   </COMPONENT>
-  <COMPONENT cid="caphyon.advinst.msicomp.ScheduledTasksComponent">
-    <ROW TaskId="AI_updater" TaskName="ViGEm Updater" Run="[#updater.exe]" CmdLine="/silent" WorkDir="[APPDIR]" UserProp="[%UserDomain]\[LogonUser]" StartTime="34816" Flags="9216" Trigger="1|1|1|1|0|0|0|" Condition="1" TaskVersion="1.0"/>
-  </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.UpdaterComponent">
-    <ROW Updater="updater.exe" URL="URL" SearchFreq="CheckFrequency" DownloadsFolder="DownloadsFolder" ID="ID" TargetDir="AppDir" AppName="ApplicationName" AppVersion="ApplicationVersion" CompanyName="CompanyName" DefCommandLine="DefaultCommandLine" Flags="Flags" IconPath="Icons8-Windows-8-User-Interface-Downloading-Updates.ico" IconIndex="0" UnistallCASeq="AI_UPDATER_UNINSTALL" TaskId="AI_updater" Description="[|UpdaterName] [|ProductVersion] © [|Manufacturer], Inc, 2016"/>
+    <ROW Updater="updater.exe" URL="URL" SearchFreq="CheckFrequency" DownloadsFolder="DownloadsFolder" ID="ID" TargetDir="AppDir" AppName="ApplicationName" AppVersion="ApplicationVersion" CompanyName="CompanyName" DefCommandLine="DefaultCommandLine" Flags="Flags" IconPath="Icons8-Windows-8-User-Interface-Downloading-Updates.ico" IconIndex="0" UnistallCASeq="AI_UPDATER_UNINSTALL" Description="[|UpdaterName] [|ProductVersion] © [|Manufacturer], Inc, 2016"/>
   </COMPONENT>
 </DOCUMENT>

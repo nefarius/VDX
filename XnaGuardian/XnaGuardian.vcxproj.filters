@@ -44,9 +44,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="XnaGuardian.rc" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="Driver Files">
       <UniqueIdentifier>{51dec7b8-5572-4bac-a681-53ed768da445}</UniqueIdentifier>
     </Filter>
@@ -59,10 +56,18 @@
     <Filter Include="Header Files\Common">
       <UniqueIdentifier>{7fc7e7cc-50d4-4e96-927f-b438a11337f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{1171ff30-3bf9-4cf7-bb54-9b7d0f6e86ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Inf Include="XnaGuardian.inf">
       <Filter>Driver Files</Filter>
     </Inf>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="XnaGuardian.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

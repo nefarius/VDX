@@ -47,7 +47,7 @@ XnaGuardianQueueInitialize(
 
     //
     // Configure a default queue so that requests that are not
-    // configure-fowarded using WdfDeviceConfigureRequestDispatching to goto
+    // configure-forwarded using WdfDeviceConfigureRequestDispatching to goto
     // other queues get dispatched here.
     //
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(
@@ -55,7 +55,13 @@ XnaGuardianQueueInitialize(
         WdfIoQueueDispatchParallel
     );
 
+    //
+    // Pass stuff down the stack we won't modify
+    // 
     queueConfig.EvtIoDefault = XnaGuardianEvtIoDefault;
+    //
+    // Filter the interesting calls
+    // 
     queueConfig.EvtIoDeviceControl = XnaGuardianEvtIoDeviceControl;
 
     status = WdfIoQueueCreate(
@@ -190,6 +196,10 @@ VOID XnaGuardianEvtIoDeviceControl(
 
         WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&requestAttribs, XINPUT_PAD_IDENTIFIER_CONTEXT);
 
+        //
+        // Attach context object to current request object
+        // This way we can access the context data in the completion routine
+        // 
         status = WdfObjectAllocateContext(
             Request,
             &requestAttribs,
@@ -230,7 +240,7 @@ VOID XnaGuardianEvtIoDeviceControl(
             //
             // Identify LED request
             // 
-            if (((PUCHAR)pBuffer)[4] == 0x01)
+            if (((PUCHAR)pBuffer)[4] == 0x01 && ((PUCHAR)pBuffer)[0] < 0x04)
             {
                 pDeviceContext->LedValues[((PUCHAR)pBuffer)[0]] = ((PUCHAR)pBuffer)[1];
             }
@@ -380,8 +390,8 @@ void XInputGetGamepadStateCompleted(
     // Get global pad override data
     // 
     WdfWaitLockAcquire(PadStatesLock, NULL);
+
     pPad = &PadStates[padIndex];
-    WdfWaitLockRelease(PadStatesLock);
 
     status = WdfRequestRetrieveOutputBuffer(Request, IO_GET_GAMEPAD_STATE_OUT_SIZE, &buffer, &buflen);
 
@@ -391,8 +401,6 @@ void XInputGetGamepadStateCompleted(
         // Extract XINPUT_GAMEPAD structure from buffer
         // 
         pGamepad = GAMEPAD_FROM_BUFFER(buffer);
-
-        WdfWaitLockAcquire(PadStatesLock, NULL);
 
         //
         // Override buttons
@@ -457,13 +465,13 @@ void XInputGetGamepadStateCompleted(
             pGamepad->sThumbRX = pPad->Gamepad.sThumbRX;
         if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y)
             pGamepad->sThumbRY = pPad->Gamepad.sThumbRY;
-
-        WdfWaitLockRelease(PadStatesLock);
     }
     else
     {
         KdPrint((DRIVERNAME "WdfRequestRetrieveOutputBuffer failed with status 0x%x\n", status));
     }
+    
+    WdfWaitLockRelease(PadStatesLock);
 
     //
     // Always complete

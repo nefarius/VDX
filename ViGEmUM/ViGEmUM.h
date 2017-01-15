@@ -23,9 +23,9 @@ SOFTWARE.
 */
 
 
-#pragma once
-
+// ReSharper disable CppMissingIncludeGuard
 #ifdef _MSC_VER
+// ReSharper restore CppMissingIncludeGuard
 #pragma once
 #endif
 

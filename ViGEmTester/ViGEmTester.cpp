@@ -29,12 +29,11 @@ SOFTWARE.
 #include "stdafx.h"
 #include <Windows.h>
 #include <initguid.h>
-#include <public.h>
 #include <ViGEmUM.h>
 
 #define VIGEM_TEST_XUSB
 #define VIGEM_TEST_DS4
-#define VIGEM_TEST_XGIP
+// #define VIGEM_TEST_XGIP
 
 HANDLE bus;
 int serial = 0;

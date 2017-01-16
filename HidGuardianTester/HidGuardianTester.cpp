@@ -5,8 +5,6 @@
 #include <Windows.h>
 #include <SetupAPI.h>
 #include <hidsdi.h>
-#include <initguid.h>
-#include "../XnaGuardian/Public.h"
 
 #pragma comment(lib, "hid.lib")
 
@@ -25,50 +23,15 @@ int main()
     GUID hidClass;
     HidD_GetHidGuid(&hidClass);
 
-    hDevice = CreateFile(L"\\\\.\\XnaGuardian",
-        GENERIC_READ | GENERIC_WRITE,
-        0,
-        nullptr,
-        OPEN_EXISTING,
-        0,
-        nullptr);
-
-    printf("hDevice = 0x%p, error = %d\n", hDevice, GetLastError());
-
-    DWORD retval;
-
-    XINPUT_EXT_OVERRIDE_GAMEPAD gamepad;
-    XINPUT_EXT_OVERRIDE_GAMEPAD_INIT(&gamepad, 0);
-
-    XINPUT_EXT_OVERRIDE_GAMEPAD_A(&gamepad, TRUE);
-    XINPUT_EXT_OVERRIDE_GAMEPAD_Y(&gamepad, TRUE);
-
-    BOOLEAN ret = DeviceIoControl(
-        hDevice,
-        IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE,
-        static_cast<LPVOID>(&gamepad),
-        gamepad.Size,
-        nullptr,
-        0,
-        &retval,
-        nullptr);
-
-    printf("DeviceIoControl = %d, error = %d\n", ret, GetLastError());
-    getchar();
-    return 0;
-
-#ifdef HIDGUARDIAN
     HMODULE cerberus = LoadLibrary(L"HidCerberus.Lib.dll");
-
     HidGuardianOpen_t fpOpen = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianOpen"));
     HidGuardianOpen_t fpClose = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianClose"));
 
     fpOpen();
-#endif
 
-    auto deviceInfoSet = SetupDiGetClassDevs(&XUSB_INTERFACE_CLASS_GUID, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+    auto deviceInfoSet = SetupDiGetClassDevs(&hidClass, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
-    while (SetupDiEnumDeviceInterfaces(deviceInfoSet, nullptr, &XUSB_INTERFACE_CLASS_GUID, memberIndex++, &deviceInterfaceData))
+    while (SetupDiEnumDeviceInterfaces(deviceInfoSet, nullptr, &hidClass, memberIndex++, &deviceInterfaceData))
     {
         printf("Found one!\n");
 
@@ -101,30 +64,10 @@ int main()
             FILE_SHARE_READ | FILE_SHARE_WRITE,
             nullptr,
             OPEN_EXISTING,
-            FILE_ATTRIBUTE_NORMAL,
+            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
             nullptr);
 
         printf("hDevice = 0x%p, error = %d\n", hDevice, GetLastError());
-
-        DWORD retval;
-
-        XINPUT_EXT_OVERRIDE_GAMEPAD gamepad;
-        XINPUT_EXT_OVERRIDE_GAMEPAD_INIT(&gamepad, 0);
-
-        XINPUT_EXT_OVERRIDE_GAMEPAD_A(&gamepad, TRUE);
-        XINPUT_EXT_OVERRIDE_GAMEPAD_Y(&gamepad, TRUE);
-
-        BOOLEAN ret = DeviceIoControl(
-            hDevice,
-            IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE,
-            static_cast<LPVOID>(&gamepad),
-            gamepad.Size,
-            nullptr,
-            0,
-            &retval,
-            nullptr);
-
-        printf("DeviceIoControl = %d, error = %d\n", ret, GetLastError());
 
         free(detailDataBuffer);
     }
@@ -134,9 +77,7 @@ int main()
     printf("Done\n");
     getchar();
 
-#ifdef HIDGUARDIAN
     fpClose();
-#endif
 
     return 0;
 }

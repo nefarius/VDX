@@ -63,7 +63,7 @@ int main()
     fpClose = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianClose"));
 
     printf("Bypassing HidGuardian\n");
-    fpOpen();
+    if (fpOpen) fpOpen();
 
     printf("Initializing emulation driver\n");
 

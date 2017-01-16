@@ -23,7 +23,8 @@ SOFTWARE.
 */
 
 
-#include "public.h"
+#pragma once
+
 #include <ntintsafe.h>
 
 EXTERN_C_START

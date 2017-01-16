@@ -51,7 +51,7 @@ VIGEM_API VIGEM_ERROR vigem_init()
     auto deviceInfoSet = SetupDiGetClassDevs(&GUID_DEVINTERFACE_BUSENUM_VIGEM, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
     // enumerate device instances
-    while (SetupDiEnumDeviceInterfaces(deviceInfoSet, nullptr, &GUID_DEVINTERFACE_BUSENUM_VIGEM, memberIndex, &deviceInterfaceData))
+    while (SetupDiEnumDeviceInterfaces(deviceInfoSet, nullptr, &GUID_DEVINTERFACE_BUSENUM_VIGEM, memberIndex++, &deviceInterfaceData))
     {
         // get required target buffer size
         SetupDiGetDeviceInterfaceDetail(deviceInfoSet, &deviceInterfaceData, nullptr, 0, &requiredSize, nullptr);
@@ -84,38 +84,37 @@ VIGEM_API VIGEM_ERROR vigem_init()
             FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
             nullptr);
 
-        if (g_hViGEmBus != INVALID_HANDLE_VALUE)
-        {
-            DWORD transfered = 0;
-            OVERLAPPED lOverlapped = { 0 };
-            lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-
-            VIGEM_CHECK_VERSION version;
-            VIGEM_CHECK_VERSION_INIT(&version, VIGEM_COMMON_VERSION);
-
-            // send compiled library version to driver to check compatibility
-            DeviceIoControl(g_hViGEmBus, IOCTL_VIGEM_CHECK_VERSION, &version, version.Size, nullptr, 0, &transfered, &lOverlapped);
-
-            // wait for result
-            if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
-            {
-                error = VIGEM_ERROR_NONE;
-            }
-            else
-            {
-                error = VIGEM_ERROR_BUS_VERSION_MISMATCH;
-            }
-
-            CloseHandle(lOverlapped.hEvent);
-        }
-        else
+        // check bus open result
+        if (g_hViGEmBus == INVALID_HANDLE_VALUE)
         {
             error = VIGEM_ERROR_BUS_ACCESS_FAILED;
+            free(detailDataBuffer);
+            continue;
         }
 
-        free(detailDataBuffer);
+        DWORD transfered = 0;
+        OVERLAPPED lOverlapped = { 0 };
+        lOverlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
-        break;
+        VIGEM_CHECK_VERSION version;
+        VIGEM_CHECK_VERSION_INIT(&version, VIGEM_COMMON_VERSION);
+
+        // send compiled library version to driver to check compatibility
+        DeviceIoControl(g_hViGEmBus, IOCTL_VIGEM_CHECK_VERSION, &version, version.Size, nullptr, 0, &transfered, &lOverlapped);
+
+        // wait for result
+        if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) != 0)
+        {
+            error = VIGEM_ERROR_NONE;
+            free(detailDataBuffer);
+            CloseHandle(lOverlapped.hEvent);
+            break;
+        }
+
+        error = VIGEM_ERROR_BUS_VERSION_MISMATCH;
+
+        CloseHandle(lOverlapped.hEvent);
+        free(detailDataBuffer);
     }
 
     SetupDiDestroyDeviceInfoList(deviceInfoSet);

@@ -1,4 +1,4 @@
-rem @echo off
+@echo off
 SET mypath=%~dp0
 
 makecab /f ViGEm.ddf

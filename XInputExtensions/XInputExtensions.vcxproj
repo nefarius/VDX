@@ -149,6 +149,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\XInputOverrides.h" />
     <ClInclude Include="..\Common\XnaGuardianShared.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />

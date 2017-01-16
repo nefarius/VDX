@@ -41,6 +41,7 @@
     <ClCompile Include="Sideband.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\XInputOverrides.h" />
     <ClInclude Include="..\Common\XnaGuardianShared.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="Driver.h" />

@@ -26,7 +26,7 @@ SOFTWARE.
 #pragma once
 
 #include "public.h"
-#include "XInputInternal.h"
+#include "XInputOverrides.h"
 
 EXTERN_C_START
 

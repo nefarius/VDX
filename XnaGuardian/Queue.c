@@ -26,6 +26,7 @@ SOFTWARE.
 #include "driver.h"
 #include "queue.tmh"
 #include "XInputInternal.h"
+#include "XInputOverrides.h"
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, XnaGuardianQueueInitialize)

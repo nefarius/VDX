@@ -11,16 +11,16 @@
 .Set CabinetNameTemplate=ViGEm_x64.cab
 ; HidGuardian
 .Set DestinationDir=HidGuardianPackage
-"..\x64\Release\ViGEm Drivers Redistributable\HidGuardian.sys"
-"..\x64\Release\ViGEm Drivers Redistributable\HidGuardian.inf"
-"..\x64\Release\ViGEm Drivers Redistributable\WdfCoinstaller01009.dll"
+HidGuardian.sys
+HidGuardian.inf
+WdfCoinstaller01009.dll
 ; ViGEmBus
 .Set DestinationDir=ViGEmBusPackage
-"..\x64\Release\ViGEm Drivers Redistributable\ViGEmBus.sys"
-"..\x64\Release\ViGEm Drivers Redistributable\ViGEmBus.inf"
-"..\x64\Release\ViGEm Drivers Redistributable\WdfCoinstaller01009.dll"
+ViGEmBus.sys
+ViGEmBus.inf
+WdfCoinstaller01009.dll
 ; XnaGuardian
 .Set DestinationDir=XnaGuardianPackage
-"..\x64\Release\ViGEm Drivers Redistributable\XnaGuardian.sys"
-"..\x64\Release\ViGEm Drivers Redistributable\XnaGuardian.inf"
-"..\x64\Release\ViGEm Drivers Redistributable\WdfCoinstaller01009.dll"
+XnaGuardian.sys
+XnaGuardian.inf
+WdfCoinstaller01009.dll

@@ -250,3 +250,7 @@ ModelManifest.xml
 /Installer/ViGEm Installer-cache
 /Installer
 /Doxygen
+/Signing/disk1
+/Signing/SIGN_OLD.CMD
+/Signing/setup.rpt
+/Signing/setup.inf

@@ -8,7 +8,7 @@
 .Set CompressionType=MSZIP
 .Set Cabinet=on
 .Set Compress=on
-.Set CabinetNameTemplate=ViGEm_x64.cab
+;.Set CabinetNameTemplate=ViGEm_x64.cab
 ; HidGuardian
 .Set DestinationDir=HidGuardianPackage
 HidGuardian.sys

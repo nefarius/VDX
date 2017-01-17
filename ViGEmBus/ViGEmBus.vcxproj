@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -182,7 +182,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <Inf>
-      <TimeStamp>1.3.0.0</TimeStamp>
+      <TimeStamp>1.4.0.0</TimeStamp>
     </Inf>
     <Link>
       <AdditionalDependencies>$(DDK_LIB_PATH)ntstrsafe.lib;$(DDK_LIB_PATH)wdmsec.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -190,7 +190,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <Inf>
-      <TimeStamp>1.3.0.0</TimeStamp>
+      <TimeStamp>1.4.0.0</TimeStamp>
     </Inf>
     <Link>
       <AdditionalDependencies>$(DDK_LIB_PATH)ntstrsafe.lib;$(DDK_LIB_PATH)wdmsec.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -198,7 +198,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Inf>
-      <TimeStamp>1.3.0.0</TimeStamp>
+      <TimeStamp>1.4.0.0</TimeStamp>
     </Inf>
     <Link>
       <AdditionalDependencies>$(DDK_LIB_PATH)ntstrsafe.lib;$(DDK_LIB_PATH)wdmsec.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -206,7 +206,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Inf>
-      <TimeStamp>1.3.0.0</TimeStamp>
+      <TimeStamp>1.4.0.0</TimeStamp>
     </Inf>
     <Link>
       <AdditionalDependencies>$(DDK_LIB_PATH)ntstrsafe.lib;$(DDK_LIB_PATH)wdmsec.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -214,7 +214,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Inf>
-      <TimeStamp>1.3.0.0</TimeStamp>
+      <TimeStamp>1.4.0.0</TimeStamp>
     </Inf>
     <Link>
       <AdditionalDependencies>$(DDK_LIB_PATH)ntstrsafe.lib;$(DDK_LIB_PATH)wdmsec.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -222,7 +222,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <Inf>
-      <TimeStamp>1.3.0.0</TimeStamp>
+      <TimeStamp>1.4.0.0</TimeStamp>
     </Inf>
     <Link>
       <AdditionalDependencies>$(DDK_LIB_PATH)ntstrsafe.lib;$(DDK_LIB_PATH)wdmsec.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -230,7 +230,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Inf>
-      <TimeStamp>1.3.0.0</TimeStamp>
+      <TimeStamp>1.4.0.0</TimeStamp>
     </Inf>
     <Link>
       <AdditionalDependencies>$(DDK_LIB_PATH)ntstrsafe.lib;$(DDK_LIB_PATH)wdmsec.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -238,7 +238,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Inf>
-      <TimeStamp>1.3.0.0</TimeStamp>
+      <TimeStamp>1.4.0.0</TimeStamp>
     </Inf>
     <Link>
       <AdditionalDependencies>$(DDK_LIB_PATH)ntstrsafe.lib;$(DDK_LIB_PATH)wdmsec.lib;%(AdditionalDependencies)</AdditionalDependencies>

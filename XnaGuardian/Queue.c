@@ -74,7 +74,7 @@ XnaGuardianQueueInitialize(
 
     if (!NT_SUCCESS(status))
     {
-        TraceEvents(TRACE_LEVEL_ERROR, TRACE_QUEUE, "WdfIoQueueCreate failed %!STATUS!", status);
+        KdPrint(("WdfIoQueueCreate failed with status 0x%X\n", status));
         return status;
     }
 

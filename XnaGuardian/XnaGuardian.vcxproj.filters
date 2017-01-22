@@ -67,9 +67,6 @@
     <Inf Include="XnaGuardian.inf">
       <Filter>Driver Files</Filter>
     </Inf>
-    <Inf Include="XboxGuardian.inf">
-      <Filter>Driver Files</Filter>
-    </Inf>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="XnaGuardian.rc">

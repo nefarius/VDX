@@ -29,6 +29,8 @@ SOFTWARE.
 
 #define XINPUT_MAX_DEVICES          0x04
 
+#define VALID_USER_INDEX(_index_)   ((_index_ >= 0) && (_index_ < XINPUT_MAX_DEVICES))
+
 //
 // Custom extensions
 // 

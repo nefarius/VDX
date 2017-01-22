@@ -64,7 +64,7 @@ XINPUTEXTENSIONS_API DWORD XInputOverrideSetMask(DWORD dwUserIndex, DWORD dwMask
     PXINPUT_EXT_OVERRIDE_GAMEPAD    pPad = nullptr;
     DWORD                           retval = 0;
 
-    if (dwUserIndex < 0 || dwUserIndex >= XINPUT_MAX_DEVICES) return ERROR_BAD_ARGUMENTS;
+    if (!VALID_USER_INDEX(dwUserIndex)) return ERROR_BAD_ARGUMENTS;
 
     if (!SUCCEEDED(HRESULT_FROM_WIN32(OpenGuardian()))) return GetLastError();
 
@@ -97,7 +97,7 @@ XINPUTEXTENSIONS_API DWORD XInputOverrideSetState(DWORD dwUserIndex, PXINPUT_GAM
 
     if (!pGamepad) return ERROR_BAD_ARGUMENTS;
 
-    if (dwUserIndex < 0 || dwUserIndex >= XINPUT_MAX_DEVICES) return ERROR_BAD_ARGUMENTS;
+    if (!VALID_USER_INDEX(dwUserIndex)) return ERROR_BAD_ARGUMENTS;
 
     if (!SUCCEEDED(HRESULT_FROM_WIN32(OpenGuardian()))) return GetLastError();
 
@@ -130,7 +130,7 @@ XINPUTEXTENSIONS_API DWORD XInputOverridePeekState(DWORD dwUserIndex, PXINPUT_GA
 
     if (!pGamepad) return ERROR_BAD_ARGUMENTS;
 
-    if (dwUserIndex < 0 || dwUserIndex >= XINPUT_MAX_DEVICES) return ERROR_BAD_ARGUMENTS;
+    if (!VALID_USER_INDEX(dwUserIndex)) return ERROR_BAD_ARGUMENTS;
 
     if (!SUCCEEDED(HRESULT_FROM_WIN32(OpenGuardian()))) return GetLastError();
 

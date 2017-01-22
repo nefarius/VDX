@@ -256,6 +256,15 @@ VOID XnaGuardianSidebandIoDeviceControl(
             break;
         }
 
+        // 
+        // Validate range
+        // 
+        if (!VALID_USER_INDEX(pHidePad->UserIndex))
+        {
+            status = STATUS_INVALID_PARAMETER;
+            break;
+        }
+
         //
         // Set pad state
         // 
@@ -297,7 +306,7 @@ VOID XnaGuardianSidebandIoDeviceControl(
         // 
         // Validate range
         // 
-        if (pOverride->UserIndex < 0 || pOverride->UserIndex > 3)
+        if (!VALID_USER_INDEX(pOverride->UserIndex))
         {
             status = STATUS_INVALID_PARAMETER;
             break;
@@ -363,14 +372,14 @@ VOID XnaGuardianSidebandIoDeviceControl(
         // 
         // Validate range
         // 
-        if (userIndex < 0 || userIndex > 3)
+        if (!VALID_USER_INDEX(userIndex))
         {
             status = STATUS_INVALID_PARAMETER;
             break;
         }
 
         // 
-        // Retrieve input buffer
+        // Retrieve output buffer
         // 
         status = WdfRequestRetrieveOutputBuffer(Request, sizeof(XINPUT_GAMEPAD_STATE), &pBuffer, &buflen);
         if (!NT_SUCCESS(status) || buflen < sizeof(XINPUT_GAMEPAD_STATE))

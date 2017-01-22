@@ -406,7 +406,9 @@ void XInputGetGamepadStateCompleted(
         //
         // Cache the values of the physical pad for use in peek call
         // 
+        WdfWaitLockAcquire(PeekPadCacheLock, NULL);
         RtlCopyBytes(&PeekPadCache[padIndex], pGamepad, sizeof(XINPUT_GAMEPAD_STATE));
+        WdfWaitLockRelease(PeekPadCacheLock);
 
         //
         // Override buttons

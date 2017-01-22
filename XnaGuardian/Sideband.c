@@ -379,7 +379,9 @@ VOID XnaGuardianSidebandIoDeviceControl(
             break;
         }
 
+        WdfWaitLockAcquire(PeekPadCacheLock, NULL);
         RtlCopyBytes(pBuffer, &PeekPadCache[userIndex], sizeof(XINPUT_GAMEPAD_STATE));
+        WdfWaitLockRelease(PeekPadCacheLock);
 
         WdfRequestCompleteWithInformation(Request, STATUS_SUCCESS, sizeof(XINPUT_GAMEPAD_STATE));
         return;

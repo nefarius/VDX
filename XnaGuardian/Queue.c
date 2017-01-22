@@ -381,7 +381,7 @@ void XInputGetGamepadStateCompleted(
     //
     // Check bounds and just complete request on error
     // 
-    if (padIndex < 0 || padIndex > XINPUT_MAX_DEVICES)
+    if (!VALID_USER_INDEX(padIndex))
     {
         WdfRequestComplete(Request, status);
         return;

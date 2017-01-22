@@ -219,6 +219,8 @@ VOID XnaGuardianSidebandIoDeviceControl(
     PVOID                           pBuffer;
     PXINPUT_EXT_HIDE_GAMEPAD        pHidePad;
     PXINPUT_EXT_OVERRIDE_GAMEPAD    pOverride;
+    PXINPUT_EXT_PEEK_GAMEPAD        pPeek;
+    UCHAR                           userIndex;
 
     KdPrint((DRIVERNAME "XnaGuardianSidebandIoDeviceControl called with code 0x%X\n", IoControlCode));
 
@@ -329,6 +331,59 @@ VOID XnaGuardianSidebandIoDeviceControl(
 
         break;
 #pragma endregion
+
+#pragma region IOCTL_XINPUT_EXT_PEEK_GAMEPAD_STATE
+    case IOCTL_XINPUT_EXT_PEEK_GAMEPAD_STATE:
+
+        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_EXT_PEEK_GAMEPAD_STATE\n"));
+
+        // 
+        // Retrieve input buffer
+        // 
+        status = WdfRequestRetrieveInputBuffer(Request, sizeof(XINPUT_EXT_PEEK_GAMEPAD), &pBuffer, &buflen);
+        if (!NT_SUCCESS(status) || buflen < sizeof(XINPUT_EXT_PEEK_GAMEPAD))
+        {
+            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X\n", status));
+            break;
+        }
+
+        pPeek = (PXINPUT_EXT_PEEK_GAMEPAD)pBuffer;
+
+        //
+        // Validate padding
+        // 
+        if (pPeek->Size != sizeof(XINPUT_EXT_PEEK_GAMEPAD))
+        {
+            status = STATUS_INVALID_PARAMETER;
+            break;
+        }
+
+        userIndex = pPeek->UserIndex;
+
+        // 
+        // Validate range
+        // 
+        if (userIndex < 0 || userIndex > 3)
+        {
+            status = STATUS_INVALID_PARAMETER;
+            break;
+        }
+
+        // 
+        // Retrieve input buffer
+        // 
+        status = WdfRequestRetrieveOutputBuffer(Request, sizeof(XINPUT_GAMEPAD_STATE), &pBuffer, &buflen);
+        if (!NT_SUCCESS(status) || buflen < sizeof(XINPUT_GAMEPAD_STATE))
+        {
+            KdPrint((DRIVERNAME "WdfRequestRetrieveOutputBuffer failed with status 0x%X\n", status));
+            break;
+        }
+
+        RtlCopyBytes(pBuffer, &PeekPadCache[userIndex], sizeof(XINPUT_GAMEPAD_STATE));
+
+        WdfRequestCompleteWithInformation(Request, STATUS_SUCCESS, sizeof(XINPUT_GAMEPAD_STATE));
+        return;
+#pragma endregion 
 
     default:
         break;

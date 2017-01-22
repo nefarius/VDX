@@ -67,14 +67,14 @@ BEGIN
     BEGIN
         BLOCK "0c0704b0"
         BEGIN
-            VALUE "CompanyName", "Nefarius Software Solutions"
+            VALUE "CompanyName", "Benjamin Höglinger-Stelzer"
             VALUE "FileDescription", "XnaGuardian Class Filter Driver"
-VALUE "FileVersion", "1.4.0.0"
+            VALUE "FileVersion", "1.4.0.0"
             VALUE "InternalName", "XnaGuardian.sys"
-            VALUE "LegalCopyright", "Copyright (C) Benjamin Hoeglinger 2016"
+            VALUE "LegalCopyright", "Copyright (C) Benjamin Höglinger-Stelzer 2016"
             VALUE "OriginalFilename", "XnaGuardian.sys"
             VALUE "ProductName", "XnaGuardian Class Filter Driver"
-VALUE "ProductVersion", "1.4.0.0"
+            VALUE "ProductVersion", "1.4.0.0"
         END
     END
     BLOCK "VarFileInfo"

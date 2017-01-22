@@ -75,7 +75,7 @@ KmdfLibraryVersion = $KMDFVERSION$
 
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
-ManufacturerName="Nefarius Software Solutions"
+ManufacturerName="Benjamin Höglinger-Stelzer"
 DiskName = "HidGuardian Installation Disk"
 HidGuardian.DeviceDesc = "HidGuardian Virtual Device"
 HidGuardian.SVCDESC = "HidGuardian Service"

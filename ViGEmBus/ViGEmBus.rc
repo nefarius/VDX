@@ -67,14 +67,14 @@ BEGIN
     BEGIN
         BLOCK "000904b0"
         BEGIN
-            VALUE "CompanyName", "Nefarius Software Solutions"
+            VALUE "CompanyName", "Benjamin Höglinger-Stelzer"
             VALUE "FileDescription", "Virtual Gamepad Emulation Bus Driver"
-VALUE "FileVersion", "1.4.0.0"
+            VALUE "FileVersion", "1.4.0.0"
             VALUE "InternalName", "Virtual Gamepad Emulation Bus Driver"
-            VALUE "LegalCopyright", "Copyright (C) Benjamin Hoeglinger 2016"
+            VALUE "LegalCopyright", "Copyright (C) Benjamin Höglinger-Stelzer 2016"
             VALUE "OriginalFilename", "vigembus.sys"
             VALUE "ProductName", "Virtual Gamepad Emulation Bus Driver"
-VALUE "ProductVersion", "1.4.0.0"
+            VALUE "ProductVersion", "1.4.0.0"
         END
     END
     BLOCK "VarFileInfo"

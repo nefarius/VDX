@@ -75,7 +75,7 @@ KmdfLibraryVersion = $KMDFVERSION$
 
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
-ManufacturerName="Nefarius Software Solutions"
+ManufacturerName="Benjamin Höglinger-Stelzer"
 DiskName = "XnaGuardian Installation Disk"
 XnaGuardian.DeviceDesc = "XnaGuardian Virtual Device"
 XnaGuardian.SVCDESC = "XnaGuardian Service"

@@ -32,6 +32,7 @@ EXTERN_C_START
 
 extern XINPUT_PAD_STATE_INTERNAL    PadStates[XINPUT_MAX_DEVICES];
 extern WDFWAITLOCK                  PadStatesLock;
+extern XINPUT_GAMEPAD_STATE         PeekPadCache[XINPUT_MAX_DEVICES];
 
 NTSTATUS
 XnaGuardianQueueInitialize(

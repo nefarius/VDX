@@ -8,7 +8,7 @@ Class=System
 ClassGuid={4D36E97D-E325-11CE-BFC1-08002BE10318}
 Provider=%ManufacturerName%
 CatalogFile=XnaGuardian.cat
-DriverVer= ; TODO: set DriverVer in stampinf property pages
+DriverVer= ;
 
 [DestinationDirs]
 DefaultDestDir = 12

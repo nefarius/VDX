@@ -4,11 +4,11 @@
 
 [Version]
 Signature="$WINDOWS NT$"
-Class=HIDClass
-ClassGuid={745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Class=System
+ClassGuid={4D36E97D-E325-11CE-BFC1-08002BE10318}
 Provider=%ManufacturerName%
 CatalogFile=HidGuardian.cat
-DriverVer= ; TODO: set DriverVer in stampinf property pages
+DriverVer= ;
 
 [DestinationDirs]
 DefaultDestDir = 12

@@ -17,6 +17,7 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
 LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
+#pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -66,14 +67,14 @@ BEGIN
     BEGIN
         BLOCK "0c0704b0"
         BEGIN
-            VALUE "CompanyName", "Nefarius Software Solutions"
+            VALUE "CompanyName", "Benjamin Höglinger-Stelzer"
             VALUE "FileDescription", "XnaGuardian User-Mode Library"
-VALUE "FileVersion", "1.4.1.0"
+            VALUE "FileVersion", "1.4.1.0"
             VALUE "InternalName", "XInputExtensions.dll"
-            VALUE "LegalCopyright", "Copyright (C) Benjamin Hoeglinger 2017"
+            VALUE "LegalCopyright", "Copyright (C) Benjamin Höglinger-Stelzer 2017"
             VALUE "OriginalFilename", "XInputExtensions.dll"
             VALUE "ProductName", "XnaGuardian User-Mode Library"
-VALUE "ProductVersion", "1.4.1.0"
+            VALUE "ProductVersion", "1.4.1.0"
         END
     END
     BLOCK "VarFileInfo"

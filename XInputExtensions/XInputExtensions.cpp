@@ -123,4 +123,35 @@ XINPUTEXTENSIONS_API DWORD XInputOverrideSetState(DWORD dwUserIndex, PXINPUT_GAM
     return GetLastError();
 }
 
+XINPUTEXTENSIONS_API DWORD XInputOverridePeekState(DWORD dwUserIndex, PXINPUT_GAMEPAD pGamepad)
+{
+    XINPUT_EXT_PEEK_GAMEPAD     peek;
+    DWORD                       retval = 0;
+
+    if (!pGamepad) return ERROR_BAD_ARGUMENTS;
+
+    if (dwUserIndex < 0 || dwUserIndex >= XINPUT_MAX_DEVICES) return ERROR_BAD_ARGUMENTS;
+
+    if (!SUCCEEDED(HRESULT_FROM_WIN32(OpenGuardian()))) return GetLastError();
+
+    XINPUT_EXT_PEEK_GAMEPAD_INIT(&peek, dwUserIndex);
+
+    auto ret = DeviceIoControl(
+        g_hGuardian,
+        IOCTL_XINPUT_EXT_PEEK_GAMEPAD_STATE,
+        static_cast<LPVOID>(&peek),
+        peek.Size,
+        pGamepad,
+        sizeof(XINPUT_GAMEPAD),
+        &retval,
+        nullptr);
+
+    if (ret > 0) return ERROR_SUCCESS;
+
+    CloseHandle(g_hGuardian);
+    g_hGuardian = nullptr;
+
+    return GetLastError();
+}
+
 

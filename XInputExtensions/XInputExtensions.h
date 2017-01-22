@@ -43,6 +43,8 @@ extern "C"
 
     XINPUTEXTENSIONS_API DWORD XInputOverrideSetState(DWORD dwUserIndex, PXINPUT_GAMEPAD pGamepad);
 
+    XINPUTEXTENSIONS_API DWORD XInputOverridePeekState(DWORD dwUserIndex, PXINPUT_GAMEPAD pGamepad);
+
 #ifdef __cplusplus
 }
 #endif

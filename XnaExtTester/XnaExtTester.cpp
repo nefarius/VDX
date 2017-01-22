@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include "../XInputExtensions/XInputExtensions.h"
-#include "../Common/XnaGuardianShared.h"
+#include "../Common/XInputOverrides.h"
 
 int main()
 {
@@ -13,6 +13,13 @@ int main()
 
     XInputOverrideSetMask(0, XINPUT_GAMEPAD_OVERRIDE_A | XINPUT_GAMEPAD_OVERRIDE_Y);
     XInputOverrideSetState(0, &pad);
+
+    while(TRUE)
+    {
+        XInputOverridePeekState(0, &pad);
+        printf("%X\n", pad.wButtons);
+        Sleep(100);
+    }
 
     return 0;
 }

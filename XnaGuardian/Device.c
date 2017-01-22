@@ -94,11 +94,6 @@ XnaGuardianCreateDevice(
         if (!NT_SUCCESS(status)) {
             KdPrint((DRIVERNAME "FilterCreateControlDevice failed with status 0x%x\n",
                 status));
-            //
-            // Let us not fail AddDevice just because we weren't able to create the
-            // control device.
-            //
-            status = STATUS_SUCCESS;
         }
     }
     else

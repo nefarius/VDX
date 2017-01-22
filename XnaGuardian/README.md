@@ -1,5 +1,5 @@
 # XnaGuardian
-Adds various extension requests to `XnaComposite` class devices.
+Adds various extensions to the `XInput` API on a driver level.
 
 ![Disclaimer](http://nefarius.at/public/Alpha-Disclaimer.png)
 

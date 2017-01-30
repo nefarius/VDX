@@ -172,6 +172,7 @@
     <VerifyDrivers />
     <VerifyFlags>133563</VerifyFlags>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <Inf2CatWindowsVersionList>10_$(DDKPlatform),6_3_$(DDKPlatform),Server6_3_$(DDKPlatform),8_$(DDKPlatform),Server8_$(DDKPlatform),Server2008R2_$(DDKPlatform),7_$(DDKPlatform)</Inf2CatWindowsVersionList>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>

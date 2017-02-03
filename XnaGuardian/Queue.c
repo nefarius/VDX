@@ -27,6 +27,7 @@ SOFTWARE.
 #include "queue.tmh"
 #include "XInputInternal.h"
 #include "XInputOverrides.h"
+#include <hidclass.h>
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, XnaGuardianQueueInitialize)
@@ -64,6 +65,10 @@ XnaGuardianQueueInitialize(
     // Filter the interesting calls
     // 
     queueConfig.EvtIoDeviceControl = XnaGuardianEvtIoDeviceControl;
+    //
+    // Filter ReadFile(...) calls
+    //
+    queueConfig.EvtIoRead = XnaGuardianEvtIoRead;
 
     status = WdfIoQueueCreate(
         Device,
@@ -270,6 +275,11 @@ VOID XnaGuardianEvtIoDeviceControl(
         KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_AUDIO_INFORMATION\n"));
         break;
 
+    case IOCTL_HID_GET_INPUT_REPORT:
+
+        KdPrint((DRIVERNAME ">> IOCTL_HID_GET_INPUT_REPORT\n"));
+        break;
+
     default:
         break;
     }
@@ -287,6 +297,36 @@ VOID XnaGuardianEvtIoDeviceControl(
         status = WdfRequestGetStatus(Request);
         KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
         WdfRequestComplete(Request, status);
+    }
+}
+
+//
+// Hooks into ReadFile(...) calls
+// 
+VOID XnaGuardianEvtIoRead(
+    _In_ WDFQUEUE   Queue,
+    _In_ WDFREQUEST Request,
+    _In_ size_t     Length
+)
+{
+    BOOLEAN     ret;
+    WDFDEVICE   Device;
+    NTSTATUS    status;
+
+    KdPrint((DRIVERNAME "XnaGuardianEvtIoRead called\n"));
+
+    UNREFERENCED_PARAMETER(Length);
+
+    Device = WdfIoQueueGetDevice(Queue);
+
+    WdfRequestFormatRequestUsingCurrentType(Request);
+    WdfRequestSetCompletionRoutine(Request, XnaGuardianEvtIoReadCompleted, Device);
+
+    ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS);
+
+    if (!ret) {
+        status = WdfRequestGetStatus(Request);
+        KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
     }
 }
 
@@ -487,4 +527,26 @@ void XInputGetGamepadStateCompleted(
     WdfRequestComplete(Request, status);
 }
 
+//
+// Filter ReadFile(...) result
+// 
+void XnaGuardianEvtIoReadCompleted(
+    _In_ WDFREQUEST                     Request,
+    _In_ WDFIOTARGET                    Target,
+    _In_ PWDF_REQUEST_COMPLETION_PARAMS Params,
+    _In_ WDFCONTEXT                     Context
+)
+{
+    NTSTATUS    status;
+
+    UNREFERENCED_PARAMETER(Target);
+    UNREFERENCED_PARAMETER(Params);
+    UNREFERENCED_PARAMETER(Context);
+    
+    status = WdfRequestGetStatus(Request);
+
+    KdPrint((DRIVERNAME "XnaGuardianEvtIoReadCompleted completed with status 0x%X\n", status));
+
+    WdfRequestComplete(Request, status);
+}
 

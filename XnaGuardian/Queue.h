@@ -45,8 +45,10 @@ XnaGuardianQueueInitialize(
 //
 EVT_WDF_IO_QUEUE_IO_DEFAULT XnaGuardianEvtIoDefault;
 EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL XnaGuardianEvtIoDeviceControl;
+EVT_WDF_IO_QUEUE_IO_READ XnaGuardianEvtIoRead;
 
 EVT_WDF_REQUEST_COMPLETION_ROUTINE XInputGetInformationCompleted;
 EVT_WDF_REQUEST_COMPLETION_ROUTINE XInputGetGamepadStateCompleted;
+EVT_WDF_REQUEST_COMPLETION_ROUTINE XnaGuardianEvtIoReadCompleted;
 
 EXTERN_C_END

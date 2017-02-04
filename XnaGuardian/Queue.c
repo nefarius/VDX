@@ -389,6 +389,7 @@ void XInputGetGamepadStateCompleted(
     PXINPUT_PAD_IDENTIFIER_CONTEXT  pRequestContext;
     PXINPUT_PAD_STATE_INTERNAL      pPad;
     LONG                            padIndex = 0;
+    LONG                            nButtonOverrides;
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
@@ -454,7 +455,7 @@ void XInputGetGamepadStateCompleted(
         // Override buttons
         // 
 
-        LONG nButtonOverrides = pPad->Overrides & 0xFFFF;
+        nButtonOverrides = pPad->Overrides & 0xFFFF;
         pGamepad->wButtons = (pGamepad->wButtons&~nButtonOverrides) | (pPad->Gamepad.wButtons&nButtonOverrides);
 
         //

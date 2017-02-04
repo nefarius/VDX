@@ -189,7 +189,7 @@ VOID XnaGuardianEvtIoDeviceControl(
         KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_GAMEPAD_STATE\n"));
 
         status = WdfRequestRetrieveInputBuffer(Request, IO_GET_GAMEPAD_STATE_IN_SIZE, &pBuffer, &buflen);
-                
+
         if (!NT_SUCCESS(status))
         {
             KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed: 0x%x\n", status));
@@ -454,43 +454,8 @@ void XInputGetGamepadStateCompleted(
         // Override buttons
         // 
 
-        // D-Pad
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_DPAD_UP)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP);
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_DPAD_DOWN)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN);
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_DPAD_LEFT)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT);
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_DPAD_RIGHT)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT);
-
-        // Start, Back
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_START)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_START);
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_BACK)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_BACK);
-
-        // Thumbs
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB);
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB);
-
-        // Shoulders
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_SHOULDER)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER);
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_SHOULDER)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER);
-
-        // Face
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_A)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_A);
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_B)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_B);
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_X)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_X);
-        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_Y)
-            pGamepad->wButtons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_Y);
+        LONG nButtonOverrides = pPad->Overrides & 0xFFFF;
+        pGamepad->wButtons = (pGamepad->wButtons&~nButtonOverrides) | (pPad->Gamepad.wButtons&nButtonOverrides);
 
         //
         // Override axes
@@ -518,7 +483,7 @@ void XInputGetGamepadStateCompleted(
     {
         KdPrint((DRIVERNAME "WdfRequestRetrieveOutputBuffer failed with status 0x%x\n", status));
     }
-    
+
     WdfWaitLockRelease(PadStatesLock);
 
     //
@@ -542,7 +507,7 @@ void XnaGuardianEvtIoReadCompleted(
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
     UNREFERENCED_PARAMETER(Context);
-    
+
     status = WdfRequestGetStatus(Request);
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoReadCompleted completed with status 0x%X\n", status));

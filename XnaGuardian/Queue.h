@@ -31,9 +31,7 @@ EXTERN_C_START
 #define MAX_DEVICES_FROM_BUFFER(_buffer_) ((ULONG)((PUCHAR)_buffer_)[2])
 
 extern XINPUT_PAD_STATE_INTERNAL    PadStates[XINPUT_MAX_DEVICES];
-extern WDFWAITLOCK                  PadStatesLock;
 extern XINPUT_GAMEPAD_STATE         PeekPadCache[XINPUT_MAX_DEVICES];
-extern WDFWAITLOCK                  PeekPadCacheLock;
 
 NTSTATUS
 XnaGuardianQueueInitialize(

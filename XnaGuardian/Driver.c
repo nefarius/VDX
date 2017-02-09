@@ -74,28 +74,6 @@ DriverEntry(
         return status;
     }
 
-    // 
-    // Create pad states lock
-    // 
-    status = WdfWaitLockCreate(WDF_NO_OBJECT_ATTRIBUTES,
-        &PadStatesLock);
-    if (!NT_SUCCESS(status))
-    {
-        KdPrint((DRIVERNAME "WdfWaitLockCreate failed with status 0x%x\n", status));
-        return status;
-    }
-
-    // 
-    // Create pad peek lock
-    // 
-    status = WdfWaitLockCreate(WDF_NO_OBJECT_ATTRIBUTES,
-        &PeekPadCacheLock);
-    if (!NT_SUCCESS(status))
-    {
-        KdPrint((DRIVERNAME "WdfWaitLockCreate failed with status 0x%x\n", status));
-        return status;
-    }
-
     status = WdfCollectionCreate(WDF_NO_OBJECT_ATTRIBUTES,
         &FilterDeviceCollection);
     if (!NT_SUCCESS(status))

@@ -431,7 +431,6 @@ void XInputGetGamepadStateCompleted(
     //
     // Get global pad override data
     // 
-    WdfWaitLockAcquire(PadStatesLock, NULL);
 
     pPad = &PadStates[padIndex];
 
@@ -447,9 +446,7 @@ void XInputGetGamepadStateCompleted(
         //
         // Cache the values of the physical pad for use in peek call
         // 
-        WdfWaitLockAcquire(PeekPadCacheLock, NULL);
         RtlCopyBytes(&PeekPadCache[padIndex], pGamepad, sizeof(XINPUT_GAMEPAD_STATE));
-        WdfWaitLockRelease(PeekPadCacheLock);
 
         //
         // Override buttons
@@ -484,8 +481,6 @@ void XInputGetGamepadStateCompleted(
     {
         KdPrint((DRIVERNAME "WdfRequestRetrieveOutputBuffer failed with status 0x%x\n", status));
     }
-
-    WdfWaitLockRelease(PadStatesLock);
 
     //
     // Always complete

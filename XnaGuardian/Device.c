@@ -30,9 +30,7 @@ SOFTWARE.
 #include "Sideband.h"
 
 XINPUT_PAD_STATE_INTERNAL   PadStates[XINPUT_MAX_DEVICES];
-WDFWAITLOCK                 PadStatesLock;
 XINPUT_GAMEPAD_STATE        PeekPadCache[XINPUT_MAX_DEVICES];
-WDFWAITLOCK                 PeekPadCacheLock;
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, XnaGuardianCreateDevice)

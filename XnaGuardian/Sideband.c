@@ -268,9 +268,7 @@ VOID XnaGuardianSidebandIoDeviceControl(
         //
         // Set pad state
         // 
-        WdfWaitLockAcquire(PadStatesLock, NULL);
         PadStates[pHidePad->UserIndex].IsGetStateForbidden = pHidePad->Hidden;
-        WdfWaitLockRelease(PadStatesLock);
 
         status = STATUS_SUCCESS;
 
@@ -315,7 +313,6 @@ VOID XnaGuardianSidebandIoDeviceControl(
         //
         // Set pad overrides
         // 
-        WdfWaitLockAcquire(PadStatesLock, NULL);
         if (
             RtlCompareMemory(
                 &PadStates[pOverride->UserIndex].Overrides,
@@ -334,7 +331,6 @@ VOID XnaGuardianSidebandIoDeviceControl(
         {
             PadStates[pOverride->UserIndex].Gamepad = pOverride->Gamepad;
         }
-        WdfWaitLockRelease(PadStatesLock);
 
         status = STATUS_SUCCESS;
 
@@ -388,9 +384,7 @@ VOID XnaGuardianSidebandIoDeviceControl(
             break;
         }
 
-        WdfWaitLockAcquire(PeekPadCacheLock, NULL);
         RtlCopyBytes(pBuffer, &PeekPadCache[userIndex], sizeof(XINPUT_GAMEPAD_STATE));
-        WdfWaitLockRelease(PeekPadCacheLock);
 
         WdfRequestCompleteWithInformation(Request, STATUS_SUCCESS, sizeof(XINPUT_GAMEPAD_STATE));
         return;

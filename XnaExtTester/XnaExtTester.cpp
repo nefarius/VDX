@@ -11,7 +11,7 @@ int main()
     pad.wButtons |= XINPUT_GAMEPAD_A;
     pad.wButtons |= XINPUT_GAMEPAD_Y;
 
-    XInputOverrideSetMask(0, XINPUT_GAMEPAD_OVERRIDE_A | XINPUT_GAMEPAD_OVERRIDE_B | XINPUT_GAMEPAD_OVERRIDE_X | XINPUT_GAMEPAD_OVERRIDE_Y);
+    XInputOverrideSetMask(0, 1);
     getchar();
 
     //XInputOverrideSetState(0, &pad);

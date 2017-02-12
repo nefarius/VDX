@@ -313,24 +313,8 @@ VOID XnaGuardianSidebandIoDeviceControl(
         //
         // Set pad overrides
         // 
-        if (
-            RtlCompareMemory(
-                &PadStates[pOverride->UserIndex].Overrides,
-                &pOverride->Overrides,
-                sizeof(ULONG)
-            ) != 0)
-        {
-            PadStates[pOverride->UserIndex].Overrides = pOverride->Overrides;
-        }
-        if (
-            RtlCompareMemory(
-                &PadStates[pOverride->UserIndex].Gamepad,
-                &pOverride->Gamepad,
-                sizeof(XINPUT_GAMEPAD_STATE)
-            ) != 0)
-        {
-            PadStates[pOverride->UserIndex].Gamepad = pOverride->Gamepad;
-        }
+        PadStates[pOverride->UserIndex].Overrides = pOverride->Overrides;
+        PadStates[pOverride->UserIndex].Gamepad = pOverride->Gamepad;
 
         status = STATUS_SUCCESS;
 

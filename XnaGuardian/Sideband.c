@@ -370,7 +370,7 @@ VOID XnaGuardianSidebandIoDeviceControl(
 
         RtlCopyBytes(pBuffer, &PeekPadCache[userIndex], sizeof(XINPUT_GAMEPAD_STATE));
 
-        WdfRequestCompleteWithInformation(Request, STATUS_SUCCESS, sizeof(XINPUT_GAMEPAD_STATE));
+        WdfRequestCompleteWithInformation(Request, status, sizeof(XINPUT_GAMEPAD_STATE));
         return;
 #pragma endregion 
 

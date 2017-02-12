@@ -499,6 +499,8 @@ void XnaGuardianEvtIoReadCompleted(
 )
 {
     NTSTATUS    status;
+    PVOID       buffer;
+    size_t      buflen;
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
@@ -507,6 +509,18 @@ void XnaGuardianEvtIoReadCompleted(
     status = WdfRequestGetStatus(Request);
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoReadCompleted completed for device 0x%X with status 0x%X\n", Context, status));
+
+    if (NT_SUCCESS(WdfRequestRetrieveOutputBuffer(Request, 1, &buffer, &buflen)))
+    {
+        KdPrint((DRIVERNAME "[HID-Report] "));
+
+        for (LONG i = 0; i < buflen; i++)
+        {
+            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
+        }
+
+        KdPrint(("\n"));
+    }
 
     WdfRequestComplete(Request, status);
 }

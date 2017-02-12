@@ -506,7 +506,7 @@ void XnaGuardianEvtIoReadCompleted(
 
     status = WdfRequestGetStatus(Request);
 
-    KdPrint((DRIVERNAME "XnaGuardianEvtIoReadCompleted completed with status 0x%X\n", status));
+    KdPrint((DRIVERNAME "XnaGuardianEvtIoReadCompleted completed for device 0x%X with status 0x%X\n", Context, status));
 
     WdfRequestComplete(Request, status);
 }

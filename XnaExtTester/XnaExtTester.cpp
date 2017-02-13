@@ -8,19 +8,26 @@
 int main()
 {
     XINPUT_GAMEPAD pad = { 0 };
-    pad.wButtons |= XINPUT_GAMEPAD_A;
-    pad.wButtons |= XINPUT_GAMEPAD_Y;
-
-    XInputOverrideSetMask(0, 1);
-    getchar();
-
-    //XInputOverrideSetState(0, &pad);
+    auto counter = 0;
+    
+    XInputOverrideSetMask(0, 
+        XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_X | XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_Y
+            | XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_X | XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y);
 
     while(TRUE)
     {
         XInputOverridePeekState(0, &pad);
         printf("%X\n", pad.wButtons);
         Sleep(100);
+
+        counter += 1000;
+
+        pad.sThumbLX = counter;
+        pad.sThumbLY = counter;
+        pad.sThumbRX = counter;
+        pad.sThumbRY = counter;
+
+        XInputOverrideSetState(0, &pad);
     }
 
     return 0;

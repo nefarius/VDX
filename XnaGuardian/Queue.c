@@ -498,9 +498,10 @@ void XnaGuardianEvtIoReadCompleted(
     _In_ WDFCONTEXT                     Context
 )
 {
-    NTSTATUS    status;
-    PVOID       buffer;
-    size_t      buflen;
+    NTSTATUS                        status;
+    PVOID                           buffer;
+    size_t                          buflen;
+    PXINPUT_PAD_STATE_INTERNAL      pPad;
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
@@ -520,6 +521,14 @@ void XnaGuardianEvtIoReadCompleted(
         }
 
         KdPrint(("\n"));
+
+        pPad = &PadStates[0];
+
+        RtlCopyBytes(&((PUCHAR)buffer)[1], &pPad->Gamepad.sThumbLX, 2);
+        RtlCopyBytes(&((PUCHAR)buffer)[3], &pPad->Gamepad.sThumbLX, 2);
+
+        RtlCopyBytes(&((PUCHAR)buffer)[5], &pPad->Gamepad.sThumbRX, 2);
+        RtlCopyBytes(&((PUCHAR)buffer)[7], &pPad->Gamepad.sThumbRY, 2);
     }
 
     WdfRequestComplete(Request, status);

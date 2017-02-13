@@ -499,9 +499,11 @@ void XnaGuardianEvtIoReadCompleted(
 )
 {
     NTSTATUS                        status;
+#ifdef XNA_HID_INTERCEPT
     PVOID                           buffer;
     size_t                          buflen;
     PXINPUT_PAD_STATE_INTERNAL      pPad;
+#endif
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
@@ -511,6 +513,7 @@ void XnaGuardianEvtIoReadCompleted(
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoReadCompleted completed for device 0x%X with status 0x%X\n", Context, status));
 
+#ifdef XNA_HID_INTERCEPT
     if (NT_SUCCESS(WdfRequestRetrieveOutputBuffer(Request, 1, &buffer, &buflen)))
     {
         KdPrint((DRIVERNAME "[HID-Report] "));
@@ -530,6 +533,7 @@ void XnaGuardianEvtIoReadCompleted(
         RtlCopyBytes(&((PUCHAR)buffer)[5], &pPad->Gamepad.sThumbRX, 2);
         RtlCopyBytes(&((PUCHAR)buffer)[7], &pPad->Gamepad.sThumbRY, 2);
     }
+#endif
 
     WdfRequestComplete(Request, status);
 }

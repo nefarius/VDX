@@ -13,6 +13,9 @@
     <ClCompile Include="Sideband.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="String.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Queue.h">
@@ -44,6 +47,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\XInputOverrides.h">
       <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="String.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

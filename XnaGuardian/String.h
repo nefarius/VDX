@@ -24,30 +24,5 @@ SOFTWARE.
 
 
 #pragma once
-#define INITGUID
 
-#include <ntddk.h>
-#include <wdf.h>
-
-#include "device.h"
-#include "queue.h"
-#include "trace.h"
-#include "String.h"
-
-#define DRIVERNAME "XnaGuardian: "
-
-extern WDFCOLLECTION   FilterDeviceCollection;
-extern WDFWAITLOCK     FilterDeviceCollectionLock;
-extern WDFDEVICE       ControlDevice;
-
-EXTERN_C_START
-
-//
-// WDFDRIVER Events
-//
-
-DRIVER_INITIALIZE DriverEntry;
-EVT_WDF_DRIVER_DEVICE_ADD XnaGuardianEvtDeviceAdd;
-EVT_WDF_OBJECT_CONTEXT_CLEANUP XnaGuardianEvtDriverContextCleanup;
-
-EXTERN_C_END
+wchar_t *wcsstr(const wchar_t *haystack, const wchar_t *needle);

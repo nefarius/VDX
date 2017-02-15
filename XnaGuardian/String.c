@@ -33,7 +33,7 @@ SOFTWARE.
 //
 // Stolen from here: https://github.com/lattera/glibc/blob/master/wcsmbs/wcsstr.c
 // 
-wchar_t *wcsstr(const wchar_t *haystack, const wchar_t *needle)
+wchar_t *kmwcsstr(const wchar_t *haystack, const wchar_t *needle)
 {
     register wchar_t b, c;
 

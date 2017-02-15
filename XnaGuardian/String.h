@@ -25,4 +25,7 @@ SOFTWARE.
 
 #pragma once
 
-wchar_t *wcsstr(const wchar_t *haystack, const wchar_t *needle);
+//
+// Custom wcsstr implementation for kernel-mode
+// 
+wchar_t *kmwcsstr(const wchar_t *haystack, const wchar_t *needle);

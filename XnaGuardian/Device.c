@@ -46,6 +46,8 @@ XnaGuardianCreateDevice(
     WDF_OBJECT_ATTRIBUTES   deviceAttributes;
     WDFDEVICE               device;
     NTSTATUS                status;
+    WDFMEMORY               memoryHwId;
+    PCWSTR                  hardwareId;
 
     PAGED_CODE();
 
@@ -62,6 +64,37 @@ XnaGuardianCreateDevice(
 
     if (NT_SUCCESS(status))
     {
+        WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
+        deviceAttributes.ParentObject = device;
+
+        //
+        // Query for current device's Hardware ID
+        // 
+        status = WdfDeviceAllocAndQueryProperty(device,
+            DevicePropertyHardwareID,
+            NonPagedPool,
+            &deviceAttributes,
+            &memoryHwId
+        );
+
+        if (!NT_SUCCESS(status)) {
+            KdPrint((DRIVERNAME "WdfDeviceAllocAndQueryProperty failed with status 0x%X", status));
+            return status;
+        }
+
+        hardwareId = WdfMemoryGetBuffer(memoryHwId, NULL);
+
+        //
+        // Check if device is XInput-compatible
+        // 
+        // See here: https://msdn.microsoft.com/en-US/library/windows/desktop/ee417014%28v=vs.85%29.aspx
+        // 
+        if (!kmwcsstr(hardwareId, L"IG_"))
+        {
+            KdPrint((DRIVERNAME "Regular HID device detected, unloading...\n"));
+            return STATUS_NOT_SUPPORTED;
+        }
+
         //
         // Initialize the I/O Package and any Queues
         //

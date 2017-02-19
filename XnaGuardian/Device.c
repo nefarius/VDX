@@ -83,6 +83,7 @@ XnaGuardianCreateDevice(
         }
 
         hardwareId = WdfMemoryGetBuffer(memoryHwId, NULL);
+        KdPrint((DRIVERNAME "HardwareID: %ls\n", hardwareId));
 
         //
         // Check if device is XInput-compatible

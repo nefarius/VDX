@@ -27,7 +27,7 @@ SOFTWARE.
 #include "queue.tmh"
 #include "XInputInternal.h"
 #include "XInputOverrides.h"
-#include <hidclass.h>
+#include <hidport.h>
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, XnaGuardianQueueInitialize)
@@ -134,7 +134,7 @@ VOID XnaGuardianEvtIoDeviceControl(
     WDF_OBJECT_ATTRIBUTES           requestAttribs;
     PXINPUT_PAD_IDENTIFIER_CONTEXT  pXInputContext = NULL;
 
-    KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called with code 0x%X\n", IoControlCode));
+    KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called with code 0x%08X\n", IoControlCode));
 
     UNREFERENCED_PARAMETER(OutputBufferLength);
     UNREFERENCED_PARAMETER(InputBufferLength);
@@ -278,6 +278,16 @@ VOID XnaGuardianEvtIoDeviceControl(
     case IOCTL_HID_GET_INPUT_REPORT:
 
         KdPrint((DRIVERNAME ">> IOCTL_HID_GET_INPUT_REPORT\n"));
+        break;
+
+    case IOCTL_HID_GET_REPORT_DESCRIPTOR:
+
+        KdPrint((DRIVERNAME ">> IOCTL_HID_GET_REPORT_DESCRIPTOR\n"));
+        break;
+
+    case IOCTL_HID_GET_DEVICE_DESCRIPTOR:
+
+        KdPrint((DRIVERNAME ">> IOCTL_HID_GET_DEVICE_DESCRIPTOR \n"));
         break;
 
     default:

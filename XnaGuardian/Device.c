@@ -95,6 +95,8 @@ XnaGuardianCreateDevice(
             return STATUS_NOT_SUPPORTED;
         }
 
+        KdPrint((DRIVERNAME "XUSB/XGIP HID device detected, initializing...\n"));
+
         //
         // Initialize the I/O Package and any Queues
         //

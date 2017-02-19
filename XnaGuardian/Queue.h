@@ -43,6 +43,7 @@ XnaGuardianQueueInitialize(
 //
 EVT_WDF_IO_QUEUE_IO_DEFAULT XnaGuardianEvtIoDefault;
 EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL XnaGuardianEvtIoDeviceControl;
+EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL XnaGuardianEvtIoInternalDeviceControl;
 EVT_WDF_IO_QUEUE_IO_READ XnaGuardianEvtIoRead;
 
 EVT_WDF_REQUEST_COMPLETION_ROUTINE XInputGetInformationCompleted;

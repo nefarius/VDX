@@ -66,6 +66,10 @@ XnaGuardianQueueInitialize(
     // 
     queueConfig.EvtIoDeviceControl = XnaGuardianEvtIoDeviceControl;
     //
+    // Hooks driver-to-driver communication
+    // 
+    queueConfig.EvtIoInternalDeviceControl = XnaGuardianEvtIoInternalDeviceControl;
+    //
     // Filter ReadFile(...) calls
     //
     queueConfig.EvtIoRead = XnaGuardianEvtIoRead;
@@ -298,6 +302,45 @@ VOID XnaGuardianEvtIoDeviceControl(
     default:
         break;
     }
+
+    //
+    // Not our business, forward
+    // 
+    WDF_REQUEST_SEND_OPTIONS_INIT(&options,
+        WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
+
+    ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), &options);
+
+    if (ret == FALSE)
+    {
+        status = WdfRequestGetStatus(Request);
+        KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
+        WdfRequestComplete(Request, status);
+    }
+}
+
+//
+// Hooks driver-to-driver communication.
+// 
+VOID XnaGuardianEvtIoInternalDeviceControl(
+    _In_ WDFQUEUE   Queue,
+    _In_ WDFREQUEST Request,
+    _In_ size_t     OutputBufferLength,
+    _In_ size_t     InputBufferLength,
+    _In_ ULONG      IoControlCode
+)
+{
+    WDF_REQUEST_SEND_OPTIONS        options;
+    NTSTATUS                        status;
+    BOOLEAN                         ret;
+    WDFDEVICE                       Device;
+
+    KdPrint((DRIVERNAME "XnaGuardianEvtIoInternalDeviceControl called with code 0x%08X\n", IoControlCode));
+
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+    UNREFERENCED_PARAMETER(InputBufferLength);
+
+    Device = WdfIoQueueGetDevice(Queue);
 
     //
     // Not our business, forward

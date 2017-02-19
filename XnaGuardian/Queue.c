@@ -275,19 +275,24 @@ VOID XnaGuardianEvtIoDeviceControl(
         KdPrint((DRIVERNAME ">> IOCTL_XINPUT_GET_AUDIO_INFORMATION\n"));
         break;
 
-    case IOCTL_HID_GET_INPUT_REPORT:
+    case IOCTL_HID_GET_COLLECTION_DESCRIPTOR:
 
-        KdPrint((DRIVERNAME ">> IOCTL_HID_GET_INPUT_REPORT\n"));
+        KdPrint((DRIVERNAME ">> IOCTL_HID_GET_COLLECTION_DESCRIPTOR\n"));
         break;
 
-    case IOCTL_HID_GET_REPORT_DESCRIPTOR:
+    case IOCTL_HID_FLUSH_QUEUE:
 
-        KdPrint((DRIVERNAME ">> IOCTL_HID_GET_REPORT_DESCRIPTOR\n"));
+        KdPrint((DRIVERNAME ">> IOCTL_HID_FLUSH_QUEUE\n"));
         break;
 
-    case IOCTL_HID_GET_DEVICE_DESCRIPTOR:
+    case IOCTL_HID_SET_POLL_FREQUENCY_MSEC:
 
-        KdPrint((DRIVERNAME ">> IOCTL_HID_GET_DEVICE_DESCRIPTOR \n"));
+        KdPrint((DRIVERNAME ">> IOCTL_HID_SET_POLL_FREQUENCY_MSEC \n"));
+        break;
+
+    case IOCTL_HID_GET_COLLECTION_INFORMATION:
+
+        KdPrint((DRIVERNAME ">> IOCTL_HID_GET_COLLECTION_INFORMATION \n"));
         break;
 
     default:

@@ -28,6 +28,8 @@ SOFTWARE.
 #include "XInputInternal.h"
 #include "XInputOverrides.h"
 #include <hidport.h>
+#include <usb.h>
+#include <usbioctl.h>
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, XnaGuardianQueueInitialize)
@@ -314,6 +316,8 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
     NTSTATUS                        status;
     BOOLEAN                         ret;
     WDFDEVICE                       Device;
+    PIRP                            irp;
+    PURB                            urb;
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoInternalDeviceControl called with code 0x%08X\n", IoControlCode));
 
@@ -321,6 +325,40 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
     UNREFERENCED_PARAMETER(InputBufferLength);
 
     Device = WdfIoQueueGetDevice(Queue);
+    irp = WdfRequestWdmGetIrp(Request);
+
+    switch (IoControlCode)
+    {
+    case IOCTL_INTERNAL_USB_SUBMIT_URB:
+
+        urb = (PURB)URB_FROM_IRP(irp);
+
+        switch (urb->UrbHeader.Function)
+        {
+        case URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER:
+
+            KdPrint((DRIVERNAME "URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
+
+            if (IS_INTERRUPT_IN(urb))
+            {
+                KdPrint((DRIVERNAME "Interrupt IN\n"));
+
+
+            }
+            else
+            {
+                KdPrint((DRIVERNAME "Interrupt OUT\n"));
+
+
+            }
+
+            break;
+        default:
+            break;
+        }
+    default:
+        break;
+    }
 
     //
     // Not our business, forward

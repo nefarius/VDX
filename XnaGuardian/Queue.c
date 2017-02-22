@@ -337,13 +337,23 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
         {
         case URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER:
 
-            KdPrint((DRIVERNAME "URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
+            KdPrint((DRIVERNAME ">> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
 
             if (IS_INTERRUPT_IN(urb))
             {
-                KdPrint((DRIVERNAME "Interrupt IN\n"));
+                KdPrint((DRIVERNAME "Interrupt IN buflen: %d\n", urb->UrbBulkOrInterruptTransfer.TransferBufferLength));
 
+                WdfRequestFormatRequestUsingCurrentType(Request);
+                WdfRequestSetCompletionRoutine(Request, BulkOrInterruptTransferCompleted, Device);
 
+                ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS);
+
+                if (ret == FALSE) {
+                    status = WdfRequestGetStatus(Request);
+                    KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
+                }
+                
+                return;
             }
             else
             {
@@ -374,6 +384,35 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
         KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
         WdfRequestComplete(Request, status);
     }
+}
+
+void BulkOrInterruptTransferCompleted(
+    _In_ WDFREQUEST                     Request,
+    _In_ WDFIOTARGET                    Target,
+    _In_ PWDF_REQUEST_COMPLETION_PARAMS Params,
+    _In_ WDFCONTEXT                     Context
+)
+{
+    UNREFERENCED_PARAMETER(Target);
+    UNREFERENCED_PARAMETER(Params);
+    UNREFERENCED_PARAMETER(Context);
+
+    PURB pUrb = URB_FROM_IRP(WdfRequestWdmGetIrp(Request));
+    PUCHAR pTransferBuffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
+    ULONG transferBufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
+
+    PXINPUT_PAD_STATE_INTERNAL pState = &PadStates[0];
+    RtlCopyBytes(&pTransferBuffer[0], &pState->Gamepad.sThumbLX, 2);
+    RtlCopyBytes(&pTransferBuffer[2], &pState->Gamepad.sThumbLY, 2);
+
+    KdPrint((DRIVERNAME "BUFFER: "));
+    for(ULONG i = 0; i < transferBufferLength; i++)
+    {
+        KdPrint(("%02X ", pTransferBuffer[i]));
+    }
+    KdPrint(("\n"));
+
+    WdfRequestComplete(Request, WdfRequestGetStatus(Request));
 }
 
 //

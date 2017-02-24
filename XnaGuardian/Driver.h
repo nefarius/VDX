@@ -40,6 +40,7 @@ extern WDFCOLLECTION    FilterDeviceCollection;
 extern WDFWAITLOCK      FilterDeviceCollectionLock;
 extern WDFDEVICE        ControlDevice;
 extern WDFCOLLECTION    HidUsbDeviceCollection;
+extern WDFWAITLOCK      HidUsbDeviceCollectionLock;
 
 EXTERN_C_START
 

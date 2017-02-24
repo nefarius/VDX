@@ -53,6 +53,12 @@ typedef struct _DEVICE_CONTEXT
 {
     ULONG                       MaxDevices;
     UCHAR                       LedValues[XINPUT_MAX_DEVICES];
+    WDFMEMORY                   MemoryHardwareId;
+    PCWSTR                      HardwareId;
+    WDFMEMORY                   MemoryClassName;
+    PCWSTR                      ClassName;
+    BOOLEAN                     IsXnaDevice;
+    BOOLEAN                     IsHidUsbDevice;
 
 } DEVICE_CONTEXT, *PDEVICE_CONTEXT;
 

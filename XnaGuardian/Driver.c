@@ -102,6 +102,14 @@ DriverEntry(
         return status;
     }
 
+    status = WdfWaitLockCreate(WDF_NO_OBJECT_ATTRIBUTES,
+        &HidUsbDeviceCollectionLock);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfWaitLockCreate failed with status 0x%x\n", status));
+        return status;
+    }
+
     KdPrint((DRIVERNAME "XnaGuardian loaded: 0x%X\n", status));
 
     return status;

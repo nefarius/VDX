@@ -71,10 +71,6 @@ XnaGuardianQueueInitialize(
     // Hooks driver-to-driver communication
     // 
     queueConfig.EvtIoInternalDeviceControl = XnaGuardianEvtIoInternalDeviceControl;
-    //
-    // Filter ReadFile(...) calls
-    //
-    queueConfig.EvtIoRead = XnaGuardianEvtIoRead;
 
     status = WdfIoQueueCreate(
         Device,
@@ -344,7 +340,7 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
                 KdPrint((DRIVERNAME "Interrupt IN buflen: %d\n", urb->UrbBulkOrInterruptTransfer.TransferBufferLength));
 
                 WdfRequestFormatRequestUsingCurrentType(Request);
-                WdfRequestSetCompletionRoutine(Request, BulkOrInterruptTransferCompleted, Device);
+                WdfRequestSetCompletionRoutine(Request, UsbBulkOrInterruptTransferCompleted, Device);
 
                 ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS);
 
@@ -386,22 +382,32 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
     }
 }
 
-void BulkOrInterruptTransferCompleted(
+//
+// URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER completion routine.
+// 
+void UsbBulkOrInterruptTransferCompleted(
     _In_ WDFREQUEST                     Request,
     _In_ WDFIOTARGET                    Target,
     _In_ PWDF_REQUEST_COMPLETION_PARAMS Params,
     _In_ WDFCONTEXT                     Context
 )
 {
+    NTSTATUS                        status;
+    PURB                            pUrb;
+    PUCHAR                          pTransferBuffer;
+    ULONG                           transferBufferLength;
+    PXINPUT_PAD_STATE_INTERNAL      pState;
+
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
     UNREFERENCED_PARAMETER(Context);
 
-    PURB pUrb = URB_FROM_IRP(WdfRequestWdmGetIrp(Request));
-    PUCHAR pTransferBuffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
-    ULONG transferBufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
+    status = WdfRequestGetStatus(Request);
+    pUrb = URB_FROM_IRP(WdfRequestWdmGetIrp(Request));
+    pTransferBuffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
+    transferBufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
 
-    PXINPUT_PAD_STATE_INTERNAL pState = &PadStates[0];
+    pState = &PadStates[0];
     RtlCopyBytes(&pTransferBuffer[0], &pState->Gamepad.sThumbLX, 2);
     RtlCopyBytes(&pTransferBuffer[2], &pState->Gamepad.sThumbLY, 2);
 
@@ -412,37 +418,7 @@ void BulkOrInterruptTransferCompleted(
     }
     KdPrint(("\n"));
 
-    WdfRequestComplete(Request, WdfRequestGetStatus(Request));
-}
-
-//
-// Hooks into ReadFile(...) calls
-// 
-VOID XnaGuardianEvtIoRead(
-    _In_ WDFQUEUE   Queue,
-    _In_ WDFREQUEST Request,
-    _In_ size_t     Length
-)
-{
-    BOOLEAN     ret;
-    WDFDEVICE   Device;
-    NTSTATUS    status;
-
-    KdPrint((DRIVERNAME "XnaGuardianEvtIoRead called\n"));
-
-    UNREFERENCED_PARAMETER(Length);
-
-    Device = WdfIoQueueGetDevice(Queue);
-
-    WdfRequestFormatRequestUsingCurrentType(Request);
-    WdfRequestSetCompletionRoutine(Request, XnaGuardianEvtIoReadCompleted, Device);
-
-    ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS);
-
-    if (!ret) {
-        status = WdfRequestGetStatus(Request);
-        KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
-    }
+    WdfRequestComplete(Request, status);
 }
 
 //
@@ -600,56 +576,6 @@ void XInputGetGamepadStateCompleted(
     //
     // Always complete
     // 
-    WdfRequestComplete(Request, status);
-}
-
-//
-// Filter ReadFile(...) result
-// 
-void XnaGuardianEvtIoReadCompleted(
-    _In_ WDFREQUEST                     Request,
-    _In_ WDFIOTARGET                    Target,
-    _In_ PWDF_REQUEST_COMPLETION_PARAMS Params,
-    _In_ WDFCONTEXT                     Context
-)
-{
-    NTSTATUS                        status;
-#ifdef XNA_HID_INTERCEPT
-    PVOID                           buffer;
-    size_t                          buflen;
-    PXINPUT_PAD_STATE_INTERNAL      pPad;
-#endif
-
-    UNREFERENCED_PARAMETER(Target);
-    UNREFERENCED_PARAMETER(Params);
-    UNREFERENCED_PARAMETER(Context);
-
-    status = WdfRequestGetStatus(Request);
-
-    KdPrint((DRIVERNAME "XnaGuardianEvtIoReadCompleted completed for device 0x%X with status 0x%X\n", Context, status));
-
-#ifdef XNA_HID_INTERCEPT
-    if (NT_SUCCESS(WdfRequestRetrieveOutputBuffer(Request, 1, &buffer, &buflen)))
-    {
-        KdPrint((DRIVERNAME "[HID-Report] "));
-
-        for (LONG i = 0; i < buflen; i++)
-        {
-            KdPrint(("%02X ", ((PUCHAR)buffer)[i]));
-        }
-
-        KdPrint(("\n"));
-
-        pPad = &PadStates[0];
-
-        RtlCopyBytes(&((PUCHAR)buffer)[1], &pPad->Gamepad.sThumbLX, 2);
-        RtlCopyBytes(&((PUCHAR)buffer)[3], &pPad->Gamepad.sThumbLX, 2);
-
-        RtlCopyBytes(&((PUCHAR)buffer)[5], &pPad->Gamepad.sThumbRX, 2);
-        RtlCopyBytes(&((PUCHAR)buffer)[7], &pPad->Gamepad.sThumbRY, 2);
-    }
-#endif
-
     WdfRequestComplete(Request, status);
 }
 

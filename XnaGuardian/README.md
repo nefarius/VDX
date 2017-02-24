@@ -19,13 +19,15 @@ TDB
 ```
 devcon.exe install XnaGuardian.inf Root\XnaGuardian
 devcon.exe classfilter XnaComposite upper -XnaGuardian
-devcon.exe classfilter HIDClass upper -XnaGuardian
+devcon.exe classfilter XboxComposite upper -XnaGuardian
+devcon.exe classfilter HIDClass lower -XnaGuardian
 ```
 
 ## Manual Removal
 ```
 devcon.exe remove Root\XnaGuardian
+devcon.exe classfilter XboxComposite upper !XnaGuardian
 devcon.exe classfilter XnaComposite upper !XnaGuardian
-devcon.exe classfilter HIDClass upper !XnaGuardian
+devcon.exe classfilter HIDClass lower !XnaGuardian
 ```
 

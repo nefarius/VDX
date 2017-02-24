@@ -82,6 +82,14 @@ DriverEntry(
         return status;
     }
 
+    status = WdfCollectionCreate(WDF_NO_OBJECT_ATTRIBUTES,
+        &HidUsbDeviceCollection);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfCollectionCreate failed with status 0x%x\n", status));
+        return status;
+    }
+
     //
     // The wait-lock object has the driver object as a default parent.
     //

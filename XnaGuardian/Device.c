@@ -31,6 +31,7 @@ SOFTWARE.
 
 XINPUT_PAD_STATE_INTERNAL   PadStates[XINPUT_MAX_DEVICES];
 XINPUT_GAMEPAD_STATE        PeekPadCache[XINPUT_MAX_DEVICES];
+WDFCOLLECTION               HidUsbDeviceCollection;
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, XnaGuardianCreateDevice)
@@ -48,6 +49,8 @@ XnaGuardianCreateDevice(
     NTSTATUS                status;
     WDFMEMORY               memoryHwId;
     PCWSTR                  hardwareId;
+    WDFMEMORY               memoryClassName;
+    PCWSTR                  className;
 
     PAGED_CODE();
 
@@ -86,6 +89,51 @@ XnaGuardianCreateDevice(
         KdPrint((DRIVERNAME "HardwareID for device 0x%X: %ls\n", device, hardwareId));
 
         //
+        // Query for current device's ClassName
+        // 
+        status = WdfDeviceAllocAndQueryProperty(device,
+            DevicePropertyClassName,
+            NonPagedPool,
+            &deviceAttributes,
+            &memoryClassName
+        );
+
+        if (!NT_SUCCESS(status)) {
+            KdPrint((DRIVERNAME "WdfDeviceAllocAndQueryProperty failed with status 0x%X", status));
+            return status;
+        }
+
+        className = WdfMemoryGetBuffer(memoryClassName, NULL);
+        KdPrint((DRIVERNAME "ClassName for device 0x%X: %ls\n", device, className));
+
+        //
+        // Continue startup if loaded as XUSB/XGIP filter
+        // 
+        if (kmwcsstr(className, L"XnaComposite") || kmwcsstr(className, L"XboxComposite"))
+        {
+            TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "XUSB/XGIP device detected, loading...");
+            goto continueInit;
+        }
+
+        //
+        // Abort if unknown class
+        // 
+        if (!kmwcsstr(className, L"HIDClass"))
+        {
+            KdPrint((DRIVERNAME "Unsupported device class detected, unloading...\n"));
+            return STATUS_NOT_SUPPORTED;
+        }
+
+        //
+        // Only load below USB device in the stack
+        // 
+        if (!kmwcsstr(hardwareId, L"USB\\"))
+        {
+            KdPrint((DRIVERNAME "Topmost HID device detected, unloading...\n"));
+            return STATUS_NOT_SUPPORTED;
+        }
+
+        //
         // Check if device is XInput-compatible
         // 
         // See here: https://msdn.microsoft.com/en-US/library/windows/desktop/ee417014%28v=vs.85%29.aspx
@@ -96,7 +144,9 @@ XnaGuardianCreateDevice(
             return STATUS_NOT_SUPPORTED;
         }
 
-        KdPrint((DRIVERNAME "XUSB/XGIP HID device detected, initializing...\n"));
+    continueInit:
+
+        KdPrint((DRIVERNAME "Compatible device detected, initializing...\n"));
 
         //
         // Initialize the I/O Package and any Queues

@@ -59,6 +59,11 @@ typedef struct _PDO_IDENTIFICATION_DESCRIPTION
     // 
     BOOLEAN OwnerIsDriver;
 
+    //
+    // SessionId associated with file handle.  Used to map file handles to emulated gamepad devices
+    // 
+    LONG SessionId;
+
 } PDO_IDENTIFICATION_DESCRIPTION, *PPDO_IDENTIFICATION_DESCRIPTION;
 
 //
@@ -100,8 +105,27 @@ typedef struct _FDO_DEVICE_DATA
     //
     // Counter of interface references
     // 
-    ULONG InterfaceReferenceCounter;
+    LONG InterfaceReferenceCounter;
+
+    //
+    // Next SessionId to assign to a file handle
+    // 
+    LONG NextSessionId;
 
 } FDO_DEVICE_DATA, *PFDO_DEVICE_DATA;
 
+#define FDO_FIRST_SESSION_ID 100
+
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(FDO_DEVICE_DATA, FdoGetData)
+
+// Context data associated with file objects created by user mode applications
+typedef struct _FDO_FILE_DATA
+{
+    //
+    // SessionId associated with file handle.  Used to map file handles to emulated gamepad devices
+    // 
+    LONG SessionId;
+
+} FDO_FILE_DATA, *PFDO_FILE_DATA;
+
+WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(FDO_FILE_DATA, FileObjectGetData)

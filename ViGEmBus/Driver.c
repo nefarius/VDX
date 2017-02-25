@@ -29,6 +29,8 @@ SOFTWARE.
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (INIT, DriverEntry)
 #pragma alloc_text (PAGE, Bus_EvtDeviceAdd)
+#pragma alloc_text (PAGE, Bus_DeviceFileCreate)
+#pragma alloc_text (PAGE, Bus_FileClose)
 #endif
 
 
@@ -68,7 +70,8 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
     WDFQUEUE                    queue;
     WDF_FILEOBJECT_CONFIG       foConfig;
     WDF_OBJECT_ATTRIBUTES       fdoAttributes;
-
+    WDF_OBJECT_ATTRIBUTES       fileHandleAttributes;
+    PFDO_DEVICE_DATA            pFDOData;
 
     UNREFERENCED_PARAMETER(Driver);
 
@@ -94,9 +97,11 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 
 #pragma region Assign File Object Configuration
 
-    WDF_FILEOBJECT_CONFIG_INIT(&foConfig, NULL, NULL, Bus_FileCleanup);
+    WDF_FILEOBJECT_CONFIG_INIT(&foConfig, Bus_DeviceFileCreate, Bus_FileClose, NULL);
 
-    WdfDeviceInitSetFileObjectConfig(DeviceInit, &foConfig, WDF_NO_OBJECT_ATTRIBUTES);
+    WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&fileHandleAttributes, FDO_FILE_DATA);
+
+    WdfDeviceInitSetFileObjectConfig(DeviceInit, &foConfig, &fileHandleAttributes);
 
 #pragma endregion
 
@@ -121,6 +126,16 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
         KdPrint((DRIVERNAME "Error creating device 0x%x\n", status));
         return status;
     }
+
+    pFDOData = FdoGetData(device);
+    if (pFDOData == NULL)
+    {
+        KdPrint((DRIVERNAME "Error creating device context\n"));
+        return STATUS_UNSUCCESSFUL;
+    }
+
+    pFDOData->InterfaceReferenceCounter = 0;
+    pFDOData->NextSessionId = FDO_FIRST_SESSION_ID;
 
 #pragma endregion
 
@@ -180,4 +195,139 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
 #pragma endregion
 
     return status;
+}
+
+// Gets called when the user-land process (or kernel driver) exits or closes the handle,
+// and all IO has completed.
+// 
+_Use_decl_annotations_
+VOID
+Bus_DeviceFileCreate(
+    _In_ WDFDEVICE     Device,
+    _In_ WDFREQUEST    Request,
+    _In_ WDFFILEOBJECT FileObject
+)
+{
+    NTSTATUS         status = STATUS_INVALID_PARAMETER;
+    PFDO_FILE_DATA   pFileData = NULL;
+    PFDO_DEVICE_DATA pFDOData = NULL;
+    LONG             refCount = 0;
+    LONG             sessionId = 0;
+
+    UNREFERENCED_PARAMETER(Request);
+
+    PAGED_CODE();
+
+    pFileData = FileObjectGetData(FileObject);
+    if (pFileData == NULL)
+    {
+        KdPrint((DRIVERNAME "Bus_DeviceFileCreate: ERROR! File handle context not found\n"));
+    }
+    else
+    {
+        pFDOData = FdoGetData(Device);
+        if (pFDOData == NULL)
+        {
+            KdPrint((DRIVERNAME "Bus_DeviceFileCreate: ERROR! FDO context not found\n"));
+            status = STATUS_NO_SUCH_DEVICE;
+        }
+        else
+        {
+            refCount = InterlockedIncrement(&pFDOData->InterfaceReferenceCounter);
+            sessionId = InterlockedIncrement(&pFDOData->NextSessionId);
+
+            pFileData->SessionId = sessionId;
+            status = STATUS_SUCCESS;
+
+            KdPrint((DRIVERNAME "Bus_DeviceFileCreate: File id=%d. Device refcount=%d\n", (int)sessionId, (int)refCount));
+        }
+    }
+
+    WdfRequestComplete(Request, status);
+}
+
+//
+// Gets called when the user-land process (or kernel driver) exits or closes the handle.
+// 
+_Use_decl_annotations_
+VOID
+Bus_FileClose(
+    WDFFILEOBJECT FileObject
+)
+{
+    WDFDEVICE                      device;
+    WDFDEVICE                      hChild;
+    NTSTATUS                       status;
+    WDFCHILDLIST                   list;
+    WDF_CHILD_LIST_ITERATOR        iterator;
+    WDF_CHILD_RETRIEVE_INFO        childInfo;
+    PDO_IDENTIFICATION_DESCRIPTION description;
+    PFDO_FILE_DATA                 pFileData = NULL;
+    PFDO_DEVICE_DATA               pFDOData = NULL;
+    LONG                           refCount = 0;
+
+    PAGED_CODE();
+
+    KdPrint((DRIVERNAME "Bus_FileClose called\n"));
+
+    // Check common context
+    pFileData = FileObjectGetData(FileObject);
+    if (pFileData == NULL)
+    {
+        KdPrint((DRIVERNAME "Bus_FileClose: ERROR! File handle context not found\n"));
+        return;
+    }
+
+    device = WdfFileObjectGetDevice(FileObject);
+
+    pFDOData = FdoGetData(device);
+    if (pFDOData == NULL)
+    {
+        KdPrint((DRIVERNAME "Bus_FileClose: ERROR! FDO context not found\n"));
+        status = STATUS_NO_SUCH_DEVICE;
+    }
+    else
+    {
+        refCount = InterlockedDecrement(&pFDOData->InterfaceReferenceCounter);
+
+        KdPrint((DRIVERNAME "Bus_FileClose: Device refcount=%d\n", (int)refCount));
+    }
+
+    list = WdfFdoGetDefaultChildList(device);
+
+    WDF_CHILD_LIST_ITERATOR_INIT(&iterator, WdfRetrievePresentChildren);
+
+    WdfChildListBeginIteration(list, &iterator);
+
+    for (;;)
+    {
+        WDF_CHILD_RETRIEVE_INFO_INIT(&childInfo, &description.Header);
+        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
+
+        status = WdfChildListRetrieveNextDevice(list, &iterator, &hChild, &childInfo);
+        if (!NT_SUCCESS(status) || status == STATUS_NO_MORE_ENTRIES)
+        {
+            break;
+        }
+
+        KdPrint((DRIVERNAME "Bus_FileClose enumerate: status=%d devicePID=%d currentPID=%d fileSessionId=%d deviceSessionId=%d ownerIsDriver=%d\n",
+            (int)childInfo.Status, (int)description.OwnerProcessId, (int)CURRENT_PROCESS_ID(), (int)pFileData->SessionId, (int)description.SessionId, (int)description.OwnerIsDriver));
+
+        // Only unplug devices with matching session id
+        if (childInfo.Status == WdfChildListRetrieveDeviceSuccess
+            && description.SessionId == pFileData->SessionId
+            && !description.OwnerIsDriver)
+        {
+            KdPrint((DRIVERNAME "Bus_FileClose unplugging"));
+
+            // "Unplug" child
+            status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);
+            if (!NT_SUCCESS(status))
+            {
+                KdPrint((DRIVERNAME "WdfChildListUpdateChildDescriptionAsMissing failed with status 0x%X\n", status));
+            }
+        }
+    }
+
+    WdfChildListEndIteration(list, &iterator);
 }

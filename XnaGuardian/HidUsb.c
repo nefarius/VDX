@@ -29,7 +29,7 @@ SOFTWARE.
 //
 // URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER completion routine.
 // 
-void UsbBulkOrInterruptTransferCompleted(
+void UpperUsbBulkOrInterruptTransferCompleted(
     _In_ WDFREQUEST                     Request,
     _In_ WDFIOTARGET                    Target,
     _In_ PWDF_REQUEST_COMPLETION_PARAMS Params,
@@ -41,15 +41,16 @@ void UsbBulkOrInterruptTransferCompleted(
     PUCHAR                          pTransferBuffer;
     ULONG                           transferBufferLength;
     PXINPUT_PAD_STATE_INTERNAL      pState;
+    PDEVICE_CONTEXT                 pDeviceContext;
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
-    UNREFERENCED_PARAMETER(Context);
 
     status = WdfRequestGetStatus(Request);
     pUrb = URB_FROM_IRP(WdfRequestWdmGetIrp(Request));
     pTransferBuffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
     transferBufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
+    pDeviceContext = DeviceGetContext(Context);
 
     pState = &PadStates[0];
     RtlCopyBytes(&pTransferBuffer[0], &pState->Gamepad.sThumbLX, 2);
@@ -64,3 +65,4 @@ void UsbBulkOrInterruptTransferCompleted(
 
     WdfRequestComplete(Request, status);
 }
+

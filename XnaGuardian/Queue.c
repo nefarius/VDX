@@ -340,7 +340,7 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
                 KdPrint((DRIVERNAME "Interrupt IN buflen: %d\n", urb->UrbBulkOrInterruptTransfer.TransferBufferLength));
 
                 WdfRequestFormatRequestUsingCurrentType(Request);
-                WdfRequestSetCompletionRoutine(Request, UsbBulkOrInterruptTransferCompleted, Device);
+                WdfRequestSetCompletionRoutine(Request, UpperUsbBulkOrInterruptTransferCompleted, Device);
 
                 ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS);
 

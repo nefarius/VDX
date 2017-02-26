@@ -25,5 +25,5 @@ SOFTWARE.
 
 #pragma once
 
-EVT_WDF_REQUEST_COMPLETION_ROUTINE UsbBulkOrInterruptTransferCompleted;
+EVT_WDF_REQUEST_COMPLETION_ROUTINE UpperUsbBulkOrInterruptTransferCompleted;
 

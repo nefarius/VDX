@@ -63,147 +63,149 @@ XnaGuardianCreateDevice(
 
     status = WdfDeviceCreate(&DeviceInit, &deviceAttributes, &device);
 
-    if (NT_SUCCESS(status))
-    {
-        pDeviceContext = DeviceGetContext(device);
-
-        WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
-        deviceAttributes.ParentObject = device;
-
-        //
-        // Query for current device's Hardware ID
-        // 
-        status = WdfDeviceAllocAndQueryProperty(device,
-            DevicePropertyHardwareID,
-            NonPagedPool,
-            &deviceAttributes,
-            &pDeviceContext->MemoryHardwareId
-        );
-
-        if (!NT_SUCCESS(status)) {
-            KdPrint((DRIVERNAME "WdfDeviceAllocAndQueryProperty failed with status 0x%X", status));
-            return status;
-        }
-
-        pDeviceContext->HardwareId = WdfMemoryGetBuffer(pDeviceContext->MemoryHardwareId, NULL);
-        KdPrint((DRIVERNAME "HardwareID for device 0x%X: %ls\n", device, pDeviceContext->HardwareId));
-
-        //
-        // Query for current device's ClassName
-        // 
-        status = WdfDeviceAllocAndQueryProperty(device,
-            DevicePropertyClassName,
-            NonPagedPool,
-            &deviceAttributes,
-            &pDeviceContext->MemoryClassName
-        );
-
-        if (!NT_SUCCESS(status)) {
-            KdPrint((DRIVERNAME "WdfDeviceAllocAndQueryProperty failed with status 0x%X", status));
-            return status;
-        }
-
-        pDeviceContext->ClassName = WdfMemoryGetBuffer(pDeviceContext->MemoryClassName, NULL);
-        KdPrint((DRIVERNAME "ClassName for device 0x%X: %ls\n", device, pDeviceContext->ClassName));
-
-        //
-        // Continue startup if loaded as XUSB/XGIP filter
-        // 
-        if (kmwcsstr(pDeviceContext->ClassName, L"XnaComposite")
-            || kmwcsstr(pDeviceContext->ClassName, L"XboxComposite"))
-        {
-            TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "XUSB/XGIP device detected, loading...");
-            pDeviceContext->IsXnaDevice = TRUE;
-            goto continueInit;
-        }
-
-        //
-        // Abort if unknown class
-        // 
-        if (!kmwcsstr(pDeviceContext->ClassName, L"HIDClass"))
-        {
-            KdPrint((DRIVERNAME "Unsupported device class detected, unloading...\n"));
-            return STATUS_NOT_SUPPORTED;
-        }
-
-        //
-        // Only load below USB device in the stack
-        // 
-        if (!kmwcsstr(pDeviceContext->HardwareId, L"USB\\"))
-        {
-            KdPrint((DRIVERNAME "Topmost HID device detected, unloading...\n"));
-            return STATUS_NOT_SUPPORTED;
-        }
-
-        //
-        // Check if device is XInput-compatible
-        // 
-        // See here: https://msdn.microsoft.com/en-US/library/windows/desktop/ee417014%28v=vs.85%29.aspx
-        // 
-        if (!kmwcsstr(pDeviceContext->HardwareId, L"IG_"))
-        {
-            KdPrint((DRIVERNAME "Regular HID device detected, unloading...\n"));
-            return STATUS_NOT_SUPPORTED;
-        }
-
-        //
-        // Add HID USB device to its own collection
-        // 
-        WdfWaitLockAcquire(HidUsbDeviceCollectionLock, NULL);
-        status = WdfCollectionAdd(HidUsbDeviceCollection, device);
-        if (!NT_SUCCESS(status))
-        {
-            WdfWaitLockRelease(HidUsbDeviceCollectionLock);
-            KdPrint((DRIVERNAME "WdfCollectionAdd failed with status 0x%X", status));
-            return status;
-        }
-        WdfWaitLockRelease(HidUsbDeviceCollectionLock);
-
-        pDeviceContext->IsHidUsbDevice = TRUE;
-
-        TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "HID USB device detected, loading...");
-
-    continueInit:
-
-        KdPrint((DRIVERNAME "Compatible device detected, initializing...\n"));
-
-        //
-        // Initialize the I/O Package and any Queues
-        //
-        status = XnaGuardianQueueInitialize(device);
-
-        if (!NT_SUCCESS(status)) {
-            KdPrint((DRIVERNAME "XnaGuardianQueueInitialize failed with status 0x%X", status));
-            return status;
-        }
-
-        //
-        // Add this device to the FilterDevice collection.
-        //
-        WdfWaitLockAcquire(FilterDeviceCollectionLock, NULL);
-
-        //
-        // WdfCollectionAdd takes a reference on the item object and removes
-        // it when you call WdfCollectionRemove.
-        //
-        status = WdfCollectionAdd(FilterDeviceCollection, device);
-        if (!NT_SUCCESS(status)) {
-            KdPrint((DRIVERNAME "WdfCollectionAdd failed with status code 0x%x\n", status));
-        }
-        WdfWaitLockRelease(FilterDeviceCollectionLock);
-
-        //
-        // Create a control device
-        //
-        status = FilterCreateControlDevice(device);
-        if (!NT_SUCCESS(status)) {
-            KdPrint((DRIVERNAME "FilterCreateControlDevice failed with status 0x%x\n",
-                status));
-        }
-    }
-    else
+    //
+    // Opt out early on failure
+    // 
+    if (!NT_SUCCESS(status))
     {
         KdPrint((DRIVERNAME "WdfDeviceCreate failed with status 0x%X\n", status));
+        return status;
+    }
+
+    pDeviceContext = DeviceGetContext(device);
+
+    WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
+    deviceAttributes.ParentObject = device;
+
+    //
+    // Query for current device's Hardware ID
+    // 
+    status = WdfDeviceAllocAndQueryProperty(device,
+        DevicePropertyHardwareID,
+        NonPagedPool,
+        &deviceAttributes,
+        &pDeviceContext->MemoryHardwareId
+    );
+
+    if (!NT_SUCCESS(status)) {
+        KdPrint((DRIVERNAME "WdfDeviceAllocAndQueryProperty failed with status 0x%X", status));
+        return status;
+    }
+
+    pDeviceContext->HardwareId = WdfMemoryGetBuffer(pDeviceContext->MemoryHardwareId, NULL);
+    KdPrint((DRIVERNAME "HardwareID for device 0x%X: %ls\n", device, pDeviceContext->HardwareId));
+
+    //
+    // Query for current device's ClassName
+    // 
+    status = WdfDeviceAllocAndQueryProperty(device,
+        DevicePropertyClassName,
+        NonPagedPool,
+        &deviceAttributes,
+        &pDeviceContext->MemoryClassName
+    );
+
+    if (!NT_SUCCESS(status)) {
+        KdPrint((DRIVERNAME "WdfDeviceAllocAndQueryProperty failed with status 0x%X", status));
+        return status;
+    }
+
+    pDeviceContext->ClassName = WdfMemoryGetBuffer(pDeviceContext->MemoryClassName, NULL);
+    KdPrint((DRIVERNAME "ClassName for device 0x%X: %ls\n", device, pDeviceContext->ClassName));
+
+    //
+    // Continue startup if loaded as XUSB/XGIP filter
+    // 
+    if (kmwcsstr(pDeviceContext->ClassName, L"XnaComposite")
+        || kmwcsstr(pDeviceContext->ClassName, L"XboxComposite"))
+    {
+        TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "XUSB/XGIP device detected, loading...");
+        pDeviceContext->IsXnaDevice = TRUE;
+        goto continueInit;
+    }
+
+    //
+    // Abort if unknown class
+    // 
+    if (!kmwcsstr(pDeviceContext->ClassName, L"HIDClass"))
+    {
+        KdPrint((DRIVERNAME "Unsupported device class detected, unloading...\n"));
+        return STATUS_NOT_SUPPORTED;
+    }
+
+    //
+    // Only load below USB device in the stack
+    // 
+    if (!kmwcsstr(pDeviceContext->HardwareId, L"USB\\"))
+    {
+        KdPrint((DRIVERNAME "Topmost HID device detected, unloading...\n"));
+        return STATUS_NOT_SUPPORTED;
+    }
+
+    //
+    // Check if device is XInput-compatible
+    // 
+    // See here: https://msdn.microsoft.com/en-US/library/windows/desktop/ee417014%28v=vs.85%29.aspx
+    // 
+    if (!kmwcsstr(pDeviceContext->HardwareId, L"IG_"))
+    {
+        KdPrint((DRIVERNAME "Regular HID device detected, unloading...\n"));
+        return STATUS_NOT_SUPPORTED;
+    }
+
+    //
+    // Add HID USB device to its own collection
+    // 
+    WdfWaitLockAcquire(HidUsbDeviceCollectionLock, NULL);
+    status = WdfCollectionAdd(HidUsbDeviceCollection, device);
+    if (!NT_SUCCESS(status))
+    {
+        WdfWaitLockRelease(HidUsbDeviceCollectionLock);
+        KdPrint((DRIVERNAME "WdfCollectionAdd failed with status 0x%X", status));
+        return status;
+    }
+    WdfWaitLockRelease(HidUsbDeviceCollectionLock);
+
+    pDeviceContext->IsHidUsbDevice = TRUE;
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "HID USB device detected, loading...");
+
+continueInit:
+
+    KdPrint((DRIVERNAME "Compatible device detected, initializing...\n"));
+
+    //
+    // Initialize the I/O Package and any Queues
+    //
+    status = XnaGuardianQueueInitialize(device);
+
+    if (!NT_SUCCESS(status)) {
+        KdPrint((DRIVERNAME "XnaGuardianQueueInitialize failed with status 0x%X", status));
+        return status;
+    }
+
+    //
+    // Add this device to the FilterDevice collection.
+    //
+    WdfWaitLockAcquire(FilterDeviceCollectionLock, NULL);
+
+    //
+    // WdfCollectionAdd takes a reference on the item object and removes
+    // it when you call WdfCollectionRemove.
+    //
+    status = WdfCollectionAdd(FilterDeviceCollection, device);
+    if (!NT_SUCCESS(status)) {
+        KdPrint((DRIVERNAME "WdfCollectionAdd failed with status code 0x%x\n", status));
+    }
+    WdfWaitLockRelease(FilterDeviceCollectionLock);
+
+    //
+    // Create a control device
+    //
+    status = FilterCreateControlDevice(device);
+    if (!NT_SUCCESS(status)) {
+        KdPrint((DRIVERNAME "FilterCreateControlDevice failed with status 0x%x\n",
+            status));
     }
 
     return status;

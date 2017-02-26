@@ -33,6 +33,7 @@ SOFTWARE.
 #include "queue.h"
 #include "trace.h"
 #include "String.h"
+#include "HidUsb.h"
 
 #define DRIVERNAME "XnaGuardian: "
 

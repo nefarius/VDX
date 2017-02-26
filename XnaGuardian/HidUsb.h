@@ -25,29 +25,4 @@ SOFTWARE.
 
 #pragma once
 
-EXTERN_C_START
-
-#define GAMEPAD_FROM_BUFFER(_buffer_)       ((PXINPUT_GAMEPAD_STATE)&((PUCHAR)_buffer_)[11])
-#define MAX_DEVICES_FROM_BUFFER(_buffer_)   ((ULONG)((PUCHAR)_buffer_)[2])
-#define IS_INTERRUPT_IN(_urb_)              ((_urb_->UrbBulkOrInterruptTransfer.TransferFlags & USBD_TRANSFER_DIRECTION_IN))
-
-
-extern XINPUT_PAD_STATE_INTERNAL    PadStates[XINPUT_MAX_DEVICES];
-extern XINPUT_GAMEPAD_STATE         PeekPadCache[XINPUT_MAX_DEVICES];
-
-NTSTATUS
-XnaGuardianQueueInitialize(
-    _In_ WDFDEVICE hDevice
-    );
-
-//
-// Events from the IoQueue object
-//
-EVT_WDF_IO_QUEUE_IO_DEFAULT XnaGuardianEvtIoDefault;
-EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL XnaGuardianEvtIoDeviceControl;
-EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL XnaGuardianEvtIoInternalDeviceControl;
-
-EVT_WDF_REQUEST_COMPLETION_ROUTINE XInputGetInformationCompleted;
-EVT_WDF_REQUEST_COMPLETION_ROUTINE XInputGetGamepadStateCompleted;
-
-EXTERN_C_END
+EVT_WDF_REQUEST_COMPLETION_ROUTINE UsbBulkOrInterruptTransferCompleted;

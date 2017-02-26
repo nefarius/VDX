@@ -16,6 +16,9 @@
     <ClCompile Include="String.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HidUsb.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Queue.h">
@@ -49,6 +52,9 @@
       <Filter>Header Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="String.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HidUsb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

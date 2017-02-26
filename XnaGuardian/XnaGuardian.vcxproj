@@ -37,6 +37,7 @@
   <ItemGroup>
     <ClCompile Include="Device.c" />
     <ClCompile Include="Driver.c" />
+    <ClCompile Include="HidUsb.c" />
     <ClCompile Include="Queue.c" />
     <ClCompile Include="Sideband.c" />
     <ClCompile Include="String.c" />
@@ -46,6 +47,7 @@
     <ClInclude Include="..\Common\XnaGuardianShared.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="Driver.h" />
+    <ClInclude Include="HidUsb.h" />
     <ClInclude Include="Public.h" />
     <ClInclude Include="Queue.h" />
     <ClInclude Include="resource.h" />

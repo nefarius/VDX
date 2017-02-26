@@ -59,6 +59,7 @@ typedef struct _DEVICE_CONTEXT
     PCWSTR      ClassName;
     BOOLEAN     IsXnaDevice;
     BOOLEAN     IsHidUsbDevice;
+    WDFQUEUE    XInputOverrideSetStateRequests;
 
 } DEVICE_CONTEXT, *PDEVICE_CONTEXT;
 

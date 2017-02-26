@@ -40,8 +40,9 @@ void UpperUsbBulkOrInterruptTransferCompleted(
     PURB                            pUrb;
     PUCHAR                          pTransferBuffer;
     ULONG                           transferBufferLength;
-    PXINPUT_PAD_STATE_INTERNAL      pState;
+    PXINPUT_PAD_STATE_INTERNAL      pPad;
     PDEVICE_CONTEXT                 pDeviceContext;
+    ULONG                           index;
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
@@ -52,16 +53,49 @@ void UpperUsbBulkOrInterruptTransferCompleted(
     transferBufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
     pDeviceContext = DeviceGetContext(Context);
 
-    pState = &PadStates[0];
-    RtlCopyBytes(&pTransferBuffer[0], &pState->Gamepad.sThumbLX, 2);
-    RtlCopyBytes(&pTransferBuffer[2], &pState->Gamepad.sThumbLY, 2);
+    //
+    // Map XInput user index to HID USB device by using device arrival order
+    // 
+    for (index = 0; index < XINPUT_MAX_DEVICES && index < WdfCollectionGetCount(HidUsbDeviceCollection); index++)
+    {
+        if (WdfCollectionGetItem(HidUsbDeviceCollection, index) == Context)
+        {
+            KdPrint((DRIVERNAME "HID USB Device 0x%X found at index %d\n", Context, index));
+            break;
+        }
+    }
 
+    //
+    // Validate range
+    // 
+    if (index >= XINPUT_MAX_DEVICES)
+    {
+        WdfRequestComplete(Request, status);
+        return;
+    }
+
+    pPad = &PadStates[index];
+
+    // Left Thumb
+    if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_X)
+        RtlCopyBytes(&pTransferBuffer[0], &pPad->Gamepad.sThumbLX, 2);
+    if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_Y)
+        RtlCopyBytes(&pTransferBuffer[2], &pPad->Gamepad.sThumbLY, 2);
+
+    // Right Thumb
+    if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_X)
+        RtlCopyBytes(&pTransferBuffer[4], &pPad->Gamepad.sThumbRX, 2);
+    if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y)
+        RtlCopyBytes(&pTransferBuffer[6], &pPad->Gamepad.sThumbRY, 2);
+
+#ifdef DBG
     KdPrint((DRIVERNAME "BUFFER: "));
     for (ULONG i = 0; i < transferBufferLength; i++)
     {
         KdPrint(("%02X ", pTransferBuffer[i]));
     }
     KdPrint(("\n"));
+#endif
 
     WdfRequestComplete(Request, status);
 }

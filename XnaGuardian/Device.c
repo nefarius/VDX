@@ -52,6 +52,8 @@ XnaGuardianCreateDevice(
 
     PAGED_CODE();
 
+#pragma region Set up filter device
+
     WdfFdoInitSetFilter(DeviceInit);
 
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&deviceAttributes, DEVICE_CONTEXT);
@@ -71,6 +73,10 @@ XnaGuardianCreateDevice(
         KdPrint((DRIVERNAME "WdfDeviceCreate failed with status 0x%X\n", status));
         return status;
     }
+
+#pragma endregion
+
+#pragma region Query device properties
 
     pDeviceContext = DeviceGetContext(device);
 
@@ -112,6 +118,8 @@ XnaGuardianCreateDevice(
 
     pDeviceContext->ClassName = WdfMemoryGetBuffer(pDeviceContext->MemoryClassName, NULL);
     KdPrint((DRIVERNAME "ClassName for device 0x%X: %ls\n", device, pDeviceContext->ClassName));
+
+#pragma endregion
 
     //
     // Continue startup if loaded as XUSB/XGIP filter

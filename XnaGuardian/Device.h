@@ -51,14 +51,14 @@ typedef struct _XINPUT_PAD_STATE_INTERNAL
 //
 typedef struct _DEVICE_CONTEXT
 {
-    ULONG                       MaxDevices;
-    UCHAR                       LedValues[XINPUT_MAX_DEVICES];
-    WDFMEMORY                   MemoryHardwareId;
-    PCWSTR                      HardwareId;
-    WDFMEMORY                   MemoryClassName;
-    PCWSTR                      ClassName;
-    BOOLEAN                     IsXnaDevice;
-    BOOLEAN                     IsHidUsbDevice;
+    ULONG       MaxDevices;
+    UCHAR       LedValues[XINPUT_MAX_DEVICES];
+    WDFMEMORY   MemoryHardwareId;
+    PCWSTR      HardwareId;
+    WDFMEMORY   MemoryClassName;
+    PCWSTR      ClassName;
+    BOOLEAN     IsXnaDevice;
+    BOOLEAN     IsHidUsbDevice;
 
 } DEVICE_CONTEXT, *PDEVICE_CONTEXT;
 
@@ -66,7 +66,7 @@ WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(DEVICE_CONTEXT, DeviceGetContext)
 
 typedef struct _XINPUT_PAD_IDENTIFIER_CONTEXT
 {
-    ULONG       Index;
+    ULONG   Index;
 
 } XINPUT_PAD_IDENTIFIER_CONTEXT, *PXINPUT_PAD_IDENTIFIER_CONTEXT;
 

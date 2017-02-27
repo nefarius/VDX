@@ -53,6 +53,8 @@ void UpperUsbBulkOrInterruptTransferCompleted(
     transferBufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
     pDeviceContext = DeviceGetContext(Context);
 
+    KdPrint((DRIVERNAME "UpperUsbBulkOrInterruptTransferCompleted called with status 0x%X\n", status));
+
     //
     // Map XInput user index to HID USB device by using device arrival order
     // 

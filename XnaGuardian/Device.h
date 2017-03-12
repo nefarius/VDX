@@ -74,6 +74,17 @@ typedef struct _XINPUT_PAD_IDENTIFIER_CONTEXT
 
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(XINPUT_PAD_IDENTIFIER_CONTEXT, GetPadIdentifier)
 
+typedef struct _XINPUT_HID_INPUT_REPORT
+{
+    SHORT   LeftThumbX;
+    SHORT   LeftThumbY;
+    SHORT   RightThumbX;
+    SHORT   RightThumbY;
+    SHORT   ZAxis;
+    USHORT  Buttons;
+
+} XINPUT_HID_INPUT_REPORT, *PXINPUT_HID_INPUT_REPORT;
+
 //
 // Function to initialize the device and its callbacks
 //

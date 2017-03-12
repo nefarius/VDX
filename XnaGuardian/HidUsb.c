@@ -43,6 +43,8 @@ void UpperUsbBulkOrInterruptTransferCompleted(
     ULONG                           transferBufferLength;
     PXINPUT_PAD_STATE_INTERNAL      pPad;
     ULONG                           index;
+    PXINPUT_HID_INPUT_REPORT        pHidReport;
+    LONG                            nButtonOverrides;
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
@@ -51,6 +53,7 @@ void UpperUsbBulkOrInterruptTransferCompleted(
     pUrb = URB_FROM_IRP(WdfRequestWdmGetIrp(Request));
     pTransferBuffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
     transferBufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
+    pHidReport = (PXINPUT_HID_INPUT_REPORT)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
 
     KdPrint((DRIVERNAME "UpperUsbBulkOrInterruptTransferCompleted called with status 0x%X\n", status));
 
@@ -77,17 +80,20 @@ void UpperUsbBulkOrInterruptTransferCompleted(
 
     pPad = &PadStates[index];
 
+    nButtonOverrides = pPad->Overrides & 0xFFFF;
+    // pGamepad->wButtons = (pGamepad->wButtons&~nButtonOverrides) | (pPad->Gamepad.wButtons&nButtonOverrides);
+
     // Left Thumb
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_X)
-        RtlCopyBytes(&pTransferBuffer[0], &pPad->Gamepad.sThumbLX, 2);
+        pHidReport->LeftThumbX = pPad->Gamepad.sThumbLX;
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_Y)
-        RtlCopyBytes(&pTransferBuffer[2], &pPad->Gamepad.sThumbLY, 2);
+        pHidReport->LeftThumbY = pPad->Gamepad.sThumbLY;
 
     // Right Thumb
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_X)
-        RtlCopyBytes(&pTransferBuffer[4], &pPad->Gamepad.sThumbRX, 2);
+        pHidReport->RightThumbX = pPad->Gamepad.sThumbRX;
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y)
-        RtlCopyBytes(&pTransferBuffer[6], &pPad->Gamepad.sThumbRY, 2);
+        pHidReport->RightThumbY = pPad->Gamepad.sThumbRY;
 
 #ifdef DBG
     KdPrint((DRIVERNAME "BUFFER: "));

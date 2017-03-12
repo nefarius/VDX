@@ -194,28 +194,19 @@ continueInit:
         return status;
     }
 
-    WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
-    deviceAttributes.ParentObject = device;
-
-    status = WdfRequestCreate(&deviceAttributes, WdfDeviceGetIoTarget(device), &pDeviceContext->LowerUsbRequest);
-    if (!NT_SUCCESS(status))
-    {
-        KdPrint((DRIVERNAME "WdfRequestCreate failed with status 0x%X\n", status));
-        return status;
-    }
-
-    WDF_TIMER_CONFIG_INIT(&timerCfg, LowerUsbRequestTimerFunc);
+    //
+    // Initialize request cancellation timer
+    // 
+    WDF_TIMER_CONFIG_INIT(&timerCfg, UsbBulkOrInterruptRequestTimerFunc);
     WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
 
     deviceAttributes.ParentObject = device;
 
-    status = WdfTimerCreate(&timerCfg, &deviceAttributes, &pDeviceContext->LowerUsbRequestTimer);
+    status = WdfTimerCreate(&timerCfg, &deviceAttributes, &pDeviceContext->UsbBulkOrInterruptRequestTimer);
     if (!NT_SUCCESS(status)) {
         KdPrint((DRIVERNAME "Error creating output report timer 0x%x\n", status));
         return status;
     }
-
-    //KdPrint((DRIVERNAME "Timer start result: %d\n", WdfTimerStart(pDeviceContext->LowerUsbRequestTimer, 0)));
 
     //
     // Add this device to the FilterDevice collection.
@@ -244,28 +235,22 @@ continueInit:
     return status;
 }
 
-VOID LowerUsbRequestTimerFunc(
+VOID UsbBulkOrInterruptRequestTimerFunc(
     _In_ WDFTIMER Timer
 )
 {
-    NTSTATUS            status;
+    //NTSTATUS            status;
     WDFDEVICE           device;
     PDEVICE_CONTEXT     pDeviceContext;
 
-    KdPrint((DRIVERNAME "LowerUsbRequestTimerFunc called\n\n"));
+    KdPrint((DRIVERNAME "UsbBulkOrInterruptRequestTimerFunc called\n"));
 
     device = WdfTimerGetParentObject(Timer);
     pDeviceContext = DeviceGetContext(device);
 
-    status = SendUrbBulkOrInterruptInRequest(
-        device,
-        pDeviceContext->LowerUsbRequest,
-        pDeviceContext->LowerUsbTransferBuffer,
-        20);
-
-    if (!NT_SUCCESS(status))
+    if (pDeviceContext->CurrentUsbBulkOrInterruptRequest)
     {
-        KdPrint((DRIVERNAME "SendUrbBulkOrInterruptInRequest failed with status 0x%X\n", status));
+        WdfRequestCancelSentRequest(pDeviceContext->CurrentUsbBulkOrInterruptRequest);
     }
 }
 

@@ -85,16 +85,6 @@ XnaGuardianQueueInitialize(
         return status;
     }
 
-    // Create and assign queue for incoming interrupt transfer
-    WDF_IO_QUEUE_CONFIG_INIT(&queueConfig, WdfIoQueueDispatchManual);
-
-    status = WdfIoQueueCreate(Device, &queueConfig, WDF_NO_OBJECT_ATTRIBUTES, &DeviceGetContext(Device)->UpperUsbRequests);
-    if (!NT_SUCCESS(status))
-    {
-        KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));
-        return status;
-    }
-
     return status;
 }
 
@@ -343,26 +333,23 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
 
         switch (urb->UrbHeader.Function)
         {
+            //
+            // HID Reports travel through the interrupt pipe
+            // 
         case URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER:
 
             KdPrint((DRIVERNAME ">> URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER\n"));
 
+            //
+            // Only manipulate input reports
+            // 
             if (IS_INTERRUPT_IN(urb))
             {
                 KdPrint((DRIVERNAME "Interrupt IN buflen: %d\n", urb->UrbBulkOrInterruptTransfer.TransferBufferLength));
 
-                KdPrint((DRIVERNAME "PipeHandle = 0x%X\n", urb->UrbBulkOrInterruptTransfer.PipeHandle));
+                pDeviceContext->CurrentUsbBulkOrInterruptRequest = Request;
 
-if (TRUE) goto skip;
-                status = WdfRequestForwardToIoQueue(Request, pDeviceContext->UpperUsbRequests);
-                if (!NT_SUCCESS(status))
-                {
-                    KdPrint((DRIVERNAME "WdfRequestForwardToIoQueue failed with status 0x%x\n", status));
-                    WdfRequestComplete(Request, status);
-                    return;
-                }
-    skip:
-                
+                WdfTimerStart(pDeviceContext->UsbBulkOrInterruptRequestTimer, WDF_REL_TIMEOUT_IN_MS(10));
 
                 WdfRequestFormatRequestUsingCurrentType(Request);
                 WdfRequestSetCompletionRoutine(Request, UpperUsbBulkOrInterruptTransferCompleted, Device);
@@ -374,14 +361,7 @@ if (TRUE) goto skip;
                     KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
                 }
 
-            
                 return;
-            }
-            else
-            {
-                KdPrint((DRIVERNAME "Interrupt OUT\n"));
-
-
             }
 
             break;

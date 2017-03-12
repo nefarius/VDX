@@ -215,6 +215,8 @@ continueInit:
         return status;
     }
 
+    //KdPrint((DRIVERNAME "Timer start result: %d\n", WdfTimerStart(pDeviceContext->LowerUsbRequestTimer, 0)));
+
     //
     // Add this device to the FilterDevice collection.
     //

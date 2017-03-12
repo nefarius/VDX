@@ -80,8 +80,11 @@ void UpperUsbBulkOrInterruptTransferCompleted(
 
     pPad = &PadStates[index];
 
+    //
+    // Buttons
+    // 
     nButtonOverrides = pPad->Overrides & 0xFFFF;
-    // pGamepad->wButtons = (pGamepad->wButtons&~nButtonOverrides) | (pPad->Gamepad.wButtons&nButtonOverrides);
+    pHidReport->Buttons = (pHidReport->Buttons&~nButtonOverrides) | (pPad->Gamepad.wButtons&nButtonOverrides);
 
     // Left Thumb
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_X)

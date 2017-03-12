@@ -25,6 +25,80 @@ SOFTWARE.
 
 #include "Driver.h"
 #include <usb.h>
+#include <usbioctl.h>
+#include <usbdlib.h>
+
+
+NTSTATUS SendUrbBulkOrInterruptInRequest(WDFDEVICE Device, WDFREQUEST Request, PVOID Buffer, ULONG BufferLength)
+{
+    WDF_OBJECT_ATTRIBUTES   woa;
+    NTSTATUS                status;
+    WDFMEMORY               memory;
+    PURB                    pUrb;
+
+    KdPrint((DRIVERNAME "SendUrbBulkOrInterruptInRequest called\n"));
+
+    WDF_OBJECT_ATTRIBUTES_INIT(&woa);
+
+    woa.ParentObject = Request;
+
+    status = WdfMemoryCreate(WDF_NO_OBJECT_ATTRIBUTES,
+        NonPagedPool,
+        0,
+        sizeof(URB),
+        &memory,
+        (PVOID*)&pUrb);
+
+    if (!NT_SUCCESS(status)) {
+        return status;
+    }
+
+    //[…Format the XRB…]
+    UsbBuildInterruptOrBulkTransferRequest(
+        pUrb,
+        sizeof(URB),
+        (USBD_PIPE_HANDLE)0x01,
+        Buffer,
+        NULL,
+        BufferLength,
+        USBD_TRANSFER_DIRECTION_IN,
+        NULL);
+    
+    // Parameters.Others.Argument3 is used by the IOCTL value
+    status = WdfIoTargetFormatRequestForInternalIoctlOthers(
+        WdfDeviceGetIoTarget(Device),
+        Request,
+        IOCTL_INTERNAL_USB_SUBMIT_URB,
+        memory, NULL,        // Parameters.Others.Argument1
+        WDF_NO_HANDLE, NULL, // Parameters.Others.Argument2
+        WDF_NO_HANDLE, NULL   // Parameters.Others.Argument4
+    );
+
+    if (NT_SUCCESS(status))
+    {
+        WdfRequestSetCompletionRoutine(Request, LowerUsbBulkOrInterruptTransferCompleted, Device);
+
+        // send async
+        if (WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS) == FALSE)
+        {
+            // send failed
+            WdfObjectDelete(memory);
+
+            status = WdfRequestGetStatus(Request);
+
+            KdPrint((DRIVERNAME "WdfRequestSend failed with status 0x%X\n", status));
+        }
+        else {
+            status = STATUS_PENDING;
+        }
+    }
+
+    if (!NT_SUCCESS(status)) {
+        WdfObjectDelete(memory);
+    }
+
+    return status;
+}
 
 //
 // URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER completion routine.
@@ -100,5 +174,62 @@ void UpperUsbBulkOrInterruptTransferCompleted(
 #endif
 
     WdfRequestComplete(Request, status);
+}
+
+void LowerUsbBulkOrInterruptTransferCompleted(
+    _In_ WDFREQUEST                     Request,
+    _In_ WDFIOTARGET                    Target,
+    _In_ PWDF_REQUEST_COMPLETION_PARAMS Params,
+    _In_ WDFCONTEXT                     Context
+)
+{
+    WDF_REQUEST_REUSE_PARAMS    params;
+    NTSTATUS                    status;
+    PURB                        pUrb;
+    PUCHAR                      pTransferBuffer;
+    ULONG                       transferBufferLength;
+
+    UNREFERENCED_PARAMETER(Target);
+    UNREFERENCED_PARAMETER(Params);
+    UNREFERENCED_PARAMETER(Context);
+
+    status = WdfRequestGetStatus(Request);
+
+    KdPrint((DRIVERNAME "LowerUsbBulkOrInterruptTransferCompleted called with status 0x%X\n", status));
+    if (TRUE)goto blargh;
+
+    if (NT_SUCCESS(status))
+    {
+        pUrb = URB_FROM_IRP(WdfRequestWdmGetIrp(Request));
+        pTransferBuffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
+        transferBufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
+
+        KdPrint((DRIVERNAME "transferBufferLength = %d\n", transferBufferLength));
+
+#ifdef DBG
+        KdPrint((DRIVERNAME "BUFFER: "));
+        for (ULONG i = 0; i < transferBufferLength; i++)
+        {
+            KdPrint(("%02X ", pTransferBuffer[i]));
+        }
+        KdPrint(("\n"));
+#endif
+    }
+
+    WDF_REQUEST_REUSE_PARAMS_INIT(
+        &params,
+        WDF_REQUEST_REUSE_NO_FLAGS,
+        STATUS_SUCCESS
+    );
+
+    status = WdfRequestReuse(Request, &params);
+
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfRequestReuse failed with status 0x%X\n", status));
+    }
+
+    blargh:
+    return;
 }
 

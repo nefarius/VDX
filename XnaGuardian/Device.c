@@ -28,6 +28,7 @@ SOFTWARE.
 #define NTSTRSAFE_LIB
 #include <ntstrsafe.h>
 #include "Sideband.h"
+#include <usbioctl.h>
 
 XINPUT_PAD_STATE_INTERNAL   PadStates[XINPUT_MAX_DEVICES];
 XINPUT_GAMEPAD_STATE        PeekPadCache[XINPUT_MAX_DEVICES];
@@ -49,6 +50,7 @@ XnaGuardianCreateDevice(
     WDFDEVICE               device;
     NTSTATUS                status;
     PDEVICE_CONTEXT         pDeviceContext;
+    WDF_TIMER_CONFIG        timerCfg;
 
     PAGED_CODE();
 
@@ -192,6 +194,27 @@ continueInit:
         return status;
     }
 
+    WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
+    deviceAttributes.ParentObject = device;
+
+    status = WdfRequestCreate(&deviceAttributes, WdfDeviceGetIoTarget(device), &pDeviceContext->LowerUsbRequest);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfRequestCreate failed with status 0x%X\n", status));
+        return status;
+    }
+
+    WDF_TIMER_CONFIG_INIT(&timerCfg, LowerUsbRequestTimerFunc);
+    WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
+
+    deviceAttributes.ParentObject = device;
+
+    status = WdfTimerCreate(&timerCfg, &deviceAttributes, &pDeviceContext->LowerUsbRequestTimer);
+    if (!NT_SUCCESS(status)) {
+        KdPrint((DRIVERNAME "Error creating output report timer 0x%x\n", status));
+        return status;
+    }
+
     //
     // Add this device to the FilterDevice collection.
     //
@@ -217,6 +240,31 @@ continueInit:
     }
 
     return status;
+}
+
+VOID LowerUsbRequestTimerFunc(
+    _In_ WDFTIMER Timer
+)
+{
+    NTSTATUS            status;
+    WDFDEVICE           device;
+    PDEVICE_CONTEXT     pDeviceContext;
+
+    KdPrint((DRIVERNAME "LowerUsbRequestTimerFunc called\n\n"));
+
+    device = WdfTimerGetParentObject(Timer);
+    pDeviceContext = DeviceGetContext(device);
+
+    status = SendUrbBulkOrInterruptInRequest(
+        device,
+        pDeviceContext->LowerUsbRequest,
+        pDeviceContext->LowerUsbTransferBuffer,
+        20);
+
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "SendUrbBulkOrInterruptInRequest failed with status 0x%X\n", status));
+    }
 }
 
 //

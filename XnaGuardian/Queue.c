@@ -85,6 +85,16 @@ XnaGuardianQueueInitialize(
         return status;
     }
 
+    // Create and assign queue for incoming interrupt transfer
+    WDF_IO_QUEUE_CONFIG_INIT(&queueConfig, WdfIoQueueDispatchManual);
+
+    status = WdfIoQueueCreate(Device, &queueConfig, WDF_NO_OBJECT_ATTRIBUTES, &DeviceGetContext(Device)->UpperUsbRequests);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));
+        return status;
+    }
+
     return status;
 }
 
@@ -314,6 +324,7 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
     WDFDEVICE                       Device;
     PIRP                            irp;
     PURB                            urb;
+    PDEVICE_CONTEXT                 pDeviceContext;
 
     KdPrint((DRIVERNAME "XnaGuardianEvtIoInternalDeviceControl called with code 0x%08X\n", IoControlCode));
 
@@ -322,6 +333,7 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
 
     Device = WdfIoQueueGetDevice(Queue);
     irp = WdfRequestWdmGetIrp(Request);
+    pDeviceContext = DeviceGetContext(Device);
 
     switch (IoControlCode)
     {
@@ -339,6 +351,19 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
             {
                 KdPrint((DRIVERNAME "Interrupt IN buflen: %d\n", urb->UrbBulkOrInterruptTransfer.TransferBufferLength));
 
+                KdPrint((DRIVERNAME "PipeHandle = 0x%X\n", urb->UrbBulkOrInterruptTransfer.PipeHandle));
+
+if (TRUE) goto skip;
+                status = WdfRequestForwardToIoQueue(Request, pDeviceContext->UpperUsbRequests);
+                if (!NT_SUCCESS(status))
+                {
+                    KdPrint((DRIVERNAME "WdfRequestForwardToIoQueue failed with status 0x%x\n", status));
+                    WdfRequestComplete(Request, status);
+                    return;
+                }
+    skip:
+                
+
                 WdfRequestFormatRequestUsingCurrentType(Request);
                 WdfRequestSetCompletionRoutine(Request, UpperUsbBulkOrInterruptTransferCompleted, Device);
 
@@ -348,7 +373,8 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
                     status = WdfRequestGetStatus(Request);
                     KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
                 }
-                
+
+            
                 return;
             }
             else

@@ -59,7 +59,10 @@ typedef struct _DEVICE_CONTEXT
     PCWSTR      ClassName;
     BOOLEAN     IsXnaDevice;
     BOOLEAN     IsHidUsbDevice;
-    WDFQUEUE    XInputOverrideSetStateRequests;
+    WDFQUEUE    UpperUsbRequests;
+    WDFREQUEST  LowerUsbRequest;
+    WDFTIMER    LowerUsbRequestTimer;
+    UCHAR       LowerUsbTransferBuffer[20];
 
 } DEVICE_CONTEXT, *PDEVICE_CONTEXT;
 
@@ -82,5 +85,7 @@ XnaGuardianCreateDevice(
     );
 
 EVT_WDF_OBJECT_CONTEXT_CLEANUP XnaGuardianCleanupCallback;
+
+EVT_WDF_TIMER LowerUsbRequestTimerFunc;
 
 EXTERN_C_END

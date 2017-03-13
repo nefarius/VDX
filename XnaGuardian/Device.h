@@ -95,6 +95,4 @@ XnaGuardianCreateDevice(
 
 EVT_WDF_OBJECT_CONTEXT_CLEANUP XnaGuardianCleanupCallback;
 
-EVT_WDF_TIMER UsbBulkOrInterruptRequestTimerFunc;
-
 EXTERN_C_END

@@ -28,7 +28,7 @@ SOFTWARE.
 #define NTSTRSAFE_LIB
 #include <ntstrsafe.h>
 #include "Sideband.h"
-#include <usbioctl.h>
+
 
 XINPUT_PAD_STATE_INTERNAL   PadStates[XINPUT_MAX_DEVICES];
 XINPUT_GAMEPAD_STATE        PeekPadCache[XINPUT_MAX_DEVICES];
@@ -233,25 +233,6 @@ continueInit:
     }
 
     return status;
-}
-
-VOID UsbBulkOrInterruptRequestTimerFunc(
-    _In_ WDFTIMER Timer
-)
-{
-    //NTSTATUS            status;
-    WDFDEVICE           device;
-    PDEVICE_CONTEXT     pDeviceContext;
-
-    KdPrint((DRIVERNAME "UsbBulkOrInterruptRequestTimerFunc called\n"));
-
-    device = WdfTimerGetParentObject(Timer);
-    pDeviceContext = DeviceGetContext(device);
-
-    if (pDeviceContext->CurrentUsbBulkOrInterruptRequest)
-    {
-        WdfRequestCancelSentRequest(pDeviceContext->CurrentUsbBulkOrInterruptRequest);
-    }
 }
 
 //

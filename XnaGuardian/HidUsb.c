@@ -39,21 +39,25 @@ void UpperUsbBulkOrInterruptTransferCompleted(
 {
     NTSTATUS                        status;
     PURB                            pUrb;
-    PUCHAR                          pTransferBuffer;
-    ULONG                           transferBufferLength;
     PXINPUT_PAD_STATE_INTERNAL      pPad;
     ULONG                           index;
     PXINPUT_HID_INPUT_REPORT        pHidReport;
     LONG                            nButtonOverrides;
+#ifdef DBG
+    PUCHAR                          pTransferBuffer;
+    ULONG                           transferBufferLength;
+#endif
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
 
     status = WdfRequestGetStatus(Request);
     pUrb = URB_FROM_IRP(WdfRequestWdmGetIrp(Request));
+    pHidReport = (PXINPUT_HID_INPUT_REPORT)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
+#ifdef DBG
     pTransferBuffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
     transferBufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
-    pHidReport = (PXINPUT_HID_INPUT_REPORT)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
+#endif
 
     KdPrint((DRIVERNAME "UpperUsbBulkOrInterruptTransferCompleted called with status 0x%X\n", status));
 
@@ -110,5 +114,24 @@ void UpperUsbBulkOrInterruptTransferCompleted(
     status = (status == STATUS_CANCELLED) ? STATUS_SUCCESS : status;
 
     WdfRequestComplete(Request, status);
+}
+
+VOID UsbBulkOrInterruptRequestTimerFunc(
+    _In_ WDFTIMER Timer
+)
+{
+    //NTSTATUS            status;
+    WDFDEVICE           device;
+    PDEVICE_CONTEXT     pDeviceContext;
+
+    KdPrint((DRIVERNAME "UsbBulkOrInterruptRequestTimerFunc called\n"));
+
+    device = WdfTimerGetParentObject(Timer);
+    pDeviceContext = DeviceGetContext(device);
+
+    if (pDeviceContext->CurrentUsbBulkOrInterruptRequest)
+    {
+        WdfRequestCancelSentRequest(pDeviceContext->CurrentUsbBulkOrInterruptRequest);
+    }
 }
 

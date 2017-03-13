@@ -26,4 +26,4 @@ SOFTWARE.
 #pragma once
 
 EVT_WDF_REQUEST_COMPLETION_ROUTINE UpperUsbBulkOrInterruptTransferCompleted;
-
+EVT_WDF_TIMER UsbBulkOrInterruptRequestTimerFunc;

@@ -120,7 +120,6 @@ VOID UsbBulkOrInterruptRequestTimerFunc(
     _In_ WDFTIMER Timer
 )
 {
-    //NTSTATUS            status;
     WDFDEVICE           device;
     PDEVICE_CONTEXT     pDeviceContext;
 

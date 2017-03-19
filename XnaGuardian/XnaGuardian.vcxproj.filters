@@ -13,10 +13,13 @@
     <ClCompile Include="Sideband.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="String.c">
+    <ClCompile Include="HidUsb.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HidUsb.c">
+    <ClCompile Include="Power.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KmString.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -51,10 +54,13 @@
     <ClInclude Include="..\Common\XInputOverrides.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
-    <ClInclude Include="String.h">
+    <ClInclude Include="HidUsb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HidUsb.h">
+    <ClInclude Include="Power.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KmString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -46,17 +46,27 @@ XnaGuardianCreateDevice(
     _Inout_ PWDFDEVICE_INIT DeviceInit
 )
 {
-    WDF_OBJECT_ATTRIBUTES   deviceAttributes;
-    WDFDEVICE               device;
-    NTSTATUS                status;
-    PDEVICE_CONTEXT         pDeviceContext;
-    WDF_TIMER_CONFIG        timerCfg;
+    WDF_OBJECT_ATTRIBUTES           deviceAttributes;
+    WDFDEVICE                       device;
+    NTSTATUS                        status;
+    PDEVICE_CONTEXT                 pDeviceContext;
+    WDF_PNPPOWER_EVENT_CALLBACKS    pnpPowerCallbacks;
 
     PAGED_CODE();
 
 #pragma region Set up filter device
 
     WdfFdoInitSetFilter(DeviceInit);
+
+    //
+    // Set PNP & power callbacks.
+    // 
+    WDF_PNPPOWER_EVENT_CALLBACKS_INIT(&pnpPowerCallbacks);
+
+    pnpPowerCallbacks.EvtDevicePrepareHardware = XnaGuardianEvtDevicePrepareHardware;
+    pnpPowerCallbacks.EvtDeviceD0Entry = XnaGuardianEvtDeviceD0Entry;
+
+    WdfDeviceInitSetPnpPowerEventCallbacks(DeviceInit, &pnpPowerCallbacks);
 
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&deviceAttributes, DEVICE_CONTEXT);
 
@@ -191,20 +201,6 @@ continueInit:
 
     if (!NT_SUCCESS(status)) {
         KdPrint((DRIVERNAME "XnaGuardianQueueInitialize failed with status 0x%X", status));
-        return status;
-    }
-
-    //
-    // Initialize request cancellation timer
-    // 
-    WDF_TIMER_CONFIG_INIT(&timerCfg, UsbBulkOrInterruptRequestTimerFunc);
-    WDF_OBJECT_ATTRIBUTES_INIT(&deviceAttributes);
-
-    deviceAttributes.ParentObject = device;
-
-    status = WdfTimerCreate(&timerCfg, &deviceAttributes, &pDeviceContext->UsbBulkOrInterruptRequestTimer);
-    if (!NT_SUCCESS(status)) {
-        KdPrint((DRIVERNAME "Error creating output report timer 0x%x\n", status));
         return status;
     }
 

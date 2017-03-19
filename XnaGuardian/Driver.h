@@ -28,12 +28,15 @@ SOFTWARE.
 
 #include <ntddk.h>
 #include <wdf.h>
+#include <usb.h>
+#include <wdfusb.h>
 
 #include "device.h"
 #include "queue.h"
 #include "trace.h"
-#include "String.h"
+#include "KmString.h"
 #include "HidUsb.h"
+#include "Power.h"
 
 #define DRIVERNAME "XnaGuardian: "
 

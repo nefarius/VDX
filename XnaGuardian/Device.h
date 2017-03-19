@@ -51,16 +51,18 @@ typedef struct _XINPUT_PAD_STATE_INTERNAL
 //
 typedef struct _DEVICE_CONTEXT
 {
-    ULONG       MaxDevices;
-    UCHAR       LedValues[XINPUT_MAX_DEVICES];
-    WDFMEMORY   MemoryHardwareId;
-    PCWSTR      HardwareId;
-    WDFMEMORY   MemoryClassName;
-    PCWSTR      ClassName;
-    BOOLEAN     IsXnaDevice;
-    BOOLEAN     IsHidUsbDevice;
-    WDFTIMER    UsbBulkOrInterruptRequestTimer;
-    WDFREQUEST  CurrentUsbBulkOrInterruptRequest;
+    ULONG               MaxDevices;
+    UCHAR               LedValues[XINPUT_MAX_DEVICES];
+    WDFMEMORY           MemoryHardwareId;
+    PCWSTR              HardwareId;
+    WDFMEMORY           MemoryClassName;
+    PCWSTR              ClassName;
+    BOOLEAN             IsXnaDevice;
+    BOOLEAN             IsHidUsbDevice;
+    WDFQUEUE            UpperUsbInterruptRequests;
+    WDFUSBDEVICE        UsbDevice;
+    WDFUSBINTERFACE     UsbInterface;
+    WDFUSBPIPE          InterruptPipe;
 
 } DEVICE_CONTEXT, *PDEVICE_CONTEXT;
 

@@ -24,8 +24,22 @@ SOFTWARE.
 
 
 #include "Driver.h"
-#include <usb.h>
 
+
+VOID XnaGuardianEvtUsbTargetPipeReadComplete(
+    _In_ WDFUSBPIPE Pipe,
+    _In_ WDFMEMORY  Buffer,
+    _In_ size_t     NumBytesTransferred,
+    _In_ WDFCONTEXT Context
+)
+{
+    UNREFERENCED_PARAMETER(Pipe);
+    UNREFERENCED_PARAMETER(Buffer);
+    UNREFERENCED_PARAMETER(NumBytesTransferred);
+    UNREFERENCED_PARAMETER(Context);
+
+    KdPrint((DRIVERNAME "NumBytesTransferred = %d\n", NumBytesTransferred));
+}
 
 //
 // URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER completion routine.
@@ -114,23 +128,5 @@ void UpperUsbBulkOrInterruptTransferCompleted(
     status = (status == STATUS_CANCELLED) ? STATUS_SUCCESS : status;
 
     WdfRequestComplete(Request, status);
-}
-
-VOID UsbBulkOrInterruptRequestTimerFunc(
-    _In_ WDFTIMER Timer
-)
-{
-    WDFDEVICE           device;
-    PDEVICE_CONTEXT     pDeviceContext;
-
-    KdPrint((DRIVERNAME "UsbBulkOrInterruptRequestTimerFunc called\n"));
-
-    device = WdfTimerGetParentObject(Timer);
-    pDeviceContext = DeviceGetContext(device);
-
-    if (pDeviceContext->CurrentUsbBulkOrInterruptRequest)
-    {
-        WdfRequestCancelSentRequest(pDeviceContext->CurrentUsbBulkOrInterruptRequest);
-    }
 }
 

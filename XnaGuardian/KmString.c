@@ -25,7 +25,6 @@ SOFTWARE.
 
 #include <crtdefs.h>
 #include <stddef.h>
-#include "String.h"
 
 #pragma warning(push)
 #pragma warning( disable : 4706 )

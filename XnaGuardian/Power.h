@@ -1,0 +1,5 @@
+#pragma once
+
+EVT_WDF_DEVICE_PREPARE_HARDWARE XnaGuardianEvtDevicePrepareHardware;
+EVT_WDF_DEVICE_D0_ENTRY XnaGuardianEvtDeviceD0Entry;
+EVT_WDF_DEVICE_D0_EXIT XnaGuardianEvtDeviceD0Exit;

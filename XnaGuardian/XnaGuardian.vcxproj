@@ -38,9 +38,10 @@
     <ClCompile Include="Device.c" />
     <ClCompile Include="Driver.c" />
     <ClCompile Include="HidUsb.c" />
+    <ClCompile Include="Power.c" />
     <ClCompile Include="Queue.c" />
     <ClCompile Include="Sideband.c" />
-    <ClCompile Include="String.c" />
+    <ClCompile Include="KmString.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\XInputOverrides.h" />
@@ -48,11 +49,12 @@
     <ClInclude Include="Device.h" />
     <ClInclude Include="Driver.h" />
     <ClInclude Include="HidUsb.h" />
+    <ClInclude Include="Power.h" />
     <ClInclude Include="Public.h" />
     <ClInclude Include="Queue.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Sideband.h" />
-    <ClInclude Include="String.h" />
+    <ClInclude Include="KmString.h" />
     <ClInclude Include="Trace.h" />
     <ClInclude Include="XInputInternal.h" />
   </ItemGroup>

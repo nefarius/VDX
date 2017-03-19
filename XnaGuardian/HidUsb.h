@@ -26,3 +26,11 @@ SOFTWARE.
 #pragma once
 
 EVT_WDF_USB_READER_COMPLETION_ROUTINE XnaGuardianEvtUsbTargetPipeReadComplete;
+
+BOOLEAN GetUpperUsbRequest(
+    WDFDEVICE Device,
+    WDFREQUEST *PendingRequest,
+    PUCHAR *Buffer,
+    PULONG BufferLength
+);
+

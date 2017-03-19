@@ -26,6 +26,34 @@ SOFTWARE.
 #include "Driver.h"
 
 
+BOOLEAN GetUpperUsbRequest(
+    WDFDEVICE Device,
+    WDFREQUEST *PendingRequest,
+    PUCHAR *Buffer,
+    PULONG BufferLength
+)
+{
+    NTSTATUS            status;
+    PDEVICE_CONTEXT     pDeviceContext;
+    PURB                pUrb;
+
+    pDeviceContext = DeviceGetContext(Device);
+
+    status = WdfIoQueueRetrieveNextRequest(pDeviceContext->UpperUsbInterruptRequests, PendingRequest);
+
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfIoQueueRetrieveNextRequest failed with status 0x%X\n", status));
+        return FALSE;
+    }
+
+    pUrb = URB_FROM_IRP(WdfRequestWdmGetIrp(*PendingRequest));
+    *Buffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
+    *BufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
+
+    return TRUE;
+}
+
 VOID XnaGuardianEvtUsbTargetPipeReadComplete(
     _In_ WDFUSBPIPE Pipe,
     _In_ WDFMEMORY  Buffer,
@@ -33,36 +61,22 @@ VOID XnaGuardianEvtUsbTargetPipeReadComplete(
     _In_ WDFCONTEXT Context
 )
 {
-    NTSTATUS                        status;
     PUCHAR                          pLowerBuffer;
     ULONG                           index;
     PXINPUT_PAD_STATE_INTERNAL      pPad;
     LONG                            nButtonOverrides;
     PXINPUT_HID_INPUT_REPORT        pHidReport;
-    PDEVICE_CONTEXT                 pDeviceContext;
     WDFREQUEST                      Request;
-    PURB                            pUrb;
     PUCHAR                          pUpperBuffer;
     ULONG                           upperBufferLength;
     size_t                          lowerBufferLength;
 
     UNREFERENCED_PARAMETER(Pipe);
 
-    pDeviceContext = DeviceGetContext(Context);
-
-    status = WdfIoQueueRetrieveNextRequest(pDeviceContext->UpperUsbInterruptRequests, &Request);
-
-    if (!NT_SUCCESS(status))
-    {
-        KdPrint((DRIVERNAME "WdfIoQueueRetrieveNextRequest failed with status 0x%X\n", status));
-        return;
-    }
+    if (!GetUpperUsbRequest(Context, &Request, &pUpperBuffer, &upperBufferLength)) return;
 
     pLowerBuffer = WdfMemoryGetBuffer(Buffer, NULL);
     lowerBufferLength = NumBytesTransferred;
-    pUrb = URB_FROM_IRP(WdfRequestWdmGetIrp(Request));
-    pUpperBuffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
-    upperBufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
     pHidReport = (PXINPUT_HID_INPUT_REPORT)pUpperBuffer;
 
     //
@@ -126,7 +140,7 @@ VOID XnaGuardianEvtUsbTargetPipeReadComplete(
     }
     KdPrint(("\n"));
 #endif
-    
+
     WdfRequestComplete(Request, STATUS_SUCCESS);
 }
 

@@ -133,6 +133,8 @@ XnaGuardianCreateDevice(
 
 #pragma endregion
 
+#pragma region Identify device
+
     //
     // Continue startup if loaded as XUSB/XGIP filter
     // 
@@ -173,6 +175,8 @@ XnaGuardianCreateDevice(
         return STATUS_NOT_SUPPORTED;
     }
 
+#pragma endregion
+
     //
     // Add HID USB device to its own collection
     // 
@@ -205,14 +209,17 @@ continueInit:
         return status;
     }
 
-    //
-    // Initialize USB request queues.
-    // 
-    status = UpperUsbInterruptRequestsQueueInitialize(device);
+    if (pDeviceContext->IsHidUsbDevice)
+    {
+        //
+        // Initialize USB request queues.
+        // 
+        status = UpperUsbInterruptRequestsQueueInitialize(device);
 
-    if (!NT_SUCCESS(status)) {
-        KdPrint((DRIVERNAME "UpperUsbInterruptRequestsQueueInitialize failed with status 0x%X", status));
-        return status;
+        if (!NT_SUCCESS(status)) {
+            KdPrint((DRIVERNAME "UpperUsbInterruptRequestsQueueInitialize failed with status 0x%X", status));
+            return status;
+        }
     }
 
     //

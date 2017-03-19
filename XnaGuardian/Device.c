@@ -205,6 +205,16 @@ continueInit:
     }
 
     //
+    // Initialize USB request queues.
+    // 
+    status = UpperUsbInterruptRequestsQueueInitialize(device);
+
+    if (!NT_SUCCESS(status)) {
+        KdPrint((DRIVERNAME "UpperUsbInterruptRequestsQueueInitialize failed with status 0x%X", status));
+        return status;
+    }
+
+    //
     // Add this device to the FilterDevice collection.
     //
     WdfWaitLockAcquire(FilterDeviceCollectionLock, NULL);

@@ -25,5 +25,4 @@ SOFTWARE.
 
 #pragma once
 
-EVT_WDF_REQUEST_COMPLETION_ROUTINE UpperUsbBulkOrInterruptTransferCompleted;
 EVT_WDF_USB_READER_COMPLETION_ROUTINE XnaGuardianEvtUsbTargetPipeReadComplete;

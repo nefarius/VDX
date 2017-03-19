@@ -33,47 +33,20 @@ VOID XnaGuardianEvtUsbTargetPipeReadComplete(
     _In_ WDFCONTEXT Context
 )
 {
+    PUCHAR                          pBuffer;
+    ULONG                           index;
+    PXINPUT_PAD_STATE_INTERNAL      pPad;
+    LONG                            nButtonOverrides;
+    PXINPUT_HID_INPUT_REPORT        pHidReport;
+
     UNREFERENCED_PARAMETER(Pipe);
-    UNREFERENCED_PARAMETER(Buffer);
     UNREFERENCED_PARAMETER(NumBytesTransferred);
     UNREFERENCED_PARAMETER(Context);
 
     KdPrint((DRIVERNAME "NumBytesTransferred = %d\n", NumBytesTransferred));
-}
 
-//
-// URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER completion routine.
-// 
-void UpperUsbBulkOrInterruptTransferCompleted(
-    _In_ WDFREQUEST                     Request,
-    _In_ WDFIOTARGET                    Target,
-    _In_ PWDF_REQUEST_COMPLETION_PARAMS Params,
-    _In_ WDFCONTEXT                     Context
-)
-{
-    NTSTATUS                        status;
-    PURB                            pUrb;
-    PXINPUT_PAD_STATE_INTERNAL      pPad;
-    ULONG                           index;
-    PXINPUT_HID_INPUT_REPORT        pHidReport;
-    LONG                            nButtonOverrides;
-#ifdef DBG
-    PUCHAR                          pTransferBuffer;
-    ULONG                           transferBufferLength;
-#endif
-
-    UNREFERENCED_PARAMETER(Target);
-    UNREFERENCED_PARAMETER(Params);
-
-    status = WdfRequestGetStatus(Request);
-    pUrb = URB_FROM_IRP(WdfRequestWdmGetIrp(Request));
-    pHidReport = (PXINPUT_HID_INPUT_REPORT)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
-#ifdef DBG
-    pTransferBuffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
-    transferBufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
-#endif
-
-    KdPrint((DRIVERNAME "UpperUsbBulkOrInterruptTransferCompleted called with status 0x%X\n", status));
+    pBuffer = WdfMemoryGetBuffer(Buffer, NULL);
+    pHidReport = (PXINPUT_HID_INPUT_REPORT)pBuffer;
 
     //
     // Map XInput user index to HID USB device by using device arrival order
@@ -92,7 +65,7 @@ void UpperUsbBulkOrInterruptTransferCompleted(
     // 
     if (index >= XINPUT_MAX_DEVICES)
     {
-        WdfRequestComplete(Request, status);
+        KdPrint((DRIVERNAME "Device index out of range: %d\n", index));
         return;
     }
 
@@ -117,16 +90,12 @@ void UpperUsbBulkOrInterruptTransferCompleted(
         pHidReport->RightThumbY = pPad->Gamepad.sThumbRY;
 
 #ifdef DBG
-    KdPrint((DRIVERNAME "BUFFER: "));
-    for (ULONG i = 0; i < transferBufferLength; i++)
+    KdPrint((DRIVERNAME "FILTER_BUFFER: "));
+    for (ULONG i = 0; i < NumBytesTransferred; i++)
     {
-        KdPrint(("%02X ", pTransferBuffer[i]));
+        KdPrint(("%02X ", pBuffer[i]));
     }
     KdPrint(("\n"));
 #endif
-
-    status = (status == STATUS_CANCELLED) ? STATUS_SUCCESS : status;
-
-    WdfRequestComplete(Request, status);
 }
 

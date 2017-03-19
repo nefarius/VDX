@@ -88,6 +88,32 @@ XnaGuardianQueueInitialize(
     return status;
 }
 
+NTSTATUS
+UpperUsbInterruptRequestsQueueInitialize(
+    _In_ WDFDEVICE Device
+)
+{
+    NTSTATUS                status;
+    WDF_IO_QUEUE_CONFIG     queueConfig;
+    PDEVICE_CONTEXT         pDeviceContext;
+
+    PAGED_CODE();
+
+    pDeviceContext = DeviceGetContext(Device);
+
+    // Create and assign queue for incoming interrupt transfer
+    WDF_IO_QUEUE_CONFIG_INIT(&queueConfig, WdfIoQueueDispatchManual);
+
+    status = WdfIoQueueCreate(Device, &queueConfig, WDF_NO_OBJECT_ATTRIBUTES, &pDeviceContext->UpperUsbInterruptRequests);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));
+        return status;
+    }
+
+    return status;
+}
+
 //
 // Forward everything we're not interested in.
 // 
@@ -343,18 +369,14 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
             //
             // Only manipulate input reports
             // 
-            if (IS_INTERRUPT_IN(urb))
+            if (IS_INTERRUPT_IN(urb) && pDeviceContext->IsHidUsbDevice)
             {
-                KdPrint((DRIVERNAME "Interrupt IN buflen: %d\n", urb->UrbBulkOrInterruptTransfer.TransferBufferLength));
+                status = WdfRequestForwardToIoQueue(Request, pDeviceContext->UpperUsbInterruptRequests);
 
-                WdfRequestFormatRequestUsingCurrentType(Request);
-                WdfRequestSetCompletionRoutine(Request, UpperUsbBulkOrInterruptTransferCompleted, Device);
-
-                ret = WdfRequestSend(Request, WdfDeviceGetIoTarget(Device), WDF_NO_SEND_OPTIONS);
-
-                if (ret == FALSE) {
-                    status = WdfRequestGetStatus(Request);
-                    KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
+                if (!NT_SUCCESS(status))
+                {
+                    KdPrint((DRIVERNAME "WdfRequestForwardToIoQueue failed with status 0x%X\n", status));
+                    WdfRequestComplete(Request, STATUS_UNSUCCESSFUL);
                 }
 
                 return;

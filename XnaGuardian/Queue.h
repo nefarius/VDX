@@ -40,6 +40,11 @@ XnaGuardianQueueInitialize(
     _In_ WDFDEVICE hDevice
     );
 
+NTSTATUS
+UpperUsbInterruptRequestsQueueInitialize(
+    _In_ WDFDEVICE Device
+    );
+
 //
 // Events from the IoQueue object
 //

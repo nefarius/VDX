@@ -371,6 +371,8 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
             // 
             if (IS_INTERRUPT_IN(urb) && pDeviceContext->IsHidUsbDevice)
             {
+                KdPrint((DRIVERNAME ">> >> Interrupt IN\n"));
+
                 status = WdfRequestForwardToIoQueue(Request, pDeviceContext->UpperUsbInterruptRequests);
 
                 if (!NT_SUCCESS(status))

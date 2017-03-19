@@ -108,7 +108,7 @@ XnaGuardianEvtDevicePrepareHardware(
 
         WDF_USB_CONTINUOUS_READER_CONFIG_INIT(&contReaderConfig,
             XnaGuardianEvtUsbTargetPipeReadComplete,
-            pDeviceContext, // Context
+            Device, // Context
             20); // TransferLength
                  //
                  // Reader requests are not posted to the target automatically.
@@ -182,6 +182,7 @@ NTSTATUS XnaGuardianEvtDeviceD0Exit(
     if (pDeviceContext->IsHidUsbDevice)
     {
         WdfIoTargetStop(WdfUsbTargetPipeGetIoTarget(pDeviceContext->InterruptPipe), WdfIoTargetCancelSentIo);
+        WdfIoQueuePurgeSynchronously(pDeviceContext->UpperUsbInterruptRequests);
     }
 
     return STATUS_SUCCESS;

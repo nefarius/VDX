@@ -189,6 +189,7 @@ XnaGuardianCreateDevice(
     pDeviceContext->IsHidUsbDevice = TRUE;
 
     TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "HID USB device detected, loading...");
+    KdPrint((DRIVERNAME "HID USB device detected, loading...\n"));
 
 continueInit:
 

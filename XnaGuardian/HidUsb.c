@@ -33,20 +33,37 @@ VOID XnaGuardianEvtUsbTargetPipeReadComplete(
     _In_ WDFCONTEXT Context
 )
 {
-    PUCHAR                          pBuffer;
+    NTSTATUS                        status;
+    PUCHAR                          pLowerBuffer;
     ULONG                           index;
     PXINPUT_PAD_STATE_INTERNAL      pPad;
     LONG                            nButtonOverrides;
     PXINPUT_HID_INPUT_REPORT        pHidReport;
+    PDEVICE_CONTEXT                 pDeviceContext;
+    WDFREQUEST                      Request;
+    PURB                            pUrb;
+    PUCHAR                          pUpperBuffer;
+    ULONG                           upperBufferLength;
+    size_t                          lowerBufferLength;
 
     UNREFERENCED_PARAMETER(Pipe);
-    UNREFERENCED_PARAMETER(NumBytesTransferred);
-    UNREFERENCED_PARAMETER(Context);
 
-    KdPrint((DRIVERNAME "NumBytesTransferred = %d\n", NumBytesTransferred));
+    pDeviceContext = DeviceGetContext(Context);
 
-    pBuffer = WdfMemoryGetBuffer(Buffer, NULL);
-    pHidReport = (PXINPUT_HID_INPUT_REPORT)pBuffer;
+    status = WdfIoQueueRetrieveNextRequest(pDeviceContext->UpperUsbInterruptRequests, &Request);
+
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfIoQueueRetrieveNextRequest failed with status 0x%X\n", status));
+        return;
+    }
+
+    pLowerBuffer = WdfMemoryGetBuffer(Buffer, NULL);
+    lowerBufferLength = NumBytesTransferred;
+    pUrb = URB_FROM_IRP(WdfRequestWdmGetIrp(Request));
+    pUpperBuffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
+    upperBufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
+    pHidReport = (PXINPUT_HID_INPUT_REPORT)pUpperBuffer;
 
     //
     // Map XInput user index to HID USB device by using device arrival order
@@ -60,14 +77,19 @@ VOID XnaGuardianEvtUsbTargetPipeReadComplete(
         }
     }
 
+    RtlCopyBytes(pUpperBuffer, pLowerBuffer, upperBufferLength);
+
     //
     // Validate range
     // 
     if (index >= XINPUT_MAX_DEVICES)
     {
         KdPrint((DRIVERNAME "Device index out of range: %d\n", index));
+        WdfRequestComplete(Request, STATUS_SUCCESS);
         return;
     }
+
+    KdPrint((DRIVERNAME "Pad index %d\n", index));
 
     pPad = &PadStates[index];
 
@@ -90,12 +112,21 @@ VOID XnaGuardianEvtUsbTargetPipeReadComplete(
         pHidReport->RightThumbY = pPad->Gamepad.sThumbRY;
 
 #ifdef DBG
-    KdPrint((DRIVERNAME "FILTER_BUFFER: "));
-    for (ULONG i = 0; i < NumBytesTransferred; i++)
+    KdPrint((DRIVERNAME "BUFFER_UP: "));
+    for (ULONG i = 0; i < upperBufferLength; i++)
     {
-        KdPrint(("%02X ", pBuffer[i]));
+        KdPrint(("%02X ", pUpperBuffer[i]));
+    }
+    KdPrint(("\n"));
+
+    KdPrint((DRIVERNAME "BUFFER_LO: "));
+    for (ULONG i = 0; i < lowerBufferLength; i++)
+    {
+        KdPrint(("%02X ", pLowerBuffer[i]));
     }
     KdPrint(("\n"));
 #endif
+    
+    WdfRequestComplete(Request, STATUS_SUCCESS);
 }
 

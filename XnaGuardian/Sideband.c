@@ -221,6 +221,12 @@ VOID XnaGuardianSidebandIoDeviceControl(
     PXINPUT_EXT_OVERRIDE_GAMEPAD    pOverride;
     PXINPUT_EXT_PEEK_GAMEPAD        pPeek;
     UCHAR                           userIndex;
+    PXINPUT_PAD_STATE_INTERNAL      pPad;
+    WDFREQUEST                      UsbRequest;
+    PUCHAR                          pUpperBuffer;
+    ULONG                           upperBufferLength;
+    BOOLEAN                         ret;
+    PXINPUT_HID_INPUT_REPORT        pHidReport;
 
     KdPrint((DRIVERNAME "XnaGuardianSidebandIoDeviceControl called with code 0x%X\n", IoControlCode));
 
@@ -313,8 +319,36 @@ VOID XnaGuardianSidebandIoDeviceControl(
         //
         // Set pad overrides
         // 
-        PadStates[pOverride->UserIndex].Overrides = pOverride->Overrides;
-        PadStates[pOverride->UserIndex].Gamepad = pOverride->Gamepad;
+        pPad = &PadStates[pOverride->UserIndex];
+        pPad->Overrides = pOverride->Overrides;
+        pPad->Gamepad = pOverride->Gamepad;
+
+        ret = GetUpperUsbRequest(
+            WdfCollectionGetItem(HidUsbDeviceCollection, pOverride->UserIndex),
+            &UsbRequest,
+            &pUpperBuffer,
+            &upperBufferLength);
+
+        if (ret)
+        {
+            KdPrint((DRIVERNAME "GetUpperUsbRequest succeeded\n"));
+
+            pHidReport = (PXINPUT_HID_INPUT_REPORT)pUpperBuffer;
+
+            // Left Thumb
+            if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_X)
+                pHidReport->LeftThumbX = pPad->Gamepad.sThumbLX;
+            if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_Y)
+                pHidReport->LeftThumbY = pPad->Gamepad.sThumbLY;
+
+            // Right Thumb
+            if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_X)
+                pHidReport->RightThumbX = pPad->Gamepad.sThumbRX;
+            if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y)
+                pHidReport->RightThumbY = pPad->Gamepad.sThumbRY;
+
+            WdfRequestComplete(UsbRequest, STATUS_SUCCESS);
+        }
 
         status = STATUS_SUCCESS;
 

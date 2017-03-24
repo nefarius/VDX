@@ -26,6 +26,11 @@ SOFTWARE.
 #include "Driver.h"
 
 
+//
+// Gets the next available upper USB request - if any - and
+// returns the associated request, a pointer to the transfer 
+// buffer and a pointer to the transfer buffer length.
+// 
 BOOLEAN GetUpperUsbRequest(
     WDFDEVICE Device,
     WDFREQUEST *PendingRequest,
@@ -48,8 +53,8 @@ BOOLEAN GetUpperUsbRequest(
     }
 
     pUrb = URB_FROM_IRP(WdfRequestWdmGetIrp(*PendingRequest));
-    *Buffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
-    *BufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
+    if (Buffer) *Buffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
+    if (BufferLength) *BufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
 
     return TRUE;
 }

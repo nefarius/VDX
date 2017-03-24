@@ -33,6 +33,7 @@ WDFDEVICE       ControlDevice = NULL;
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, FilterCreateControlDevice)
 #pragma alloc_text (PAGE, FilterDeleteControlDevice)
+#pragma alloc_text (PAGE, XnaGuardianSidebandFileCleanup)
 #endif
 
 //
@@ -44,13 +45,14 @@ FilterCreateControlDevice(
     WDFDEVICE Device
 )
 {
-    PWDFDEVICE_INIT             pInit = NULL;
+    PWDFDEVICE_INIT             pInit;
     WDFDEVICE                   controlDevice = NULL;
     WDF_OBJECT_ATTRIBUTES       controlAttributes;
     WDF_IO_QUEUE_CONFIG         ioQueueConfig;
     BOOLEAN                     bCreate = FALSE;
     NTSTATUS                    status;
     WDFQUEUE                    queue;
+    WDF_FILEOBJECT_CONFIG       foCfg;
     DECLARE_CONST_UNICODE_STRING(ntDeviceName, NTDEVICE_NAME_STRING);
     DECLARE_CONST_UNICODE_STRING(symbolicLinkName, SYMBOLIC_NAME_STRING);
 
@@ -105,6 +107,9 @@ FilterCreateControlDevice(
         goto Error;
     }
 
+    WDF_FILEOBJECT_CONFIG_INIT(&foCfg, NULL, NULL, XnaGuardianSidebandFileCleanup);
+    WdfDeviceInitSetFileObjectConfig(pInit, &foCfg, WDF_NO_OBJECT_ATTRIBUTES);
+
     //
     // Specify the size of device context
     //
@@ -117,7 +122,7 @@ FilterCreateControlDevice(
     }
 
     //
-    // Create a symbolic link for the control object so that usermode can open
+    // Create a symbolic link for the control object so that user-mode can open
     // the device.
     //
 
@@ -415,4 +420,22 @@ VOID XnaGuardianSidebandIoDeviceControl(
     WdfRequestComplete(Request, status);
 }
 #pragma warning(pop) // enable 28118 again
+
+_Use_decl_annotations_
+VOID
+XnaGuardianSidebandFileCleanup(
+    WDFFILEOBJECT  FileObject
+)
+{
+    ULONG   index;
+
+    UNREFERENCED_PARAMETER(FileObject);
+
+    KdPrint((DRIVERNAME "XnaGuardianSidebandFileCleanup called\n"));
+
+    for (index = 0; index < XINPUT_MAX_DEVICES; index++)
+    {
+        RtlZeroBytes(&PadStates[index], sizeof(XINPUT_PAD_STATE_INTERNAL));
+    }
+}
 

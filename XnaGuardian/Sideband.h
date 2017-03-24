@@ -31,6 +31,7 @@ SOFTWARE.
 #define SYMBOLIC_NAME_STRING        L"\\DosDevices\\XnaGuardian"
 
 EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL XnaGuardianSidebandIoDeviceControl;
+EVT_WDF_FILE_CLEANUP XnaGuardianSidebandFileCleanup;
 
 NTSTATUS
 FilterCreateControlDevice(

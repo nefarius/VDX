@@ -27,7 +27,7 @@ SOFTWARE.
 
 EXTERN_C_START
 
-#define GAMEPAD_FROM_BUFFER(_buffer_)       ((PXINPUT_GAMEPAD_STATE)&((PUCHAR)_buffer_)[11])
+#define GAMEPAD_FROM_STATE_BUFFER(_buffer_)       ((PXINPUT_GAMEPAD_STATE)&((PUCHAR)_buffer_)[11])
 #define MAX_DEVICES_FROM_BUFFER(_buffer_)   ((ULONG)((PUCHAR)_buffer_)[2])
 #define IS_INTERRUPT_IN(_urb_)              ((_urb_->UrbBulkOrInterruptTransfer.TransferFlags & USBD_TRANSFER_DIRECTION_IN))
 

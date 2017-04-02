@@ -69,14 +69,16 @@ VOID XnaGuardianEvtUsbTargetPipeReadComplete(
     PUCHAR                          pLowerBuffer;
     ULONG                           index;
     PXINPUT_PAD_STATE_INTERNAL      pPad;
-    LONG                            nButtonOverrides;
     PXINPUT_HID_INPUT_REPORT        pHidReport;
     WDFREQUEST                      Request;
     PUCHAR                          pUpperBuffer;
     ULONG                           upperBufferLength;
     size_t                          lowerBufferLength;
+    PX360_HID_USB_INPUT_REPORT      pX360Report;
+    PXBONE_HID_USB_INPUT_REPORT     pXboneReport;
 
     UNREFERENCED_PARAMETER(Pipe);
+    UNREFERENCED_PARAMETER(pX360Report);
 
     if (!GetUpperUsbRequest(Context, &Request, &pUpperBuffer, &upperBufferLength)) return;
 
@@ -113,10 +115,10 @@ VOID XnaGuardianEvtUsbTargetPipeReadComplete(
     pPad = &PadStates[index];
 
     //
-    // Buttons
+    // Cache the values of the physical pad for use in peek call
     // 
-    nButtonOverrides = pPad->Overrides & 0xFFFF;
-    pHidReport->Buttons = (pHidReport->Buttons&~nButtonOverrides) | (pPad->Gamepad.wButtons&nButtonOverrides);
+    // TODO: fix
+    //RtlCopyBytes(&PeekPadCache[index], pGamepad, sizeof(XINPUT_GAMEPAD_STATE));
 
     // Left Thumb
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_X)
@@ -129,6 +131,22 @@ VOID XnaGuardianEvtUsbTargetPipeReadComplete(
         pHidReport->RightThumbX = pPad->Gamepad.sThumbRX;
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y)
         pHidReport->RightThumbY = pPad->Gamepad.sThumbRY;
+
+    if (upperBufferLength == XBONE_HID_USB_INPUT_REPORT_BUFFER_LENGTH)
+    {
+        KdPrint((DRIVERNAME "Report is XBONE Report\n"));
+
+        pXboneReport = (PXBONE_HID_USB_INPUT_REPORT)pUpperBuffer;
+
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_A)
+            pXboneReport->Buttons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_A) ? XBONE_HID_USB_INPUT_REPORT_BUTTON_A : 0;
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_B)
+            pXboneReport->Buttons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_B) ? XBONE_HID_USB_INPUT_REPORT_BUTTON_B : 0;
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_X)
+            pXboneReport->Buttons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_X) ? XBONE_HID_USB_INPUT_REPORT_BUTTON_X : 0;
+        if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_Y)
+            pXboneReport->Buttons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_Y) ? XBONE_HID_USB_INPUT_REPORT_BUTTON_Y : 0;
+    }
 
 #ifdef DBG
     KdPrint((DRIVERNAME "BUFFER_UP: "));

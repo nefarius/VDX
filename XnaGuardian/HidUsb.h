@@ -25,6 +25,62 @@ SOFTWARE.
 
 #pragma once
 
+#define X360_HID_USB_INPUT_REPORT_BUFFER_LENGTH     0x0E
+#define XBONE_HID_USB_INPUT_REPORT_BUFFER_LENGTH    0x11
+
+typedef struct _XINPUT_HID_INPUT_REPORT
+{
+    SHORT   LeftThumbX;
+    SHORT   LeftThumbY;
+    SHORT   RightThumbX;
+    SHORT   RightThumbY;
+    SHORT   ZAxis;
+    USHORT  Buttons;
+
+} XINPUT_HID_INPUT_REPORT, *PXINPUT_HID_INPUT_REPORT;
+
+typedef struct _X360_HID_USB_INPUT_REPORT
+{
+    SHORT   LeftThumbX;
+    SHORT   LeftThumbY;
+    SHORT   RightThumbX;
+    SHORT   RightThumbY;
+    UCHAR   ZAxisEngaged;   // 0x00 default, 0x80 engaged
+    UCHAR   ZAxis;          // 0x80 default
+    USHORT  Buttons;
+
+} X360_HID_USB_INPUT_REPORT, *PX360_HID_USB_INPUT_REPORT;
+
+typedef struct _XBONE_HID_USB_INPUT_REPORT
+{
+    SHORT   LeftThumbX;
+    SHORT   LeftThumbY;
+    SHORT   RightThumbX;
+    SHORT   RightThumbY;
+    UCHAR   LeftTriggerValue;
+    UCHAR   LeftTriggerLevel;
+    UCHAR   RightTriggerValue;
+    UCHAR   RightTriggerLevel;
+    USHORT  Buttons;
+    UCHAR   Dpad;
+
+} XBONE_HID_USB_INPUT_REPORT, *PXBONE_HID_USB_INPUT_REPORT;
+
+typedef enum _XBONE_HID_USB_INPUT_REPORT_BUTTONS
+{
+    XBONE_HID_USB_INPUT_REPORT_BUTTON_A                 = 0x0100,
+    XBONE_HID_USB_INPUT_REPORT_BUTTON_B                 = 0x0200,
+    XBONE_HID_USB_INPUT_REPORT_BUTTON_X                 = 0x0400,
+    XBONE_HID_USB_INPUT_REPORT_BUTTON_Y                 = 0x0800,
+    XBONE_HID_USB_INPUT_REPORT_BUTTON_LEFT_SHOULDER     = 0x1000,
+    XBONE_HID_USB_INPUT_REPORT_BUTTON_RIGHT_SHOULDER    = 0x2000,
+    XBONE_HID_USB_INPUT_REPORT_BUTTON_START             = 0x4000,
+    XBONE_HID_USB_INPUT_REPORT_BUTTON_BACK              = 0x8000,
+    XBONE_HID_USB_INPUT_REPORT_BUTTON_LEFT_THUMB        = 0x0001,
+    XBONE_HID_USB_INPUT_REPORT_BUTTON_RIGHT_THUMB       = 0x0002
+
+} XBONE_HID_USB_INPUT_REPORT_BUTTONS, *PXBONE_HID_USB_INPUT_REPORT_BUTTONS;
+
 EVT_WDF_USB_READER_COMPLETION_ROUTINE XnaGuardianEvtUsbTargetPipeReadComplete;
 
 BOOLEAN GetUpperUsbRequest(

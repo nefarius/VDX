@@ -519,7 +519,7 @@ void XInputGetGamepadStateCompleted(
         //
         // Extract XINPUT_GAMEPAD structure from buffer
         // 
-        pGamepad = GAMEPAD_FROM_BUFFER(buffer);
+        pGamepad = GAMEPAD_FROM_STATE_BUFFER(buffer);
 
         //
         // Cache the values of the physical pad for use in peek call

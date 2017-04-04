@@ -27,6 +27,7 @@ SOFTWARE.
 
 #include "public.h"
 #include "XInputOverrides.h"
+#include "XnaGuardianShared.h"
 
 EXTERN_C_START
 
@@ -39,7 +40,6 @@ EXTERN_C_START
 
 typedef struct _XINPUT_PAD_STATE_INTERNAL
 {
-    BOOLEAN                     IsGetStateForbidden;
     XINPUT_GAMEPAD_OVERRIDES    Overrides;
     XINPUT_GAMEPAD_STATE        Gamepad;
 

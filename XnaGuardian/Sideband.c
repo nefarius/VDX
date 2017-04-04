@@ -222,7 +222,6 @@ VOID XnaGuardianSidebandIoDeviceControl(
     NTSTATUS                        status = STATUS_INVALID_PARAMETER;
     size_t                          buflen;
     PVOID                           pBuffer;
-    PXINPUT_EXT_HIDE_GAMEPAD        pHidePad;
     PXINPUT_EXT_OVERRIDE_GAMEPAD    pOverride;
     PXINPUT_EXT_PEEK_GAMEPAD        pPeek;
     UCHAR                           userIndex;
@@ -243,51 +242,6 @@ VOID XnaGuardianSidebandIoDeviceControl(
 
     switch (IoControlCode)
     {
-#pragma region IOCTL_XINPUT_EXT_HIDE_GAMEPAD
-    case IOCTL_XINPUT_EXT_HIDE_GAMEPAD:
-
-        KdPrint((DRIVERNAME ">> IOCTL_XINPUT_EXT_HIDE_GAMEPAD\n"));
-
-        // 
-        // Retrieve input buffer
-        // 
-        status = WdfRequestRetrieveInputBuffer(Request, sizeof(XINPUT_EXT_HIDE_GAMEPAD), &pBuffer, &buflen);
-        if (!NT_SUCCESS(status) || buflen < sizeof(XINPUT_EXT_HIDE_GAMEPAD))
-        {
-            KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed with status 0x%X\n", status));
-            break;
-        }
-
-        pHidePad = (PXINPUT_EXT_HIDE_GAMEPAD)pBuffer;
-
-        //
-        // Validate padding
-        // 
-        if (pHidePad->Size != sizeof(XINPUT_EXT_HIDE_GAMEPAD))
-        {
-            status = STATUS_INVALID_PARAMETER;
-            break;
-        }
-
-        // 
-        // Validate range
-        // 
-        if (!VALID_USER_INDEX(pHidePad->UserIndex))
-        {
-            status = STATUS_INVALID_PARAMETER;
-            break;
-        }
-
-        //
-        // Set pad state
-        // 
-        PadStates[pHidePad->UserIndex].IsGetStateForbidden = pHidePad->Hidden;
-
-        status = STATUS_SUCCESS;
-
-        break;
-#pragma endregion
-
 #pragma region IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE
     case IOCTL_XINPUT_EXT_OVERRIDE_GAMEPAD_STATE:
 

@@ -30,7 +30,6 @@ DEFINE_GUID(XUSB_INTERFACE_CLASS_GUID,
 
 #pragma once
 
-#include "XnaGuardianShared.h"
 
 //
 // Constants for gamepad buttons
@@ -49,28 +48,4 @@ DEFINE_GUID(XUSB_INTERFACE_CLASS_GUID,
 #define XINPUT_GAMEPAD_B                0x2000
 #define XINPUT_GAMEPAD_X                0x4000
 #define XINPUT_GAMEPAD_Y                0x8000
-
-
-typedef struct _XINPUT_EXT_HIDE_GAMEPAD
-{
-    IN ULONG Size;
-
-    IN UCHAR UserIndex;
-
-    IN BOOLEAN Hidden;
-
-} XINPUT_EXT_HIDE_GAMEPAD, *PXINPUT_EXT_HIDE_GAMEPAD;
-
-VOID FORCEINLINE XINPUT_EXT_HIDE_GAMEPAD_INIT(
-    _Out_ PXINPUT_EXT_HIDE_GAMEPAD HideGamepad,
-    _In_ UCHAR UserIndex,
-    _In_ BOOLEAN Hidden
-)
-{
-    RtlZeroMemory(HideGamepad, sizeof(XINPUT_EXT_HIDE_GAMEPAD));
-
-    HideGamepad->Size = sizeof(XINPUT_EXT_HIDE_GAMEPAD);
-    HideGamepad->UserIndex = UserIndex;
-    HideGamepad->Hidden = Hidden;
-}
 

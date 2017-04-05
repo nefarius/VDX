@@ -297,29 +297,11 @@ VOID XnaGuardianSidebandIoDeviceControl(
             if (upperBufferLength == XBONE_HID_USB_INPUT_REPORT_BUFFER_LENGTH)
             {
                 KdPrint((DRIVERNAME "Report is XBONE Report\n"));
+                KdPrint((DRIVERNAME "BUTTON_OVERRIDES: 0x%X\n", pPad->Overrides));
 
                 pXboneReport = (PXBONE_HID_USB_INPUT_REPORT)pUpperBuffer;
 
-                // Left Thumb
-                if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_X)
-                    pXboneReport->LeftThumbX = pPad->Gamepad.sThumbLX;
-                if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_Y)
-                    pXboneReport->LeftThumbY = pPad->Gamepad.sThumbLY;
-
-                // Right Thumb
-                if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_X)
-                    pXboneReport->RightThumbX = pPad->Gamepad.sThumbRX;
-                if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y)
-                    pXboneReport->RightThumbY = pPad->Gamepad.sThumbRY;
-
-                if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_A)
-                    pXboneReport->Buttons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_A) ? XBONE_HID_USB_INPUT_REPORT_BUTTON_A : 0;
-                if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_B)
-                    pXboneReport->Buttons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_B) ? XBONE_HID_USB_INPUT_REPORT_BUTTON_B : 0;
-                if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_X)
-                    pXboneReport->Buttons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_X) ? XBONE_HID_USB_INPUT_REPORT_BUTTON_X : 0;
-                if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_Y)
-                    pXboneReport->Buttons |= (pPad->Gamepad.wButtons & XINPUT_GAMEPAD_Y) ? XBONE_HID_USB_INPUT_REPORT_BUTTON_Y : 0;
+                XINPUT_GAMEPAD_TO_XBONE_HID_USB_INPUT_REPORT(pPad, pXboneReport);
             }
 
             WdfRequestComplete(UsbRequest, STATUS_SUCCESS);

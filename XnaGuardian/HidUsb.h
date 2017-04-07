@@ -27,6 +27,7 @@ SOFTWARE.
 
 #define X360_HID_USB_INPUT_REPORT_BUFFER_LENGTH     0x0E
 #define XBONE_HID_USB_INPUT_REPORT_BUFFER_LENGTH    0x11
+#define XBONE_HID_USB_THUMB_AXIS_OFFSET             0x87B2
 
 
 typedef struct _X360_HID_USB_INPUT_REPORT
@@ -97,15 +98,15 @@ VOID FORCEINLINE XINPUT_GAMEPAD_TO_XBONE_HID_USB_INPUT_REPORT(
 {
     // Left Thumb Axes
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_X)
-        pXboneReport->LeftThumbX = pPad->Gamepad.sThumbLX;
+        pXboneReport->LeftThumbX = pPad->Gamepad.sThumbLX + XBONE_HID_USB_THUMB_AXIS_OFFSET;
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_Y)
-        pXboneReport->LeftThumbY = pPad->Gamepad.sThumbLY;
+        pXboneReport->LeftThumbY = pPad->Gamepad.sThumbLY + XBONE_HID_USB_THUMB_AXIS_OFFSET;
 
     // Right Thumb Axes
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_X)
-        pXboneReport->RightThumbX = pPad->Gamepad.sThumbRX;
+        pXboneReport->RightThumbX = pPad->Gamepad.sThumbRX + XBONE_HID_USB_THUMB_AXIS_OFFSET;
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y)
-        pXboneReport->RightThumbY = pPad->Gamepad.sThumbRY;
+        pXboneReport->RightThumbY = pPad->Gamepad.sThumbRY + XBONE_HID_USB_THUMB_AXIS_OFFSET;
 
     // A
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_A)

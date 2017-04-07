@@ -142,6 +142,7 @@ XnaGuardianCreateDevice(
         || kmwcsstr(pDeviceContext->ClassName, L"XboxComposite"))
     {
         TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "XUSB/XGIP device detected, loading...");
+        KdPrint((DRIVERNAME, "XUSB/XGIP device detected, loading..."));
         pDeviceContext->IsXnaDevice = TRUE;
         goto continueInit;
     }

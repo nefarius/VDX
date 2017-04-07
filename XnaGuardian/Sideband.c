@@ -301,7 +301,25 @@ VOID XnaGuardianSidebandIoDeviceControl(
 
                 pXboneReport = (PXBONE_HID_USB_INPUT_REPORT)pUpperBuffer;
 
+#ifdef DBG
+                KdPrint((DRIVERNAME "SIDEBAND_BUFFER_BEFORE: "));
+                for (ULONG i = 0; i < upperBufferLength; i++)
+                {
+                    KdPrint(("%02X ", pUpperBuffer[i]));
+                }
+                KdPrint(("\n"));
+#endif
+
                 XINPUT_GAMEPAD_TO_XBONE_HID_USB_INPUT_REPORT(pPad, pXboneReport);
+
+#ifdef DBG
+                KdPrint((DRIVERNAME "SIDEBAND_BUFFER_AFTER: "));
+                for (ULONG i = 0; i < upperBufferLength; i++)
+                {
+                    KdPrint(("%02X ", pUpperBuffer[i]));
+                }
+                KdPrint(("\n"));
+#endif
             }
 
             WdfRequestComplete(UsbRequest, STATUS_SUCCESS);

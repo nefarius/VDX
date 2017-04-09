@@ -49,6 +49,8 @@ XnaGuardianQueueInitialize(
 
     PAGED_CODE();
 
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Entry");
+
     //
     // Configure a default queue so that requests that are not
     // configure-forwarded using WdfDeviceConfigureRequestDispatching to goto
@@ -81,9 +83,11 @@ XnaGuardianQueueInitialize(
 
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("WdfIoQueueCreate failed with status 0x%X\n", status));
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_QUEUE, "WdfIoQueueCreate failed with status %!STATUS!", status);
         return status;
     }
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Exit");
 
     return status;
 }
@@ -99,6 +103,8 @@ UpperUsbInterruptRequestsQueueInitialize(
 
     PAGED_CODE();
 
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Entry");
+
     pDeviceContext = DeviceGetContext(Device);
 
     // Create and assign queue for incoming interrupt transfer
@@ -107,9 +113,11 @@ UpperUsbInterruptRequestsQueueInitialize(
     status = WdfIoQueueCreate(Device, &queueConfig, WDF_NO_OBJECT_ATTRIBUTES, &pDeviceContext->UpperUsbInterruptRequests);
     if (!NT_SUCCESS(status))
     {
-        KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_QUEUE, "WdfIoQueueCreate failed with status %!STATUS!", status);
         return status;
     }
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Exit");
 
     return status;
 }
@@ -126,7 +134,7 @@ VOID XnaGuardianEvtIoDefault(
     NTSTATUS                    status;
     BOOLEAN                     ret;
 
-    KdPrint((DRIVERNAME "XnaGuardianEvtIoDefault called\n"));
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Entry");
 
     WDF_REQUEST_SEND_OPTIONS_INIT(&options,
         WDF_REQUEST_SEND_OPTION_SEND_AND_FORGET);
@@ -136,9 +144,11 @@ VOID XnaGuardianEvtIoDefault(
     if (ret == FALSE)
     {
         status = WdfRequestGetStatus(Request);
-        KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_QUEUE, "WdfRequestSend failed with status %!STATUS!", status);
         WdfRequestComplete(Request, status);
     }
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Exit");
 }
 
 //
@@ -162,6 +172,7 @@ VOID XnaGuardianEvtIoDeviceControl(
     WDF_OBJECT_ATTRIBUTES           requestAttribs;
     PXINPUT_PAD_IDENTIFIER_CONTEXT  pXInputContext = NULL;
 
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Entry");
     KdPrint((DRIVERNAME "XnaGuardianEvtIoDeviceControl called with code 0x%08X\n", IoControlCode));
 
     UNREFERENCED_PARAMETER(OutputBufferLength);
@@ -318,9 +329,11 @@ VOID XnaGuardianEvtIoDeviceControl(
     if (ret == FALSE)
     {
         status = WdfRequestGetStatus(Request);
-        KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_QUEUE, "WdfRequestSend failed with status %!STATUS!", status);
         WdfRequestComplete(Request, status);
     }
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Exit");
 }
 
 //
@@ -342,6 +355,7 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
     PURB                            urb;
     PDEVICE_CONTEXT                 pDeviceContext;
 
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Entry");
     KdPrint((DRIVERNAME "XnaGuardianEvtIoInternalDeviceControl called with code 0x%08X\n", IoControlCode));
 
     UNREFERENCED_PARAMETER(OutputBufferLength);
@@ -403,9 +417,11 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
     if (ret == FALSE)
     {
         status = WdfRequestGetStatus(Request);
-        KdPrint((DRIVERNAME "WdfRequestSend failed: 0x%x\n", status));
+        TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "WdfRequestSend failed with status %!STATUS!", status);
         WdfRequestComplete(Request, status);
     }
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Exit");
 }
 
 //
@@ -426,6 +442,8 @@ void XInputGetInformationCompleted(
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
 
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Entry");
+
     status = WdfRequestGetStatus(Request);
     pDeviceContext = DeviceGetContext(Context);
 
@@ -440,13 +458,18 @@ void XInputGetInformationCompleted(
         // on the current handle (typically either 0x01 or 0x04).
         // 
         pDeviceContext->MaxDevices = MAX_DEVICES_FROM_BUFFER(buffer);
+        TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, 
+            "pDeviceContext->MaxDevices = 0x%X", pDeviceContext->MaxDevices);
     }
     else
     {
-        KdPrint((DRIVERNAME "WdfRequestRetrieveOutputBuffer failed with status 0x%X", status));
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_QUEUE, 
+            "WdfRequestRetrieveOutputBuffer failed with status %!STATUS!", status);
     }
 
     WdfRequestComplete(Request, status);
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Exit");
 }
 
 //
@@ -471,6 +494,8 @@ void XInputGetGamepadStateCompleted(
 
     UNREFERENCED_PARAMETER(Target);
     UNREFERENCED_PARAMETER(Params);
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Entry");
 
     status = WdfRequestGetStatus(Request);
 
@@ -502,6 +527,7 @@ void XInputGetGamepadStateCompleted(
     // 
     if (!VALID_USER_INDEX(padIndex))
     {
+        TraceEvents(TRACE_LEVEL_WARNING, TRACE_QUEUE, "%!FUNC! Exit - invalid user index");
         WdfRequestComplete(Request, status);
         return;
     }
@@ -564,5 +590,7 @@ void XInputGetGamepadStateCompleted(
     // Always complete
     // 
     WdfRequestComplete(Request, status);
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Exit");
 }
 

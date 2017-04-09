@@ -24,6 +24,7 @@ SOFTWARE.
 
 
 #include "Driver.h"
+#include "power.tmh"
 
 
 #ifdef ALLOC_PRAGMA
@@ -55,7 +56,7 @@ XnaGuardianEvtDevicePrepareHardware(
 
     PAGED_CODE();
 
-    KdPrint((DRIVERNAME "XnaGuardianEvtDevicePrepareHardware called\n"));
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_POWER, "%!FUNC! Entry");
 
     pDeviceContext = DeviceGetContext(Device);
 
@@ -65,7 +66,7 @@ XnaGuardianEvtDevicePrepareHardware(
         status = WdfUsbTargetDeviceCreate(Device, WDF_NO_OBJECT_ATTRIBUTES, &pDeviceContext->UsbDevice);
         if (!NT_SUCCESS(status))
         {
-            KdPrint((DRIVERNAME "WdfUsbTargetDeviceCreate failed with status 0x%X\n", status));
+            TraceEvents(TRACE_LEVEL_ERROR, TRACE_POWER, "WdfUsbTargetDeviceCreate failed with status %!STATUS!", status);
             return status;
         }
 
@@ -75,7 +76,7 @@ XnaGuardianEvtDevicePrepareHardware(
             WDF_NO_OBJECT_ATTRIBUTES,
             &configParams);
         if (!NT_SUCCESS(status)) {
-            KdPrint((DRIVERNAME "WdfUsbTargetDeviceSelectConfig failed with status 0x%X\n", status));
+            TraceEvents(TRACE_LEVEL_ERROR, TRACE_POWER, "WdfUsbTargetDeviceSelectConfig failed with status %!STATUS!", status);
             return status;
         }
 
@@ -121,10 +122,12 @@ XnaGuardianEvtDevicePrepareHardware(
             &contReaderConfig);
 
         if (!NT_SUCCESS(status)) {
-            KdPrint((DRIVERNAME "WdfUsbTargetPipeConfigContinuousReader failed with status %x\n", status));
+            TraceEvents(TRACE_LEVEL_ERROR, TRACE_POWER, "WdfUsbTargetPipeConfigContinuousReader failed with %!STATUS!", status);
             return status;
         }
     }
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_POWER, "%!FUNC! Exit");
 
     return status;
 }
@@ -144,7 +147,7 @@ NTSTATUS XnaGuardianEvtDeviceD0Entry(
 
     PAGED_CODE();
 
-    KdPrint((DRIVERNAME "XnaGuardianEvtDeviceD0Entry called\n"));
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_POWER, "%!FUNC! Entry");
 
     pDeviceContext = DeviceGetContext(Device);
 
@@ -156,9 +159,11 @@ NTSTATUS XnaGuardianEvtDeviceD0Entry(
         //
         status = WdfIoTargetStart(WdfUsbTargetPipeGetIoTarget(pDeviceContext->InterruptPipe));
         if (!NT_SUCCESS(status)) {
-            KdPrint((DRIVERNAME "Failed to start interrupt pipe: 0x%X\n", status));
+            TraceEvents(TRACE_LEVEL_ERROR, TRACE_POWER, "Failed to start interrupt pipe: %!STATUS!", status);
         }
     }
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_POWER, "%!FUNC! Exit");
 
     return status;
 }
@@ -177,6 +182,8 @@ NTSTATUS XnaGuardianEvtDeviceD0Exit(
 
     PAGED_CODE();
 
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_POWER, "%!FUNC! Entry");
+
     pDeviceContext = DeviceGetContext(Device);
 
     if (pDeviceContext->IsHidUsbDevice)
@@ -184,6 +191,8 @@ NTSTATUS XnaGuardianEvtDeviceD0Exit(
         WdfIoTargetStop(WdfUsbTargetPipeGetIoTarget(pDeviceContext->InterruptPipe), WdfIoTargetCancelSentIo);
         WdfIoQueuePurgeSynchronously(pDeviceContext->UpperUsbInterruptRequests);
     }
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_POWER, "%!FUNC! Exit");
 
     return STATUS_SUCCESS;
 }

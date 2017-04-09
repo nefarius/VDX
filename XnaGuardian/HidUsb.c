@@ -24,6 +24,7 @@ SOFTWARE.
 
 
 #include "Driver.h"
+#include "hidusb.tmh"
 
 
 //
@@ -42,25 +43,37 @@ BOOLEAN GetUpperUsbRequest(
     PDEVICE_CONTEXT     pDeviceContext;
     PURB                pUrb;
 
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_HIDUSB, "%!FUNC! Entry");
+
     if (!Device)
+    {
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_HIDUSB, 
+            "%!FUNC! Exit - invalid device");
         return FALSE;
+    }
 
     pDeviceContext = DeviceGetContext(Device);
 
     if (!pDeviceContext)
+    {
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_HIDUSB,
+            "%!FUNC! Exit - invalid device context");
         return FALSE;
+    }
 
     status = WdfIoQueueRetrieveNextRequest(pDeviceContext->UpperUsbInterruptRequests, PendingRequest);
 
     if (!NT_SUCCESS(status))
     {
-        KdPrint((DRIVERNAME "WdfIoQueueRetrieveNextRequest failed with status 0x%X\n", status));
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_HIDUSB, "%!FUNC! Exit - WdfIoQueueRetrieveNextRequest failed with status %!STATUS!", status);
         return FALSE;
     }
 
     pUrb = URB_FROM_IRP(WdfRequestWdmGetIrp(*PendingRequest));
     if (Buffer) *Buffer = (PUCHAR)pUrb->UrbBulkOrInterruptTransfer.TransferBuffer;
     if (BufferLength) *BufferLength = pUrb->UrbBulkOrInterruptTransfer.TransferBufferLength;
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_HIDUSB, "%!FUNC! Exit");
 
     return TRUE;
 }
@@ -84,6 +97,8 @@ VOID XnaGuardianEvtUsbTargetPipeReadComplete(
 
     UNREFERENCED_PARAMETER(Pipe);
     UNREFERENCED_PARAMETER(pX360Report);
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_HIDUSB, "%!FUNC! Entry");
 
     if (!GetUpperUsbRequest(Context, &Request, &pUpperBuffer, &upperBufferLength)) return;
 
@@ -109,12 +124,12 @@ VOID XnaGuardianEvtUsbTargetPipeReadComplete(
     // 
     if (index >= XINPUT_MAX_DEVICES)
     {
-        KdPrint((DRIVERNAME "Device index out of range: %d\n", index));
+        TraceEvents(TRACE_LEVEL_WARNING, TRACE_HIDUSB, "%!FUNC! Exit - Device index out of range: %d", index);
         WdfRequestComplete(Request, STATUS_SUCCESS);
         return;
     }
 
-    KdPrint((DRIVERNAME "Pad index %d\n", index));
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_HIDUSB, "Pad index %d", index);
 
     pPad = &PadStates[index];
 
@@ -126,7 +141,7 @@ VOID XnaGuardianEvtUsbTargetPipeReadComplete(
 
     if (upperBufferLength == XBONE_HID_USB_INPUT_REPORT_BUFFER_LENGTH)
     {
-        KdPrint((DRIVERNAME "Report is XBONE Report\n"));
+        TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_HIDUSB, "Report is XBONE Report");
         KdPrint((DRIVERNAME "BUTTON_OVERRIDES: 0x%X\n", pPad->Gamepad.wButtons));
 
         pXboneReport = (PXBONE_HID_USB_INPUT_REPORT)pUpperBuffer;
@@ -151,5 +166,7 @@ VOID XnaGuardianEvtUsbTargetPipeReadComplete(
 #endif
 
     WdfRequestComplete(Request, STATUS_SUCCESS);
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_HIDUSB, "%!FUNC! Exit");
 }
 

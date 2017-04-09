@@ -48,7 +48,7 @@ DriverEntry(
     //
     WPP_INIT_TRACING(DriverObject, RegistryPath);
 
-    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "Loading XnaGuardian [built: %s %s]\n", __DATE__, __TIME__);
+    //TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "Loading XnaGuardian [built: %s %s]\n", __DATE__, __TIME__);
 
     //
     // Register a cleanup callback so that we can call WPP_CLEANUP when

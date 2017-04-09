@@ -43,12 +43,12 @@ DriverEntry(
     NTSTATUS status;
     WDF_OBJECT_ATTRIBUTES attributes;
 
-    KdPrint((DRIVERNAME "Loading XnaGuardian [built: %s %s]\n", __DATE__, __TIME__));
-
     //
     // Initialize WPP Tracing
     //
     WPP_INIT_TRACING(DriverObject, RegistryPath);
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "Loading XnaGuardian [built: %s %s]\n", __DATE__, __TIME__);
 
     //
     // Register a cleanup callback so that we can call WPP_CLEANUP when
@@ -69,7 +69,7 @@ DriverEntry(
     );
 
     if (!NT_SUCCESS(status)) {
-        KdPrint((DRIVERNAME "WdfDriverCreate failed 0x%X", status));
+        TraceEvents(TRACE_LEVEL_FATAL, TRACE_DRIVER, "WdfDriverCreate failed with status %!STATUS!", status);
         WPP_CLEANUP(DriverObject);
         return status;
     }
@@ -78,7 +78,8 @@ DriverEntry(
         &FilterDeviceCollection);
     if (!NT_SUCCESS(status))
     {
-        KdPrint((DRIVERNAME "WdfCollectionCreate failed with status 0x%x\n", status));
+        TraceEvents(TRACE_LEVEL_FATAL, TRACE_DRIVER, "WdfCollectionCreate failed with status %!STATUS!", status);
+        WPP_CLEANUP(DriverObject);
         return status;
     }
 
@@ -86,7 +87,8 @@ DriverEntry(
         &HidUsbDeviceCollection);
     if (!NT_SUCCESS(status))
     {
-        KdPrint((DRIVERNAME "WdfCollectionCreate failed with status 0x%x\n", status));
+        TraceEvents(TRACE_LEVEL_FATAL, TRACE_DRIVER, "WdfCollectionCreate failed with status %!STATUS!", status);
+        WPP_CLEANUP(DriverObject);
         return status;
     }
 
@@ -98,7 +100,8 @@ DriverEntry(
         &FilterDeviceCollectionLock);
     if (!NT_SUCCESS(status))
     {
-        KdPrint((DRIVERNAME "WdfWaitLockCreate failed with status 0x%x\n", status));
+        TraceEvents(TRACE_LEVEL_FATAL, TRACE_DRIVER, "WdfWaitLockCreate failed with status %!STATUS!", status);
+        WPP_CLEANUP(DriverObject);
         return status;
     }
 
@@ -106,11 +109,12 @@ DriverEntry(
         &HidUsbDeviceCollectionLock);
     if (!NT_SUCCESS(status))
     {
-        KdPrint((DRIVERNAME "WdfWaitLockCreate failed with status 0x%x\n", status));
+        TraceEvents(TRACE_LEVEL_FATAL, TRACE_DRIVER, "WdfWaitLockCreate failed with status %!STATUS!", status);
+        WPP_CLEANUP(DriverObject);
         return status;
     }
 
-    KdPrint((DRIVERNAME "XnaGuardian loaded: 0x%X\n", status));
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "XnaGuardian loaded");
 
     return status;
 }

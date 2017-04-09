@@ -82,7 +82,7 @@ XnaGuardianCreateDevice(
     // 
     if (!NT_SUCCESS(status))
     {
-        KdPrint((DRIVERNAME "WdfDeviceCreate failed with status 0x%X\n", status));
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_DEVICE, "WdfDeviceCreate failed with status %!STATUS!", status);
         return status;
     }
 
@@ -106,12 +106,12 @@ XnaGuardianCreateDevice(
     );
 
     if (!NT_SUCCESS(status)) {
-        KdPrint((DRIVERNAME "WdfDeviceAllocAndQueryProperty failed with status 0x%X", status));
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_DEVICE, "WdfDeviceAllocAndQueryProperty failed with status %!STATUS!", status);
         return status;
     }
 
     pDeviceContext->HardwareId = WdfMemoryGetBuffer(pDeviceContext->MemoryHardwareId, NULL);
-    KdPrint((DRIVERNAME "HardwareID for device 0x%X: %ls\n", device, pDeviceContext->HardwareId));
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DEVICE, "HardwareID: %ls", pDeviceContext->HardwareId);
 
     //
     // Query for current device's ClassName
@@ -124,12 +124,13 @@ XnaGuardianCreateDevice(
     );
 
     if (!NT_SUCCESS(status)) {
-        KdPrint((DRIVERNAME "WdfDeviceAllocAndQueryProperty failed with status 0x%X", status));
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_DEVICE, "WdfDeviceAllocAndQueryProperty failed with status %!STATUS!", status);
         return status;
     }
 
     pDeviceContext->ClassName = WdfMemoryGetBuffer(pDeviceContext->MemoryClassName, NULL);
     KdPrint((DRIVERNAME "ClassName for device 0x%X: %ls\n", device, pDeviceContext->ClassName));
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DEVICE, "ClassName: %ls", pDeviceContext->ClassName);
 
 #pragma endregion
 
@@ -142,7 +143,6 @@ XnaGuardianCreateDevice(
         || kmwcsstr(pDeviceContext->ClassName, L"XboxComposite"))
     {
         TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "XUSB/XGIP device detected, loading...");
-        KdPrint((DRIVERNAME, "XUSB/XGIP device detected, loading..."));
         pDeviceContext->IsXnaDevice = TRUE;
         goto continueInit;
     }
@@ -152,7 +152,7 @@ XnaGuardianCreateDevice(
     // 
     if (!kmwcsstr(pDeviceContext->ClassName, L"HIDClass"))
     {
-        KdPrint((DRIVERNAME "Unsupported device class detected, unloading...\n"));
+        TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "Unsupported device class detected, unloading...");
         return STATUS_NOT_SUPPORTED;
     }
 
@@ -161,7 +161,7 @@ XnaGuardianCreateDevice(
     // 
     if (!kmwcsstr(pDeviceContext->HardwareId, L"USB\\"))
     {
-        KdPrint((DRIVERNAME "Topmost HID device detected, unloading...\n"));
+        TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "Topmost HID device detected, unloading...");
         return STATUS_NOT_SUPPORTED;
     }
 
@@ -172,7 +172,7 @@ XnaGuardianCreateDevice(
     // 
     if (!kmwcsstr(pDeviceContext->HardwareId, L"IG_"))
     {
-        KdPrint((DRIVERNAME "Regular HID device detected, unloading...\n"));
+        TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "Regular HID device detected, unloading...");
         return STATUS_NOT_SUPPORTED;
     }
 
@@ -194,11 +194,10 @@ XnaGuardianCreateDevice(
     pDeviceContext->IsHidUsbDevice = TRUE;
 
     TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "HID USB device detected, loading...");
-    KdPrint((DRIVERNAME "HID USB device detected, loading...\n"));
 
 continueInit:
 
-    KdPrint((DRIVERNAME "Compatible device detected, initializing...\n"));
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DRIVER, "Compatible device detected, initializing...");
 
     //
     // Initialize the I/O Package and any Queues
@@ -206,7 +205,7 @@ continueInit:
     status = XnaGuardianQueueInitialize(device);
 
     if (!NT_SUCCESS(status)) {
-        KdPrint((DRIVERNAME "XnaGuardianQueueInitialize failed with status 0x%X", status));
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_DEVICE, "XnaGuardianQueueInitialize failed with status %!STATUS!", status);
         return status;
     }
 
@@ -218,7 +217,7 @@ continueInit:
         status = UpperUsbInterruptRequestsQueueInitialize(device);
 
         if (!NT_SUCCESS(status)) {
-            KdPrint((DRIVERNAME "UpperUsbInterruptRequestsQueueInitialize failed with status 0x%X", status));
+            TraceEvents(TRACE_LEVEL_ERROR, TRACE_DEVICE, "UpperUsbInterruptRequestsQueueInitialize failed with status %!STATUS!", status);
             return status;
         }
     }
@@ -234,7 +233,7 @@ continueInit:
     //
     status = WdfCollectionAdd(FilterDeviceCollection, device);
     if (!NT_SUCCESS(status)) {
-        KdPrint((DRIVERNAME "WdfCollectionAdd failed with status code 0x%x\n", status));
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_DEVICE, "WdfCollectionAdd failed with status code %!STATUS!", status);
     }
     WdfWaitLockRelease(FilterDeviceCollectionLock);
 
@@ -243,8 +242,8 @@ continueInit:
     //
     status = FilterCreateControlDevice(device);
     if (!NT_SUCCESS(status)) {
-        KdPrint((DRIVERNAME "FilterCreateControlDevice failed with status 0x%x\n",
-            status));
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_DEVICE, "FilterCreateControlDevice failed with status %!STATUS!",
+            status);
     }
 
     return status;
@@ -265,7 +264,7 @@ VOID XnaGuardianCleanupCallback(
 
     PAGED_CODE();
 
-    KdPrint((DRIVERNAME "Entered XnaGuardianCleanupCallback\n"));
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DEVICE, "%!FUNC! Entry");
 
     pDeviceContext = DeviceGetContext(Device);
 
@@ -293,12 +292,14 @@ VOID XnaGuardianCleanupCallback(
 
     if (pDeviceContext->IsHidUsbDevice)
     {
-        KdPrint((DRIVERNAME "Removing HID USB device\n"));
+        TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DEVICE, "Removing HID USB device from collection");
 
         WdfWaitLockAcquire(HidUsbDeviceCollectionLock, NULL);
         WdfCollectionRemove(HidUsbDeviceCollection, Device);
         WdfWaitLockRelease(HidUsbDeviceCollectionLock);
     }
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_DEVICE, "%!FUNC! Exit");
 }
 #pragma warning(pop) // enable 28118 again
 

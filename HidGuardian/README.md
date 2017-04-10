@@ -40,8 +40,10 @@ devcon.exe classfilter HIDClass upper !HidGuardian
 Re-plug your devices or reboot the system for the driver to get unloaded and removed.
 
 ## Driver Configuration through Registry
-| Hive | Key | Type | Value | Data |
-| ---- | --- | ---- | ----- | --------------- |
-| `HKLM` | `SYSTEM\CurrentControlSet\Services\HidGuardian\Parameters` | `REG_MULTI_SZ` | `AffectedDevices` | List of Hardware ID string(s) of the devices which shall be blocked (see screenshots).  |
-| `HKLM` | `SYSTEM\CurrentControlSet\Services\HidGuardian\Parameters` | `REG_DWORD` | `Force` | Will force-hide **all** HID devices if set to `1`, so use with caution!  |
-| `HKLM` | `SYSTEM\CurrentControlSet\Services\HidGuardian\Parameters` | `REG_MULTI_SZ` | `ExemptedDevices` | List of Hardware ID string(s) of the devices which shall **never** be blocked. |
+The keys and values to control the driver have to be created at `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\HidGuardian\Parameters` and use the following scheme:
+
+| Type | Value | Data |
+| ---- | ----- | ---- |
+| `REG_MULTI_SZ` | `AffectedDevices` | List of Hardware ID string(s) of the devices which shall be blocked (see screenshots).  |
+| `REG_DWORD` | `Force` | Will force-hide **all** HID devices if set to `1`, so use with caution!  |
+| `REG_MULTI_SZ` | `ExemptedDevices` | List of Hardware ID string(s) of the devices which shall **never** be blocked. |

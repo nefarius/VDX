@@ -30,6 +30,7 @@ Environment:
         WPP_DEFINE_BIT(TRACE_QUEUE)                                    \
         WPP_DEFINE_BIT(TRACE_HIDUSB)                                   \
         WPP_DEFINE_BIT(TRACE_POWER)                                    \
+        WPP_DEFINE_BIT(TRACE_SIDEBAND)                                 \
         )                             
 
 #define WPP_FLAG_LEVEL_LOGGER(flag, level)                                  \

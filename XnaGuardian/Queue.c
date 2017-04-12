@@ -583,7 +583,7 @@ void XInputGetGamepadStateCompleted(
     }
     else
     {
-        KdPrint((DRIVERNAME "WdfRequestRetrieveOutputBuffer failed with status 0x%x\n", status));
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_QUEUE, "WdfRequestRetrieveOutputBuffer failed with status %!STATUS!", status);
     }
 
     //

@@ -24,6 +24,7 @@ SOFTWARE.
 
 
 #include "Sideband.h"
+#include "sideband.tmh"
 #include <wdmsec.h>
 
 WDFCOLLECTION   FilterDeviceCollection;
@@ -55,6 +56,8 @@ FilterCreateControlDevice(
     WDF_FILEOBJECT_CONFIG       foCfg;
     DECLARE_CONST_UNICODE_STRING(ntDeviceName, NTDEVICE_NAME_STRING);
     DECLARE_CONST_UNICODE_STRING(symbolicLinkName, SYMBOLIC_NAME_STRING);
+
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_SIDEBAND, "%!FUNC! Entry");
 
     PAGED_CODE();
 
@@ -164,6 +167,8 @@ FilterCreateControlDevice(
 
     ControlDevice = controlDevice;
 
+    TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_SIDEBAND, "%!FUNC! Exit");
+
     return STATUS_SUCCESS;
 
 Error:
@@ -180,6 +185,8 @@ Error:
         WdfObjectDelete(controlDevice);
         controlDevice = NULL;
     }
+
+    TraceEvents(TRACE_LEVEL_ERROR, TRACE_SIDEBAND, "%!FUNC! Exit - failed with status %!STATUS!", status);
 
     return status;
 }

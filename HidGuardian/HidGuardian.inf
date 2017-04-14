@@ -12,6 +12,7 @@ DriverVer= ;
 
 [DestinationDirs]
 DefaultDestDir = 12
+HidGuardian_Device_CoInstaller_CopyFiles = 11
 
 ; ================= Class section =====================
 [SourceDisksNames]
@@ -19,6 +20,7 @@ DefaultDestDir = 12
 
 [SourceDisksFiles]
 HidGuardian.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
 
 ;*****************************************
 ; Install Section
@@ -52,9 +54,6 @@ ServiceBinary  = %12%\HidGuardian.sys
 ;--- HidGuardian_Device Coinstaller installation ------
 ;
 
-[DestinationDirs]
-HidGuardian_Device_CoInstaller_CopyFiles = 11
-
 [HidGuardian_Device.NT.CoInstallers]
 AddReg=HidGuardian_Device_CoInstaller_AddReg
 CopyFiles=HidGuardian_Device_CoInstaller_CopyFiles
@@ -64,9 +63,6 @@ HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfC
 
 [HidGuardian_Device_CoInstaller_CopyFiles]
 WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
-
-[SourceDisksFiles]
-WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
 
 [HidGuardian_Device.NT.Wdf]
 KmdfService =  HidGuardian, HidGuardian_wdfsect

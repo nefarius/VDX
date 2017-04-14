@@ -12,6 +12,7 @@ DriverVer= ;
 
 [DestinationDirs]
 DefaultDestDir = 12
+ViGEmBus_Device_CoInstaller_CopyFiles = 11
 
 ; ================= Class section =====================
 
@@ -20,6 +21,7 @@ DefaultDestDir = 12
 
 [SourceDisksFiles]
 ViGEmBus.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1
 
 ;*****************************************
 ; Install Section
@@ -53,9 +55,6 @@ ServiceBinary  = %12%\ViGEmBus.sys
 ;--- ViGEmBus_Device Coinstaller installation ------
 ;
 
-[DestinationDirs]
-ViGEmBus_Device_CoInstaller_CopyFiles = 11
-
 [ViGEmBus_Device.NT.CoInstallers]
 AddReg=ViGEmBus_Device_CoInstaller_AddReg
 CopyFiles=ViGEmBus_Device_CoInstaller_CopyFiles
@@ -65,9 +64,6 @@ HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfC
 
 [ViGEmBus_Device_CoInstaller_CopyFiles]
 WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
-
-[SourceDisksFiles]
-WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1
 
 [ViGEmBus_Device.NT.Wdf]
 KmdfService =  ViGEmBus, ViGEmBus_wdfsect

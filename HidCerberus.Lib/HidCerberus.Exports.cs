@@ -20,18 +20,6 @@ namespace HidCerberus.Lib
             ServiceChannel?.HidRemovePid(Process.GetCurrentProcess().Id);
         }
 
-        [DllExport(CallingConvention = CallingConvention.StdCall)]
-        public static void XnaGuardianOpen()
-        {
-            ServiceChannel?.HidAddPid(Process.GetCurrentProcess().Id);
-        }
-
-        [DllExport(CallingConvention = CallingConvention.StdCall)]
-        public static void XnaGuardianClose()
-        {
-            ServiceChannel?.HidRemovePid(Process.GetCurrentProcess().Id);
-        }
-
         #endregion
     }
 }

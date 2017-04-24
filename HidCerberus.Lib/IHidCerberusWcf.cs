@@ -10,11 +10,5 @@ namespace HidCerberus.Lib
 
         [OperationContract]
         void HidRemovePid(int id);
-
-        [OperationContract]
-        void XnaAddPid(int id);
-
-        [OperationContract]
-        void XnaRemovePid(int id);
     }
 }

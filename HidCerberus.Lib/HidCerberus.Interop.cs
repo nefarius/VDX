@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using RGiesecke.DllExport;
 
 namespace HidCerberus.Lib
 {
@@ -8,14 +7,12 @@ namespace HidCerberus.Lib
     {
         #region DLL Exports
 
-        [DllExport(CallingConvention = CallingConvention.StdCall)]
-        public static void HidGuardianOpen()
+        public void HidGuardianOpen()
         {
             ServiceChannel?.HidAddPid(Process.GetCurrentProcess().Id);
         }
 
-        [DllExport(CallingConvention = CallingConvention.StdCall)]
-        public static void HidGuardianClose()
+        public void HidGuardianClose()
         {
             ServiceChannel?.HidRemovePid(Process.GetCurrentProcess().Id);
         }

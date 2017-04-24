@@ -2,10 +2,13 @@
 using System.Reflection;
 using System.ServiceModel;
 using log4net;
+using System.Runtime.InteropServices;
 
 namespace HidCerberus.Lib
 {
-    public partial class HidCerberus : IDisposable
+    [ClassInterface(ClassInterfaceType.None)]
+    [Guid("9C4B3DE9-C1C7-44AF-AAF7-10E18162CACA")]
+    public partial class HidCerberus : IDisposable, IHidCerberusCom
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private static readonly IHidCerberusWcf ServiceChannel;

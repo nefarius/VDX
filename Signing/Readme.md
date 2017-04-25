@@ -1,5 +1,7 @@
 # How to production-sign for Windows 7 to 10
 
+**Note:** the scripts and commands listed here are customized for my needs, adjust accordingly and use with care.
+
 1. Run `SIGN4PORTAL.CMD`
 2. Upload the resulting `*.cab` files to the [Microsoft portal](https://developer.microsoft.com/en-us/dashboard/hardware/Driver/)
 3. Download signed files from portal

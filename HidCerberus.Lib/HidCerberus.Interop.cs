@@ -5,18 +5,16 @@ namespace HidCerberus.Lib
 {
     public partial class HidCerberus
     {
-        #region DLL Exports
-
+        [ComVisible(true)]
         public void HidGuardianOpen()
         {
             ServiceChannel?.HidAddPid(Process.GetCurrentProcess().Id);
         }
 
+        [ComVisible(true)]
         public void HidGuardianClose()
         {
             ServiceChannel?.HidRemovePid(Process.GetCurrentProcess().Id);
         }
-
-        #endregion
     }
 }

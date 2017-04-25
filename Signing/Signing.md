@@ -1,0 +1,1 @@
+SignTool sign /v /ac "C:\Program Files (x86)\Windows Kits\10\CrossCertificates\GlobalSign Root CA.crt" /n "Wohlfeil.IT e.U." /tr http://sha256timestamp.ws.symantec.com/sha256/timestamp /fd sha256 /td sha256 /as 

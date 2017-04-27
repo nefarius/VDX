@@ -167,9 +167,6 @@
     <ClCompile Include="x360ce2ViGEm.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HidCerberus.Lib\HidCerberus.Lib.csproj">
-      <Project>{6b9c8e3a-7b7e-44c8-af3b-79cbfd5e653a}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\ViGEmUM\ViGEmUM.vcxproj">
       <Project>{f49b380b-52d3-4939-abe7-a7b1d867b67a}</Project>
     </ProjectReference>

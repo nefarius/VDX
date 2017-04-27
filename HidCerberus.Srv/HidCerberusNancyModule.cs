@@ -27,6 +27,27 @@ namespace HidCerberus.Srv
 
                 return Response.AsText("OK");
             };
+
+            Get["/v1/hid/whitelist/get"] = _ =>
+            {
+                var wlKey = Registry.LocalMachine.OpenSubKey(HidWhitelistRegistryKeyBase);
+                var list = wlKey?.GetSubKeyNames();
+                wlKey?.Close();
+
+                return Response.AsJson(list);
+            };
+
+            Get["/v1/hid/whitelist/purge"] = _ =>
+            {
+                var wlKey = Registry.LocalMachine.OpenSubKey(HidWhitelistRegistryKeyBase);
+
+                foreach (var subKeyName in wlKey.GetSubKeyNames())
+                {
+                    Registry.LocalMachine.DeleteSubKey($"{HidWhitelistRegistryKeyBase}\\{subKeyName}");
+                }
+
+                return Response.AsText("OK");
+            };
         }
     }
 }

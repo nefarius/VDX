@@ -7,7 +7,7 @@ namespace ViGEmTester.NET
     {
         static void Main(string[] args)
         {
-            HidCerberus.Lib.HidCerberus.HidGuardianOpen();
+           
 
             var x360 = new Xbox360Controller();
             x360.PlugIn();
@@ -19,7 +19,7 @@ namespace ViGEmTester.NET
 
             Console.ReadKey();
 
-            HidCerberus.Lib.HidCerberus.HidGuardianClose();
+       
         }
     }
 }

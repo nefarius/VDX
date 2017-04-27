@@ -12,7 +12,9 @@
 #define HIDCERBERUSLIB_API __declspec(dllimport)
 #endif
 
+extern "C"
+{
+    HIDCERBERUSLIB_API BOOL HidGuardianOpen();
 
-HIDCERBERUSLIB_API BOOL HidGuardianOpen();
-
-HIDCERBERUSLIB_API BOOL HidGuardianClose();
+    HIDCERBERUSLIB_API BOOL HidGuardianClose();
+}

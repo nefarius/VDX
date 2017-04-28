@@ -16,7 +16,7 @@ namespace HidCerberus.Srv
 
                 Registry.LocalMachine.CreateSubKey($"{HidWhitelistRegistryKeyBase}\\{id}");
 
-                return Response.AsText("OK");
+                return Response.AsJson(new[] { "OK" });
             };
 
             Get["/v1/hid/whitelist/remove/{id}"] = parameters =>
@@ -25,7 +25,7 @@ namespace HidCerberus.Srv
 
                 Registry.LocalMachine.DeleteSubKey($"{HidWhitelistRegistryKeyBase}\\{id}");
 
-                return Response.AsText("OK");
+                return Response.AsJson(new[] { "OK" });
             };
 
             Get["/v1/hid/whitelist/get"] = _ =>
@@ -46,7 +46,7 @@ namespace HidCerberus.Srv
                     Registry.LocalMachine.DeleteSubKey($"{HidWhitelistRegistryKeyBase}\\{subKeyName}");
                 }
 
-                return Response.AsText("OK");
+                return Response.AsJson(new[] {"OK"});
             };
         }
     }

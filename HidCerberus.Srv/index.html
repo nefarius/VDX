@@ -129,7 +129,8 @@
                 <form id="add-affected-devices" method="post" action="/v1/hidguardian/affected/add">
                     <div class="form-group">
                         <label for="hwids">Enter Hardware IDs below (one line per ID)</label>
-                        <textarea class="form-control" name="hwids" id="hwids" rows="5"></textarea>
+                        <textarea class="form-control" name="hwids" id="hwids" rows="5"
+                                  placeholder="HID\VID_0079&amp;PID_0011&amp;REV_0106&#10;HID\{00001124-0000-1000-8000-00805f9b34fb}_VID&amp;0002054c_PID&amp;05c4"></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>

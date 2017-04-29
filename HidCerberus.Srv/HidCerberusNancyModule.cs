@@ -10,8 +10,12 @@ namespace HidCerberus.Srv
 {
     public class HidCerberusNancyModule : NancyModule
     {
-        private static readonly IEnumerable<object> ResponseOk = new[] { "OK" };
-        private static readonly string[] HardwareIdSplitters = { "\r\n", "\n" };
+        private static readonly IEnumerable<object> ResponseOk = new[] {"OK"};
+        private static readonly string[] HardwareIdSplitters = {"\r\n", "\n"};
+
+        private static readonly Regex HardwareIdRegex =
+            new Regex(
+                @"HID\\[{(]?[0-9A-Fa-z]{8}[-]?([0-9A-Fa-z]{4}[-]?){3}[0-9A-Fa-z]{12}[)}]?|HID\\VID_[a-zA-Z0-9]{4}&PID_[a-zA-Z0-9]{4}");
 
         public HidCerberusNancyModule()
         {
@@ -106,7 +110,7 @@ namespace HidCerberus.Srv
 
             Post["/v1/hidguardian/affected/add"] = parameters =>
             {
-                var hwids = Uri.UnescapeDataString(Request.Body.AsString().Split(new[] { '=' })[1]);
+                var hwids = Uri.UnescapeDataString(Request.Body.AsString().Split('=')[1]);
 
                 // get existing Hardware IDs
                 var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true);
@@ -118,9 +122,8 @@ namespace HidCerberus.Srv
                 // kick empty lines
                 idList.RemoveAll(string.IsNullOrEmpty);
 
-                var regex = new Regex(@"HID\\VID_[a-zA-Z0-9]{4}&PID_[a-zA-Z0-9]{4}");
-                if (idList.Any(i => !regex.IsMatch(i)))
-                    return Response.AsJson(new[] { "ERROR", "One or more supplied Hardware IDs are malformed" });
+                if (idList.Any(i => !HardwareIdRegex.IsMatch(i)))
+                    return Response.AsJson(new[] {"ERROR", "One or more supplied Hardware IDs are malformed"});
 
                 // fuse arrays
                 if (affected != null)
@@ -137,7 +140,7 @@ namespace HidCerberus.Srv
 
             Post["/v1/hidguardian/affected/remove"] = parameters =>
             {
-                var hwids = Uri.UnescapeDataString(Request.Body.AsString().Split(new[] { '=' })[1]);
+                var hwids = Uri.UnescapeDataString(Request.Body.AsString().Split('=')[1]);
 
                 // get existing Hardware IDs
                 var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true);
@@ -149,9 +152,8 @@ namespace HidCerberus.Srv
                 // kick empty lines
                 idList.RemoveAll(string.IsNullOrEmpty);
 
-                var regex = new Regex(@"HID\\VID_[a-zA-Z0-9]{4}&PID_[a-zA-Z0-9]{4}");
-                if (idList.Any(i => !regex.IsMatch(i)))
-                    return Response.AsJson(new[] { "ERROR", "One or more supplied Hardware IDs are malformed" });
+                if (idList.Any(i => !HardwareIdRegex.IsMatch(i)))
+                    return Response.AsJson(new[] {"ERROR", "One or more supplied Hardware IDs are malformed"});
 
                 // remove provided values
                 affected?.RemoveAll(x => idList.Contains(x));
@@ -168,7 +170,7 @@ namespace HidCerberus.Srv
             Get["/v1/hidguardian/affected/purge"] = _ =>
             {
                 var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true);
-                wlKey?.SetValue("AffectedDevices", new string[] { }, RegistryValueKind.MultiString);
+                wlKey?.SetValue("AffectedDevices", new string[] {}, RegistryValueKind.MultiString);
                 wlKey?.Close();
 
                 return Response.AsJson(ResponseOk);

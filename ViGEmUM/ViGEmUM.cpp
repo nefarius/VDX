@@ -350,15 +350,10 @@ VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
 
     if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) == 0)
     {
-        CloseHandle(lOverlapped.hEvent);
-
-        switch (GetLastError())
+        if (GetLastError() == ERROR_ACCESS_DENIED)
         {
-        case ERROR_ACCESS_DENIED:
+            CloseHandle(lOverlapped.hEvent);
             return VIGEM_ERROR_INVALID_TARGET;
-            break;
-        default:
-            break;
         }
     }
 
@@ -392,15 +387,10 @@ VIGEM_API VIGEM_ERROR vigem_ds4_submit_report(VIGEM_TARGET Target, DS4_REPORT Re
 
     if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) == 0)
     {
-        CloseHandle(lOverlapped.hEvent);
-
-        switch (GetLastError())
+        if (GetLastError() == ERROR_ACCESS_DENIED)
         {
-        case ERROR_ACCESS_DENIED:
+            CloseHandle(lOverlapped.hEvent);
             return VIGEM_ERROR_INVALID_TARGET;
-            break;
-        default:
-            break;
         }
     }
 
@@ -434,15 +424,10 @@ VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(VIGEM_TARGET Target, XGIP_REPORT 
 
     if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) == 0)
     {
-        CloseHandle(lOverlapped.hEvent);
-
-        switch (GetLastError())
+        if (GetLastError() == ERROR_ACCESS_DENIED)
         {
-        case ERROR_ACCESS_DENIED:
+            CloseHandle(lOverlapped.hEvent);
             return VIGEM_ERROR_INVALID_TARGET;
-            break;
-        default:
-            break;
         }
     }
 
@@ -630,15 +615,10 @@ VIGEM_ERROR vigem_xgip_init_xboxgip(PVIGEM_TARGET Target)
 
         if (GetOverlappedResult(g_hViGEmBus, &lOverlapped, &transfered, TRUE) == 0)
         {
-            CloseHandle(lOverlapped.hEvent);
-
-            switch (GetLastError())
+            if (GetLastError() == ERROR_ACCESS_DENIED)
             {
-            case ERROR_ACCESS_DENIED:
+                CloseHandle(lOverlapped.hEvent);
                 return VIGEM_ERROR_INVALID_TARGET;
-                break;
-            default:
-                break;
             }
         }
     }

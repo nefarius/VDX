@@ -51,7 +51,7 @@ int main()
     SetConsoleTitle(L"x360ce to ViGEm demo application");
     SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 
-    HMODULE cerberus = LoadLibrary(L"HidCerberus.Lib.dll");
+    auto cerberus = LoadLibrary(L"HidCerberus.Lib.dll");
 
     if (cerberus == INVALID_HANDLE_VALUE)
     {
@@ -78,7 +78,7 @@ int main()
 
     VIGEM_TARGET targets[XUSER_MAX_COUNT];
 
-    for (int i = 0; i < XUSER_MAX_COUNT; i++)
+    for (auto i = 0; i < XUSER_MAX_COUNT; i++)
     {
         VIGEM_TARGET_INIT(&targets[i]);
     }
@@ -92,7 +92,7 @@ int main()
     {
         auto begin = high_resolution_clock::now();
 
-        for (int i = 0; i < XUSER_MAX_COUNT; i++)
+        for (auto i = 0; i < XUSER_MAX_COUNT; i++)
         {
             ZeroMemory(&state, sizeof(XINPUT_STATE));
 

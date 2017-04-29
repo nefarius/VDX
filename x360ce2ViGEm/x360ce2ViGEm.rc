@@ -79,12 +79,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Nefarius Software Solutions"
             VALUE "FileDescription", "x360ce2ViGEm"
-VALUE "FileVersion", "1.6.1.0"
+            VALUE "FileVersion", "1.6.1.0"
             VALUE "InternalName", "x360ce2ViGEm"
-            VALUE "LegalCopyright", "Copyright (C) Benjamin Hï¿½glinger 2016"
+            VALUE "LegalCopyright", "Copyright (C) Benjamin Höglinger 2016"
             VALUE "OriginalFilename", "x360ce2V.exe"
             VALUE "ProductName", "x360ce2ViGEm"
-VALUE "ProductVersion", "1.6.1.0"
+            VALUE "ProductVersion", "1.6.1.0"
         END
     END
     BLOCK "VarFileInfo"

@@ -146,11 +146,18 @@ namespace HidCerberus.Srv
                 // split input array
                 var idList = hwids.Split(HardwareIdSplitters, StringSplitOptions.None).ToList();
 
+                // kick empty lines
+                idList.RemoveAll(string.IsNullOrEmpty);
+
+                var regex = new Regex(@"HID\\VID_[a-zA-Z0-9]{4}&PID_[a-zA-Z0-9]{4}");
+                if (idList.Any(i => !regex.IsMatch(i)))
+                    return Response.AsJson(new[] { "ERROR", "One or more supplied Hardware IDs are malformed" });
+
                 // remove provided values
                 affected?.RemoveAll(x => idList.Contains(x));
 
                 // write back to registry
-                wlKey?.SetValue("AffectedDevices", idList.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToArray(),
+                wlKey?.SetValue("AffectedDevices", affected.ToArray(),
                     RegistryValueKind.MultiString);
 
                 wlKey?.Close();

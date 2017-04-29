@@ -28,8 +28,14 @@
         $.getJSON("/v1/hidguardian/affected/get", function (data) {
             var items = [];
             $.each(data, function (key, val) {
-                items.push('<li class="list-group-item">' + val + '<span class="pull-right"><button type="button" class="btn btn-primary btn-xs">Remove</button></span></li>');
+                items.push('<li class="list-group-item">'
+                    + val
+                    + '<span class="pull-right"><button type="button" class="affected-remove btn btn-primary btn-xs">Remove</button></span></li>');
             });
+
+            if (items.length === 0) {
+                $("#purge-affected-devices").hide();
+            }
 
             $("<ul/>", {
                 "class": "list-group",
@@ -41,8 +47,14 @@
         $.getJSON("/v1/hidguardian/whitelist/get", function (data) {
             var items = [];
             $.each(data, function (key, val) {
-                items.push('<li class="list-group-item">' + val + '<span class="pull-right"><button type="button" class="btn btn-primary btn-xs">Remove</button></span></li>');
+                items.push('<li class="list-group-item">'
+                    + val
+                    + '<span class="pull-right"><button type="button" class="whitelist-remove btn btn-primary btn-xs">Remove</button></span></li>');
             });
+
+            if (items.length === 0) {
+                $("#purge-whitelisted-pids").hide();
+            }
 
             $("<ul/>", {
                 "class": "list-group",
@@ -69,6 +81,24 @@
             $.get("/v1/hidguardian/whitelist/purge", function (data, status) {
                 location.reload();
             });
+        });
+
+        /* Click handler for individual affected remove button  */
+        $(document).on("click", ".affected-remove", function () {
+            $.post("/v1/hidguardian/affected/remove", {
+                hwids: $(this).closest('li').clone().children().remove().end().text()
+            })
+                .done(function (data) {
+                    location.reload();
+                });
+        });
+
+        /* Click handler for individual whitelist remove button  */
+        $(document).on("click", ".whitelist-remove", function () {
+            $.get("/v1/hidguardian/whitelist/remove/"
+                + $(this).closest('li').clone().children().remove().end().text(), function (data, status) {
+                    location.reload();
+                });
         });
     </script>
 </head>

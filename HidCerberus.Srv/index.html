@@ -7,6 +7,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.1/jquery.form.min.js"
+            integrity="sha384-tIwI8+qJdZBtYYCKwRkjxBGQVZS3gGozr3CtI+5JF/oL1JmPEHzCEnIKbDbLTCer"
+            crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
           integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
           crossorigin="anonymous">
@@ -15,12 +21,6 @@
           crossorigin="anonymous">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
             integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
-            crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
-            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-            crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.1/jquery.form.min.js"
-            integrity="sha384-tIwI8+qJdZBtYYCKwRkjxBGQVZS3gGozr3CtI+5JF/oL1JmPEHzCEnIKbDbLTCer"
             crossorigin="anonymous"></script>
 
     <script>
@@ -34,7 +34,7 @@
             $("<ul/>", {
                 "class": "list-group",
                 html: items.join("")
-            }).appendTo("#affected-devices");
+            }).prependTo("#affected-devices");
         });
 
         /* Publish list of whitelisted PIDs */
@@ -47,12 +47,26 @@
             $("<ul/>", {
                 "class": "list-group",
                 html: items.join("")
-            }).appendTo("#whitelisted-pids");
+            }).prependTo("#whitelisted-pids");
         });
 
         /* Submit forms via AJAX */
         $(function () {
             $('#add-affected-devices').ajaxForm(function () {
+                location.reload();
+            });
+        });
+
+        /* Purge affected devices */
+        $(document).on("click", "#purge-affected-devices", function () {
+            $.get("/v1/hidguardian/affected/purge", function (data, status) {
+                location.reload();
+            });
+        });
+
+        /* Purge affected devices */
+        $(document).on("click", "#purge-whitelisted-pids", function () {
+            $.get("/v1/hidguardian/whitelist/purge", function (data, status) {
                 location.reload();
             });
         });
@@ -69,7 +83,13 @@
         <!-- List affected devices -->
         <div class="panel panel-default">
             <div class="panel-heading">Currently affected devices</div>
-            <div class="panel-body" id="affected-devices"></div>
+            <div class="panel-body" id="affected-devices">
+                <p>
+                    <span class="pull-right">
+                        <button id="purge-affected-devices" type="submit" class="btn btn-danger btn-sm">Remove all</button>
+                    </span>
+                </p>
+            </div>
         </div>
 
         <!-- Add affected devices -->
@@ -89,7 +109,13 @@
         <!-- List whitelisted PIDs -->
         <div class="panel panel-default">
             <div class="panel-heading">Currently whitelisted process IDs</div>
-            <div class="panel-body" id="whitelisted-pids"></div>
+            <div class="panel-body" id="whitelisted-pids">
+                <p>
+                    <span class="pull-right">
+                        <button id="purge-whitelisted-pids" type="submit" class="btn btn-danger btn-sm">Remove all</button>
+                    </span>
+                </p>
+            </div>
         </div>
     </div>
 

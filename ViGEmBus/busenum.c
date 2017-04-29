@@ -28,69 +28,11 @@ SOFTWARE.
 #include <usb.h>
 
 #ifdef ALLOC_PRAGMA
-#pragma alloc_text (PAGE, Bus_FileCleanup)
 #pragma alloc_text (PAGE, Bus_PlugInDevice)
 #pragma alloc_text (PAGE, Bus_UnPlugDevice)
 #endif
 
 
-//
-// Gets called when the user-land process (or kernel driver) exits or closes the handle.
-// 
-_Use_decl_annotations_
-VOID
-Bus_FileCleanup(
-    WDFFILEOBJECT FileObject
-)
-{
-    WDFDEVICE                           device;
-    WDFDEVICE                           hChild;
-    NTSTATUS                            status;
-    WDFCHILDLIST                        list;
-    WDF_CHILD_LIST_ITERATOR             iterator;
-    WDF_CHILD_RETRIEVE_INFO             childInfo;
-    PDO_IDENTIFICATION_DESCRIPTION      description;
-
-    PAGED_CODE();
-
-
-    KdPrint((DRIVERNAME "Bus_FileCleanup called\n"));
-
-    device = WdfFileObjectGetDevice(FileObject);
-
-    list = WdfFdoGetDefaultChildList(device);
-
-    WDF_CHILD_LIST_ITERATOR_INIT(&iterator, WdfRetrievePresentChildren);
-
-    WdfChildListBeginIteration(list, &iterator);
-
-    for (;;)
-    {
-        WDF_CHILD_RETRIEVE_INFO_INIT(&childInfo, &description.Header);
-        WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
-
-        status = WdfChildListRetrieveNextDevice(list, &iterator, &hChild, &childInfo);
-        if (!NT_SUCCESS(status) || status == STATUS_NO_MORE_ENTRIES)
-        {
-            break;
-        }
-
-        // Only unplug owned children
-        if (childInfo.Status == WdfChildListRetrieveDeviceSuccess
-            && description.OwnerProcessId == CURRENT_PROCESS_ID()
-            && !description.OwnerIsDriver)
-        {
-            // "Unplug" child
-            status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);
-            if (!NT_SUCCESS(status))
-            {
-                KdPrint((DRIVERNAME "WdfChildListUpdateChildDescriptionAsMissing failed with status 0x%X\n", status));
-            }
-        }
-    }
-
-    WdfChildListEndIteration(list, &iterator);
-}
 
 //
 // Simulates a device plug-in event.
@@ -104,6 +46,8 @@ NTSTATUS Bus_PlugInDevice(
     PDO_IDENTIFICATION_DESCRIPTION  description;
     NTSTATUS                        status;
     PVIGEM_PLUGIN_TARGET            plugIn;
+    WDFFILEOBJECT                   fileObject;
+    PFDO_FILE_DATA                  pFileData;
     size_t                          length = 0;
 
     PAGED_CODE();
@@ -129,6 +73,20 @@ NTSTATUS Bus_PlugInDevice(
     }
 
     *Transferred = length;
+ 
+    fileObject = WdfRequestGetFileObject(Request);
+    if (fileObject == NULL)
+    {
+        KdPrint((DRIVERNAME "File object associated with request is null"));
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    pFileData = FileObjectGetData(fileObject);
+    if (pFileData == NULL)
+    {
+        KdPrint((DRIVERNAME "File object context associated with request is null"));
+        return STATUS_INVALID_PARAMETER;
+    }
 
     //
     // Initialize the description with the information about the newly
@@ -139,6 +97,7 @@ NTSTATUS Bus_PlugInDevice(
     description.SerialNo = plugIn->SerialNo;
     description.TargetType = plugIn->TargetType;
     description.OwnerProcessId = CURRENT_PROCESS_ID();
+    description.SessionId = pFileData->SessionId;
     description.OwnerIsDriver = IsInternal;
 
     // Set default IDs if supplied values are invalid
@@ -203,6 +162,8 @@ NTSTATUS Bus_UnPlugDevice(
     PDO_IDENTIFICATION_DESCRIPTION      description;
     BOOLEAN                             unplugAll;
     PVIGEM_UNPLUG_TARGET                unPlug;
+    WDFFILEOBJECT                       fileObject;
+    PFDO_FILE_DATA                      pFileData = NULL;
     size_t                              length = 0;
 
     PAGED_CODE();
@@ -213,18 +174,35 @@ NTSTATUS Bus_UnPlugDevice(
 
     if (!NT_SUCCESS(status))
     {
-        KdPrint((DRIVERNAME "WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
+        KdPrint((DRIVERNAME "Bus_UnPlugDevice: WdfRequestRetrieveInputBuffer failed 0x%x\n", status));
         return status;
     }
 
     if ((sizeof(VIGEM_UNPLUG_TARGET) != unPlug->Size) || (length != unPlug->Size))
     {
-        KdPrint((DRIVERNAME "Input buffer size mismatch"));
+        KdPrint((DRIVERNAME "Bus_UnPlugDevice: Input buffer size mismatch"));
         return STATUS_INVALID_PARAMETER;
     }
 
     *Transferred = length;
     unplugAll = (unPlug->SerialNo == 0);
+
+    if (!IsInternal)
+    {
+        fileObject = WdfRequestGetFileObject(Request);
+        if (fileObject == NULL)
+        {
+            KdPrint((DRIVERNAME "Bus_UnPlugDevice: File object associated with request is null"));
+            return STATUS_INVALID_PARAMETER;
+        }
+
+        pFileData = FileObjectGetData(fileObject);
+        if (pFileData == NULL)
+        {
+            KdPrint((DRIVERNAME "Bus_UnPlugDevice: File object context associated with request is null"));
+            return STATUS_INVALID_PARAMETER;
+        }
+    }
 
     list = WdfFdoGetDefaultChildList(Device);
 
@@ -245,6 +223,12 @@ NTSTATUS Bus_UnPlugDevice(
             break;
         }
 
+        // If unable to retrieve device
+        if (childInfo.Status != WdfChildListRetrieveDeviceSuccess)
+        {
+            continue;
+        }
+
         // Child isn't the one we looked for, skip
         if (!unplugAll && description.SerialNo != unPlug->SerialNo)
         {
@@ -252,14 +236,13 @@ NTSTATUS Bus_UnPlugDevice(
         }
 
         // Only unplug owned children
-        if (childInfo.Status == WdfChildListRetrieveDeviceSuccess
-            && (description.OwnerProcessId == CURRENT_PROCESS_ID() || IsInternal))
+        if (IsInternal || description.SessionId == pFileData->SessionId)
         {
             // Unplug child
             status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);
             if (!NT_SUCCESS(status))
             {
-                KdPrint((DRIVERNAME "WdfChildListUpdateChildDescriptionAsMissing failed with status 0x%X\n", status));
+                KdPrint((DRIVERNAME "Bus_UnPlugDevice: WdfChildListUpdateChildDescriptionAsMissing failed with status 0x%X\n", status));
             }
         }
     }

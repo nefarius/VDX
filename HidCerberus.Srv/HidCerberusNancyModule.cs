@@ -9,8 +9,8 @@ namespace HidCerberus.Srv
 {
     public class HidCerberusNancyModule : NancyModule
     {
-        private static readonly IEnumerable<object> ResponseOk = new[] {"OK"};
-        private static readonly string[] HardwareIdSplitters = {"\r\n", "\n"};
+        private static readonly IEnumerable<object> ResponseOk = new[] { "OK" };
+        private static readonly string[] HardwareIdSplitters = { "\r\n", "\n" };
 
         public HidCerberusNancyModule()
         {
@@ -100,7 +100,7 @@ namespace HidCerberus.Srv
             Get["/v1/hidguardian/affected/add/{hwid}"] = parameters =>
             {
                 // decode base64 input
-                var base64 = (string) parameters.hwid;
+                var base64 = (string)parameters.hwid;
                 var hwids = Encoding.UTF8.GetString(Convert.FromBase64String(base64));
 
                 // get existing Hardware IDs
@@ -126,7 +126,7 @@ namespace HidCerberus.Srv
             Get["/v1/hidguardian/affected/remove/{hwid}"] = parameters =>
             {
                 // decode base64 input
-                var base64 = (string) parameters.hwid;
+                var base64 = (string)parameters.hwid;
                 var hwids = Encoding.UTF8.GetString(Convert.FromBase64String(base64));
 
                 // get existing Hardware IDs
@@ -143,6 +143,15 @@ namespace HidCerberus.Srv
                 wlKey?.SetValue("AffectedDevices", idList.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToArray(),
                     RegistryValueKind.MultiString);
 
+                wlKey?.Close();
+
+                return Response.AsJson(ResponseOk);
+            };
+
+            Get["/v1/hidguardian/affected/purge"] = _ =>
+            {
+                var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true);
+                wlKey?.SetValue("AffectedDevices", new string[] { }, RegistryValueKind.MultiString);
                 wlKey?.Close();
 
                 return Response.AsJson(ResponseOk);

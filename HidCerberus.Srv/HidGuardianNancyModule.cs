@@ -8,7 +8,7 @@ using Nancy.Extensions;
 
 namespace HidCerberus.Srv
 {
-    public class HidCerberusNancyModule : NancyModule
+    public class HidGuardianNancyModule : NancyModule
     {
         private static readonly IEnumerable<object> ResponseOk = new[] {"OK"};
         private static readonly string[] HardwareIdSplitters = {"\r\n", "\n"};
@@ -17,7 +17,7 @@ namespace HidCerberus.Srv
             new Regex(
                 @"HID\\[{(]?[0-9A-Fa-z]{8}[-]?([0-9A-Fa-z]{4}[-]?){3}[0-9A-Fa-z]{12}[)}]?|HID\\VID_[a-zA-Z0-9]{4}&PID_[a-zA-Z0-9]{4}");
 
-        public HidCerberusNancyModule()
+        public HidGuardianNancyModule()
         {
             #region Index
 

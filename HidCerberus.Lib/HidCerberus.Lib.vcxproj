@@ -71,23 +71,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\Development\C++\poco-1.7.8p2\Foundation\include;D:\Development\C++\poco-1.7.8p2\Net\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Development\C++\poco-1.7.8p2\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(POCO_ROOT)\Foundation\include;D:\Development\C++\poco-1.7.8p2\Net\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(POCO_ROOT)\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\Development\C++\poco-1.7.8p2\Foundation\include;D:\Development\C++\poco-1.7.8p2\Net\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Development\C++\poco-1.7.8p2\lib64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(POCO_ROOT)\Foundation\include;D:\Development\C++\poco-1.7.8p2\Net\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(POCO_ROOT)\lib64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\Development\C++\poco-1.7.8p2\Foundation\include;D:\Development\C++\poco-1.7.8p2\Net\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Development\C++\poco-1.7.8p2\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(POCO_ROOT)\Foundation\include;D:\Development\C++\poco-1.7.8p2\Net\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(POCO_ROOT)\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\Development\C++\poco-1.7.8p2\Foundation\include;D:\Development\C++\poco-1.7.8p2\Net\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Development\C++\poco-1.7.8p2\lib64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(POCO_ROOT)\Foundation\include;D:\Development\C++\poco-1.7.8p2\Net\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(POCO_ROOT)\lib64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -100,9 +100,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="add_affected.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="favicon.ico" />
     <Content Include="index.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

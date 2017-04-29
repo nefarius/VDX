@@ -19,10 +19,10 @@
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"
             integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
             crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.1/jquery.form.min.js" 
-            integrity="sha384-tIwI8+qJdZBtYYCKwRkjxBGQVZS3gGozr3CtI+5JF/oL1JmPEHzCEnIKbDbLTCer" 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.1/jquery.form.min.js"
+            integrity="sha384-tIwI8+qJdZBtYYCKwRkjxBGQVZS3gGozr3CtI+5JF/oL1JmPEHzCEnIKbDbLTCer"
             crossorigin="anonymous"></script>
-    
+
     <script>
         /* Publish list of affected devices */
         $.getJSON("/v1/hidguardian/affected/get", function (data) {
@@ -37,6 +37,19 @@
             }).appendTo("#affected-devices");
         });
 
+        /* Publish list of whitelisted PIDs */
+        $.getJSON("/v1/hidguardian/whitelist/get", function (data) {
+            var items = [];
+            $.each(data, function (key, val) {
+                items.push('<li class="list-group-item">' + val + '<span class="pull-right"><button type="button" class="btn btn-primary btn-xs">Remove</button></span></li>');
+            });
+
+            $("<ul/>", {
+                "class": "list-group",
+                html: items.join("")
+            }).appendTo("#whitelisted-pids");
+        });
+
         /* Submit forms via AJAX */
         $(function () {
             $('#add-affected-devices').ajaxForm(function () {
@@ -48,10 +61,11 @@
 <body>
 
     <div class="container">
+        <!-- Header -->
         <h1>HidGuradian Configuration</h1>
-        <p>This part is inside a .container class.</p>
-        <p>The .container class provides a responsive fixed width container.</p>
-        
+        <p>Heya, you've found the HidCerberus Service configuration page.</p>
+        <p>Here you can change settings affecting HidGuardian and view what's going on under the hood.</p>
+
         <!-- List affected devices -->
         <div class="panel panel-default">
             <div class="panel-heading">Currently affected devices</div>
@@ -70,6 +84,12 @@
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
             </div>
+        </div>
+
+        <!-- List whitelisted PIDs -->
+        <div class="panel panel-default">
+            <div class="panel-heading">Currently whitelisted process IDs</div>
+            <div class="panel-body" id="whitelisted-pids"></div>
         </div>
     </div>
 

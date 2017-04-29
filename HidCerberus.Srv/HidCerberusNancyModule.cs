@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using Nancy;
 using Nancy.Extensions;
-using Nancy.ModelBinding;
 
 namespace HidCerberus.Srv
 {
@@ -17,7 +15,11 @@ namespace HidCerberus.Srv
 
         public HidCerberusNancyModule()
         {
+            #region Index
+
             Get["/"] = _ => View["index"];
+
+            #endregion
 
             #region Whitelist
 
@@ -102,8 +104,6 @@ namespace HidCerberus.Srv
                 return Response.AsJson(affected);
             };
 
-            Get["/v1/hidguardian/affected/add"] = _ => View["add_affected"];
-
             Post["/v1/hidguardian/affected/add"] = parameters =>
             {
                 var hwids = Uri.UnescapeDataString(Request.Body.AsString().Split(new[] { '=' })[1]);
@@ -132,11 +132,9 @@ namespace HidCerberus.Srv
                 return Response.AsJson(ResponseOk);
             };
 
-            Get["/v1/hidguardian/affected/remove/{hwid}"] = parameters =>
+            Post["/v1/hidguardian/affected/remove"] = parameters =>
             {
-                // decode base64 input
-                var base64 = (string)parameters.hwid;
-                var hwids = Encoding.UTF8.GetString(Convert.FromBase64String(base64));
+                var hwids = Uri.UnescapeDataString(Request.Body.AsString().Split(new[] { '=' })[1]);
 
                 // get existing Hardware IDs
                 var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true);

@@ -10,6 +10,7 @@ namespace HidCerberus.Srv
     public class HidCerberusNancyModule : NancyModule
     {
         private static readonly IEnumerable<object> ResponseOk = new[] {"OK"};
+        private static readonly string[] HardwareIdSplitters = {"\r\n", "\n"};
 
         public HidCerberusNancyModule()
         {
@@ -107,8 +108,7 @@ namespace HidCerberus.Srv
                 var affected = (wlKey?.GetValue("AffectedDevices") as string[])?.ToList();
 
                 // split input array
-                var stringSeparators = new[] {"\r\n", "\n"};
-                var idList = hwids.Split(stringSeparators, StringSplitOptions.None).ToList();
+                var idList = hwids.Split(HardwareIdSplitters, StringSplitOptions.None).ToList();
 
                 // fuse arrays
                 if (affected != null)
@@ -126,7 +126,7 @@ namespace HidCerberus.Srv
             Get["/v1/hidguardian/affected/remove/{hwid}"] = parameters =>
             {
                 // decode base64 input
-                var base64 = (string)parameters.hwid;
+                var base64 = (string) parameters.hwid;
                 var hwids = Encoding.UTF8.GetString(Convert.FromBase64String(base64));
 
                 // get existing Hardware IDs
@@ -134,8 +134,7 @@ namespace HidCerberus.Srv
                 var affected = (wlKey?.GetValue("AffectedDevices") as string[])?.ToList();
 
                 // split input array
-                var stringSeparators = new[] { "\r\n", "\n" };
-                var idList = hwids.Split(stringSeparators, StringSplitOptions.None).ToList();
+                var idList = hwids.Split(HardwareIdSplitters, StringSplitOptions.None).ToList();
 
                 // remove provided values
                 affected?.RemoveAll(x => idList.Contains(x));

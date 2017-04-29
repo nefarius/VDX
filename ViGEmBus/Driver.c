@@ -127,6 +127,8 @@ NTSTATUS Bus_EvtDeviceAdd(IN WDFDRIVER Driver, IN PWDFDEVICE_INIT DeviceInit)
         return status;
     }
 
+    KdPrint((DRIVERNAME "Created FDO: 0x%X\n", device));
+
     pFDOData = FdoGetData(device);
     if (pFDOData == NULL)
     {

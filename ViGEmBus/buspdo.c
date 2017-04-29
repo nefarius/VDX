@@ -210,6 +210,7 @@ NTSTATUS Bus_CreatePdo(
     WDF_PNPPOWER_EVENT_CALLBACKS_INIT(&pnpPowerCallbacks);
 
     pnpPowerCallbacks.EvtDevicePrepareHardware = Bus_EvtDevicePrepareHardware;
+    pnpPowerCallbacks.EvtDeviceRelationsQuery = Pdo_EvtDeviceRelationsQuery;
 
     WdfDeviceInitSetPnpPowerEventCallbacks(DeviceInit, &pnpPowerCallbacks);
 
@@ -226,6 +227,8 @@ NTSTATUS Bus_CreatePdo(
     status = WdfDeviceCreate(&DeviceInit, &pdoAttributes, &hChild);
     if (!NT_SUCCESS(status))
         return status;
+
+    KdPrint((DRIVERNAME "Created PDO: 0x%X\n", hChild));
 
     switch (Description->TargetType)
     {
@@ -652,5 +655,16 @@ VOID Pdo_EvtIoInternalDeviceControl(
     {
         WdfRequestComplete(Request, status);
     }
+}
+
+_Use_decl_annotations_
+VOID
+Pdo_EvtDeviceRelationsQuery(
+    WDFDEVICE  Device,
+    DEVICE_RELATION_TYPE  RelationType
+)
+{
+    KdPrint((DRIVERNAME "Pdo_EvtDeviceRelationsQuery Device: 0x%X\n", Device));
+    KdPrint((DRIVERNAME "Pdo_EvtDeviceRelationsQuery RelationType: 0x%X\n", RelationType));
 }
 

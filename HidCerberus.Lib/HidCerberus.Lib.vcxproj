@@ -156,9 +156,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="HidCerberus.Lib.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />

@@ -142,10 +142,14 @@ BOOL WINAPI HandlerRoutine(
     _In_ DWORD dwCtrlType
 )
 {
-    if (dwCtrlType == CTRL_CLOSE_EVENT)
+    switch (dwCtrlType)
     {
+    case CTRL_C_EVENT: // Ctrl+C
+    case CTRL_BREAK_EVENT: // Ctrl+Break
+    case CTRL_CLOSE_EVENT: // Closing the console window
         fpClose();
         return TRUE;
+    default: break;
     }
 
     return FALSE;

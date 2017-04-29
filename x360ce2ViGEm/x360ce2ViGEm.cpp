@@ -32,6 +32,7 @@ SOFTWARE.
 #include <chrono>
 #include <thread>
 
+#pragma warning(disable: 4995)
 
 typedef void (WINAPI* HidGuardianOpen_t)();
 typedef void (WINAPI* HidGuardianClose_t)();
@@ -64,6 +65,7 @@ int main()
 
     printf("Bypassing HidGuardian\n");
     if (fpOpen) fpOpen();
+    else printf("Warning: couldn't contatc HidGuardian\n");
 
     printf("Initializing emulation driver\n");
 

@@ -58,16 +58,24 @@ BOOL SendRequest(std::string addUri)
 
 HIDCERBERUSLIB_API BOOL HidGuardianOpen()
 {
-    std::string addUri("http://localhost:26762/v1/hidguardian/whitelist/add/");
-    addUri += std::to_string(GetCurrentProcessId());
+    try
+    {
+        std::string addUri("http://localhost:26762/v1/hidguardian/whitelist/add/");
+        addUri += std::to_string(GetCurrentProcessId());
 
-    return SendRequest(addUri);
+        return SendRequest(addUri);
+    }
+    catch (...) { return FALSE; }
 }
 
 HIDCERBERUSLIB_API BOOL HidGuardianClose()
 {
-    std::string addUri("http://localhost:26762/v1/hidguardian/whitelist/remove/");
-    addUri += std::to_string(GetCurrentProcessId());
+    try
+    {
+        std::string addUri("http://localhost:26762/v1/hidguardian/whitelist/remove/");
+        addUri += std::to_string(GetCurrentProcessId());
 
-    return SendRequest(addUri);
+        return SendRequest(addUri);
+    }
+    catch (...) { return FALSE; }
 }

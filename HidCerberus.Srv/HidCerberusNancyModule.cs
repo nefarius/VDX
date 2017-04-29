@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using Nancy;
+using Nancy.Extensions;
+using Nancy.ModelBinding;
 
 namespace HidCerberus.Srv
 {
@@ -97,11 +100,11 @@ namespace HidCerberus.Srv
                 return Response.AsJson(affected);
             };
 
-            Get["/v1/hidguardian/affected/add/{hwid}"] = parameters =>
+            Get["/v1/hidguardian/affected/add"] = _ => View["add_affected"];
+
+            Post["/v1/hidguardian/affected/add"] = parameters =>
             {
-                // decode base64 input
-                var base64 = (string)parameters.hwid;
-                var hwids = Encoding.UTF8.GetString(Convert.FromBase64String(base64));
+                var hwids = Uri.UnescapeDataString(Request.Body.AsString().Split(new[] { '=' })[1]);
 
                 // get existing Hardware IDs
                 var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true);
@@ -109,6 +112,10 @@ namespace HidCerberus.Srv
 
                 // split input array
                 var idList = hwids.Split(HardwareIdSplitters, StringSplitOptions.None).ToList();
+
+                var regex = new Regex(@"HID\\VID_[a-zA-Z0-9]{4}&PID_[a-zA-Z0-9]{4}");
+                if (idList.Any(i => !regex.IsMatch(i)))
+                    return Response.AsJson(new[] { "ERROR", "One or more supplied Hardware IDs are malformed" });
 
                 // fuse arrays
                 if (affected != null)

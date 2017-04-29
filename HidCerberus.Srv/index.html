@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>HidGuradian Configuration</title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+          crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.1/jquery.form.min.js" 
+            integrity="sha384-tIwI8+qJdZBtYYCKwRkjxBGQVZS3gGozr3CtI+5JF/oL1JmPEHzCEnIKbDbLTCer" 
+            crossorigin="anonymous"></script>
+    
+    <script>
+        /* Publish list of affected devices */
+        $.getJSON("/v1/hidguardian/affected/get", function (data) {
+            var items = [];
+            $.each(data, function (key, val) {
+                items.push('<li class="list-group-item">' + val + '<span class="pull-right"><button type="button" class="btn btn-primary btn-xs">Remove</button></span></li>');
+            });
+
+            $("<ul/>", {
+                "class": "list-group",
+                html: items.join("")
+            }).appendTo("#affected-devices");
+        });
+
+        /* Submit forms via AJAX */
+        $(function () {
+            $('#add-affected-devices').ajaxForm(function () {
+                location.reload();
+            });
+        });
+    </script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>HidGuradian Configuration</h1>
+        <p>This part is inside a .container class.</p>
+        <p>The .container class provides a responsive fixed width container.</p>
+        
+        <!-- List affected devices -->
+        <div class="panel panel-default">
+            <div class="panel-heading">Currently affected devices</div>
+            <div class="panel-body" id="affected-devices"></div>
+        </div>
+
+        <!-- Add affected devices -->
+        <div class="panel panel-default">
+            <div class="panel-heading">Add affected devices</div>
+            <div class="panel-body">
+                <form id="add-affected-devices" method="post" action="/v1/hidguardian/affected/add">
+                    <div class="form-group">
+                        <label for="hwids">Enter Hardware IDs below (one line per ID)</label>
+                        <textarea class="form-control" name="hwids" id="hwids" rows="5"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -17,6 +17,8 @@ namespace HidCerberus.Srv
 
         public HidCerberusNancyModule()
         {
+            Get["/"] = _ => View["index"];
+
             #region Whitelist
 
             Get["/v1/hidguardian/whitelist/add/{id:int}"] = parameters =>

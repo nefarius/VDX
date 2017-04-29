@@ -100,6 +100,22 @@
                     location.reload();
                 });
         });
+
+        /* Publish list of available devices */
+        $.getJSON("/v1/hid/devices/get", function (data) {
+            var items = [];
+            $.each(data, function (key, val) {
+                if (val.manufacturer || val.productName) {
+                    items.push('<li class="list-group-item">' + val.manufacturer + ' ' + val.productName
+                        + '<span class="pull-right"><button type="button" class="available-hide btn btn-success btn-xs">Hide</button></span></li>');
+                }
+            });
+
+            $("<ul/>", {
+                "class": "list-group",
+                html: items.join("")
+            }).prependTo("#available-devices");
+        });
     </script>
 </head>
 <body>
@@ -120,6 +136,12 @@
                     </span>
                 </p>
             </div>
+        </div>
+        
+        <!-- List available devices -->
+        <div class="panel panel-default">
+            <div class="panel-heading">Available USB/Bluetooth/HID devices</div>
+            <div class="panel-body" id="available-devices"></div>
         </div>
 
         <!-- Add affected devices -->

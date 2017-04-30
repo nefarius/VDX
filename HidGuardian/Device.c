@@ -228,7 +228,7 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     stringAttributes.ParentObject = col;
 
     //
-    // Get the multi-string value
+    // Get the multi-string value for exempted devices
     // 
     status = WdfRegistryQueryMultiString(
         keyParams,
@@ -273,7 +273,7 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     stringAttributes.ParentObject = col;
 
     //
-    // Get the multi-string value
+    // Get the multi-string value for affected devices
     // 
     status = WdfRegistryQueryMultiString(
         keyParams,
@@ -281,31 +281,29 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
         &stringAttributes,
         col
     );
-    if (!NT_SUCCESS(status)) {
-        KdPrint((DRIVERNAME "WdfRegistryQueryMultiString failed: 0x%x\n", status));
-        return status;
-    }
-
-    // 
-    // Get affected values
-    // 
-    for (i = 0; i < WdfCollectionGetCount(col); i++)
+    if (NT_SUCCESS(status))
     {
-        WdfStringGetUnicodeString(WdfCollectionGetItem(col, i), &currentHardwareID);
+        // 
+        // Get affected values
+        // 
+        for (i = 0; i < WdfCollectionGetCount(col); i++)
+        {
+            WdfStringGetUnicodeString(WdfCollectionGetItem(col, i), &currentHardwareID);
 
-        KdPrint((DRIVERNAME "My ID %wZ vs current affected ID %wZ\n", &myHardwareID, &currentHardwareID));
+            KdPrint((DRIVERNAME "My ID %wZ vs current affected ID %wZ\n", &myHardwareID, &currentHardwareID));
 
-        affected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
-        KdPrint((DRIVERNAME "Are we affected: %d\n", affected));
+            affected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
+            KdPrint((DRIVERNAME "Are we affected: %d\n", affected));
 
-        if (affected) break;
+            if (affected) break;
+        }
     }
 
     WdfRegistryClose(keyParams);
     WdfObjectDelete(col);
 
     //
-    // If Hardware ID wasn't found, report failure so the filter gets unloaded
+    // If Hardware ID wasn't found (or Force is disabled), report failure so the filter gets unloaded
     // 
     return (affected) ? STATUS_SUCCESS : STATUS_DEVICE_FEATURE_NOT_SUPPORTED;
 }

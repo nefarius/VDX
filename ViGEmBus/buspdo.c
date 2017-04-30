@@ -664,6 +664,9 @@ Pdo_EvtDeviceRelationsQuery(
     DEVICE_RELATION_TYPE  RelationType
 )
 {
+    UNREFERENCED_PARAMETER(Device);
+    UNREFERENCED_PARAMETER(RelationType);
+
     KdPrint((DRIVERNAME "Pdo_EvtDeviceRelationsQuery Device: 0x%X\n", Device));
     KdPrint((DRIVERNAME "Pdo_EvtDeviceRelationsQuery RelationType: 0x%X\n", RelationType));
 }

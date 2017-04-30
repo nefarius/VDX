@@ -27,6 +27,8 @@ typedef void (WINAPI* HidGuardianClose_t)();
 static HidGuardianOpen_t fpOpen;
 static HidGuardianOpen_t fpClose;
 
+auto cerberus = LoadLibrary(L"HidCerberus.Lib.dll");
+
 fpOpen = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianOpen"));
 fpClose = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianClose"));
 

@@ -17,3 +17,22 @@
  11. Build the library
  12. ???
  13. Profit!
+
+## How to use
+### Native C/C++
+``` C
+typedef void (WINAPI* HidGuardianOpen_t)();
+typedef void (WINAPI* HidGuardianClose_t)();
+
+static HidGuardianOpen_t fpOpen;
+static HidGuardianOpen_t fpClose;
+
+fpOpen = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianOpen"));
+fpClose = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianClose"));
+
+// Before opening HID device
+if (fpOpen) fpOpen();
+
+// Before program exit
+if (fpClose) fpClose();
+```

@@ -11,6 +11,16 @@
 // Windows Header Files:
 #include <windows.h>
 
+#include <Poco/Message.h>
+#include <Poco/Logger.h>
+#include <Poco/FileChannel.h>
+#include <Poco/AutoPtr.h>
+#include <Poco/PatternFormatter.h>
+#include <Poco/FormattingChannel.h>
 
-
-// TODO: reference additional headers your program requires here
+using Poco::Message;
+using Poco::Logger;
+using Poco::FileChannel;
+using Poco::AutoPtr;
+using Poco::PatternFormatter;
+using Poco::FormattingChannel;

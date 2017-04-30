@@ -27,20 +27,28 @@ SOFTWARE.
 #include "stdafx.h"
 
 
-BOOL APIENTRY DllMain( HMODULE hModule,
-                       DWORD  ul_reason_for_call,
-                       LPVOID lpReserved
-					 )
+BOOL APIENTRY DllMain(HMODULE hModule,
+    DWORD  ul_reason_for_call,
+    LPVOID lpReserved
+)
 {
-	switch (ul_reason_for_call)
-	{
-	case DLL_PROCESS_ATTACH:
-	case DLL_THREAD_ATTACH:
-	case DLL_THREAD_DETACH:
-	case DLL_PROCESS_DETACH:
-		break;
-	default: break;
-	}
-	return TRUE;
+    AutoPtr<FileChannel> pFileChannel(new FileChannel);
+    pFileChannel->setProperty("path", "HidCerberus.Lib.log");
+    AutoPtr<PatternFormatter> pPF(new PatternFormatter);
+    pPF->setProperty("pattern", "%Y-%m-%d %H:%M:%S.%i %s [%p]: %t");
+    AutoPtr<FormattingChannel> pFC(new FormattingChannel(pPF, pFileChannel));
+
+    switch (ul_reason_for_call)
+    {
+    case DLL_PROCESS_ATTACH:
+        Logger::root().setChannel(pFC);
+        break;
+    case DLL_THREAD_ATTACH:
+    case DLL_THREAD_DETACH:
+    case DLL_PROCESS_DETACH:
+        break;
+    default: break;
+    }
+    return TRUE;
 }
 

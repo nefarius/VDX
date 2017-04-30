@@ -35,11 +35,13 @@ SOFTWARE.
 #include <Poco/Net/HTTPMessage.h>
 #include <Poco/Net/HTTPResponse.h>
 
+
 using Poco::URI;
 using Poco::Net::HTTPClientSession;
 using Poco::Net::HTTPRequest;
 using Poco::Net::HTTPMessage;
 using Poco::Net::HTTPResponse;
+
 
 BOOL SendRequest(std::string addUri)
 {
@@ -58,24 +60,38 @@ BOOL SendRequest(std::string addUri)
 
 HIDCERBERUSLIB_API BOOL HidGuardianOpen()
 {
+    auto& logger = Logger::get("HidCerberus.Lib:HidGuardianOpen");
+
     try
     {
         std::string addUri("http://localhost:26762/v1/hidguardian/whitelist/add/");
         addUri += std::to_string(GetCurrentProcessId());
+        logger.information("Sending add request: %s", addUri);
 
         return SendRequest(addUri);
     }
-    catch (...) { return FALSE; }
+    catch (std::exception const & ex)
+    {
+        logger.error("Couldn't send request: %s", std::string(ex.what()));
+        return FALSE;
+    }
 }
 
 HIDCERBERUSLIB_API BOOL HidGuardianClose()
 {
+    auto& logger = Logger::get("HidCerberus.Lib:HidGuardianClose");
+
     try
     {
         std::string addUri("http://localhost:26762/v1/hidguardian/whitelist/remove/");
         addUri += std::to_string(GetCurrentProcessId());
+        logger.information("Sending remove request: %s", addUri);
 
         return SendRequest(addUri);
     }
-    catch (...) { return FALSE; }
+    catch (std::exception const & ex)
+    {
+        logger.error("Couldn't send request: %s", std::string(ex.what()));
+        return FALSE;
+    }
 }

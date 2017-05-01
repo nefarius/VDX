@@ -15,84 +15,7 @@
     <script src="/Content/knockout-min.js"></script>
     <script src="/Content/knockout.mapping.min.js"></script>
 
-    <script>
-        /* Publish list of affected devices */
-        $.getJSON("/v1/hidguardian/affected/get", function (data) {
-            var items = [];
-            $.each(data, function (key, val) {
-                items.push('<li class="list-group-item">'
-                    + val
-                    + '<span class="pull-right"><button type="button" class="affected-remove btn btn-primary btn-xs">Remove</button></span></li>');
-            });
-
-            if (items.length === 0) {
-                $("#purge-affected-devices").hide();
-            }
-
-            $("<ul/>", {
-                "class": "list-group",
-                html: items.join("")
-            }).prependTo("#affected-devices");
-        });
-
-        /* Publish list of whitelisted PIDs */
-        $.getJSON("/v1/hidguardian/whitelist/get", function (data) {
-            var items = [];
-            $.each(data, function (key, val) {
-                items.push('<li class="list-group-item">'
-                    + val
-                    + '<span class="pull-right"><button type="button" class="whitelist-remove btn btn-primary btn-xs">Remove</button></span></li>');
-            });
-
-            if (items.length === 0) {
-                $("#purge-whitelisted-pids").hide();
-            }
-
-            $("<ul/>", {
-                "class": "list-group",
-                html: items.join("")
-            }).prependTo("#whitelisted-pids");
-        });
-
-        /* Submit forms via AJAX */
-        $(function () {
-            $('#add-affected-devices').ajaxForm(function () {
-                location.reload();
-            });
-        });
-
-        /* Purge affected devices */
-        $(document).on("click", "#purge-affected-devices", function () {
-            $.get("/v1/hidguardian/affected/purge", function (data, status) {
-                location.reload();
-            });
-        });
-
-        /* Purge affected devices */
-        $(document).on("click", "#purge-whitelisted-pids", function () {
-            $.get("/v1/hidguardian/whitelist/purge", function (data, status) {
-                location.reload();
-            });
-        });
-
-        /* Click handler for individual affected remove button  */
-        $(document).on("click", ".affected-remove", function () {
-            $.post("/v1/hidguardian/affected/remove", {
-                hwids: $(this).closest('li').clone().children().remove().end().text()
-            })
-                .done(function (data) {
-                    location.reload();
-                });
-        });
-
-        /* Click handler for individual whitelist remove button  */
-        $(document).on("click", ".whitelist-remove", function () {
-            $.get("/v1/hidguardian/whitelist/remove/"
-                + $(this).closest('li').clone().children().remove().end().text(), function (data, status) {
-                    location.reload();
-                });
-        });
-    </script>
+    <script src="Content/custom/api-requests.js"></script>
 </head>
 <body>
 
@@ -163,15 +86,6 @@
         </div>
     </div>
 
-    <script>
-        /* Publish list of available devices */
-        $.getJSON("/v1/hid/devices/get", function (data) {
-            function HidDevicesViewModel() {
-                var self = this;
-                self.hidDevices = ko.observableArray(data);
-            }
-            ko.applyBindings(new HidDevicesViewModel());
-        });
-    </script>
+    <script src="Content/custom/viewmodels.js"></script>
 </body>
 </html>

@@ -22,6 +22,12 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
             integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
             crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"
+            integrity="sha384-/EjRuG6YTb6zCFou+DBnYCi5u9E1RjUMJanyGOL7DUYLp6wSCUuHNhd58uoGj7jh"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min.js"
+            integrity="sha384-5iaafnDCmIZLLNfCHYJwy/FQZf6AXVLgSx8wPvUvkOOOFk7ODxEXwdfxgHW3dv4a"
+            crossorigin="anonymous"></script>
 
     <script>
         /* Publish list of affected devices */
@@ -100,22 +106,6 @@
                     location.reload();
                 });
         });
-
-        /* Publish list of available devices */
-        $.getJSON("/v1/hid/devices/get", function (data) {
-            var items = [];
-            $.each(data, function (key, val) {
-                if (val.manufacturer || val.productName) {
-                    items.push('<li class="list-group-item">' + val.manufacturer + ' ' + val.productName
-                        + '<span class="pull-right"><button type="button" class="available-hide btn btn-success btn-xs">Hide</button></span></li>');
-                }
-            });
-
-            $("<ul/>", {
-                "class": "list-group",
-                html: items.join("")
-            }).prependTo("#available-devices");
-        });
     </script>
 </head>
 <body>
@@ -137,11 +127,26 @@
                 </p>
             </div>
         </div>
-        
+
         <!-- List available devices -->
         <div class="panel panel-default">
             <div class="panel-heading">Available USB/Bluetooth/HID devices</div>
-            <div class="panel-body" id="available-devices"></div>
+            <div class="panel-body" id="available-devices">
+                <ul class="list-group" data-bind="foreach: hidDevices">
+                    <li class="list-group-item">
+                        <h4 class="list-group-item-heading">
+                            <span data-bind="text: manufacturer"></span>
+                            <span data-bind="if: (!manufacturer)">Unknown</span>
+                            <span data-bind="text: productName"></span>
+                            <span data-bind="if: (!productName)">Unknown</span>
+                            <span class="pull-right"><button type="button" class="available-hide btn btn-success btn-xs">Hide</button></span>
+                        </h4>
+                        <p class="list-group-item-text">
+                            <span class="label label-default" data-bind="text: hardwareId"></span>
+                        </p>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <!-- Add affected devices -->
@@ -172,5 +177,15 @@
         </div>
     </div>
 
+    <script>
+        /* Publish list of available devices */
+        $.getJSON("/v1/hid/devices/get", function (data) {
+            function HidDevicesViewModel() {
+                var self = this;
+                self.hidDevices = ko.observableArray(data);
+            }
+            ko.applyBindings(new HidDevicesViewModel());
+        });
+    </script>
 </body>
 </html>

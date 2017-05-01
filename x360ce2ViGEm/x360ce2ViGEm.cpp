@@ -34,8 +34,8 @@ SOFTWARE.
 
 #pragma warning(disable: 4995)
 
-typedef void (WINAPI* HidGuardianOpen_t)();
-typedef void (WINAPI* HidGuardianClose_t)();
+typedef BOOL(WINAPI* HidGuardianOpen_t)();
+typedef BOOL(WINAPI* HidGuardianClose_t)();
 
 static HidGuardianOpen_t fpOpen;
 static HidGuardianOpen_t fpClose;
@@ -64,7 +64,7 @@ int main()
     fpClose = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianClose"));
 
     printf("Bypassing HidGuardian\n");
-    if (fpOpen) fpOpen();
+    if (fpOpen && fpOpen()) printf("Process whitelisted\n");
     else printf("Warning: couldn't contatc HidGuardian\n");
 
     printf("Initializing emulation driver\n");
@@ -147,7 +147,7 @@ BOOL WINAPI HandlerRoutine(
     case CTRL_C_EVENT: // Ctrl+C
     case CTRL_BREAK_EVENT: // Ctrl+Break
     case CTRL_CLOSE_EVENT: // Closing the console window
-        fpClose();
+        if (fpClose)fpClose();
         return TRUE;
     default: break;
     }

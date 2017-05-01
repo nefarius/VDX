@@ -104,8 +104,8 @@ HidGuardianCreateDevice(
         //
         // Get Hardware ID string
         // 
-        deviceContext->HardwareIDMemory = memory;
-        deviceContext->HardwareID = WdfMemoryGetBuffer(memory, NULL);
+        deviceContext->HardwareIDsMemory = memory;
+        deviceContext->HardwareIDs = WdfMemoryGetBuffer(memory, NULL);
 
         //
         // Initialize the I/O Package and any Queues
@@ -186,22 +186,15 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     WDFKEY                  keyParams;
     BOOLEAN                 affected = FALSE;
     ULONG                   force = 0;
+    PCWSTR                  szIter = NULL;
     DECLARE_CONST_UNICODE_STRING(valueAffectedMultiSz, L"AffectedDevices");
     DECLARE_CONST_UNICODE_STRING(valueForceUl, L"Force");
     DECLARE_CONST_UNICODE_STRING(valueExemptedMultiSz, L"ExemptedDevices");
     DECLARE_UNICODE_STRING_SIZE(currentHardwareID, MAX_HARDWARE_ID_SIZE);
     DECLARE_UNICODE_STRING_SIZE(myHardwareID, MAX_HARDWARE_ID_SIZE);
 
-    PAGED_CODE();
 
-    //
-    // Convert wide into Unicode string
-    // 
-    status = RtlUnicodeStringInit(&myHardwareID, DeviceContext->HardwareID);
-    if (!NT_SUCCESS(status)) {
-        KdPrint((DRIVERNAME "RtlUnicodeStringInit failed: 0x%x\n", status));
-        return status;
-    }
+    PAGED_CODE();
 
     //
     // Create collection holding the Hardware IDs
@@ -238,23 +231,38 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     );
     if (NT_SUCCESS(status))
     {
+        //
+        // Walk through devices Hardware IDs
         // 
-        // Get exempted values
-        // 
-        for (i = 0; i < WdfCollectionGetCount(col); i++)
+        for (szIter = DeviceContext->HardwareIDs; *szIter; szIter += wcslen(szIter) + 1)
         {
-            WdfStringGetUnicodeString(WdfCollectionGetItem(col, i), &currentHardwareID);
+            //
+            // Convert wide into Unicode string
+            // 
+            status = RtlUnicodeStringInit(&myHardwareID, szIter);
+            if (!NT_SUCCESS(status)) {
+                KdPrint((DRIVERNAME "RtlUnicodeStringInit failed: 0x%x\n", status));
+                return status;
+            }
 
-            KdPrint((DRIVERNAME "My ID %wZ vs current exempted ID %wZ\n", &myHardwareID, &currentHardwareID));
-
-            affected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
-            KdPrint((DRIVERNAME "Are we exempted: %d\n", affected));
-
-            if (affected)
+            // 
+            // Get exempted values
+            // 
+            for (i = 0; i < WdfCollectionGetCount(col); i++)
             {
-                WdfRegistryClose(keyParams);
-                WdfObjectDelete(col);
-                return STATUS_DEVICE_FEATURE_NOT_SUPPORTED;
+                WdfStringGetUnicodeString(WdfCollectionGetItem(col, i), &currentHardwareID);
+
+                KdPrint((DRIVERNAME "My ID %wZ vs current exempted ID %wZ\n", &myHardwareID, &currentHardwareID));
+
+                affected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
+                KdPrint((DRIVERNAME "Are we exempted: %d\n", affected));
+
+                if (affected)
+                {
+                    WdfRegistryClose(keyParams);
+                    WdfObjectDelete(col);
+                    return STATUS_DEVICE_FEATURE_NOT_SUPPORTED;
+                }
             }
         }
     }
@@ -283,19 +291,34 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
     );
     if (NT_SUCCESS(status))
     {
+        //
+        // Walk through devices Hardware IDs
         // 
-        // Get affected values
-        // 
-        for (i = 0; i < WdfCollectionGetCount(col); i++)
+        for (szIter = DeviceContext->HardwareIDs; *szIter; szIter += wcslen(szIter) + 1)
         {
-            WdfStringGetUnicodeString(WdfCollectionGetItem(col, i), &currentHardwareID);
+            //
+            // Convert wide into Unicode string
+            // 
+            status = RtlUnicodeStringInit(&myHardwareID, szIter);
+            if (!NT_SUCCESS(status)) {
+                KdPrint((DRIVERNAME "RtlUnicodeStringInit failed: 0x%x\n", status));
+                return status;
+            }
 
-            KdPrint((DRIVERNAME "My ID %wZ vs current affected ID %wZ\n", &myHardwareID, &currentHardwareID));
+            // 
+            // Get affected values
+            // 
+            for (i = 0; i < WdfCollectionGetCount(col); i++)
+            {
+                WdfStringGetUnicodeString(WdfCollectionGetItem(col, i), &currentHardwareID);
 
-            affected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
-            KdPrint((DRIVERNAME "Are we affected: %d\n", affected));
+                KdPrint((DRIVERNAME "My ID %wZ vs current affected ID %wZ\n", &myHardwareID, &currentHardwareID));
 
-            if (affected) break;
+                affected = RtlEqualUnicodeString(&myHardwareID, &currentHardwareID, TRUE);
+                KdPrint((DRIVERNAME "Are we affected: %d\n", affected));
+
+                if (affected) break;
+            }
         }
     }
 

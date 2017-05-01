@@ -42,8 +42,8 @@ EXTERN_C_START
 //
 typedef struct _DEVICE_CONTEXT
 {
-    WDFMEMORY   HardwareIDMemory;
-    PCWSTR      HardwareID;
+    WDFMEMORY   HardwareIDsMemory;
+    PCWSTR      HardwareIDs;
 
 } DEVICE_CONTEXT, *PDEVICE_CONTEXT;
 

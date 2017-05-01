@@ -50,7 +50,7 @@ $(document).on("click", "#purge-affected-devices", function () {
     });
 });
 
-/* Purge affected devices */
+/* Purge whitelisted devices */
 $(document).on("click", "#purge-whitelisted-pids", function () {
     $.get("/v1/hidguardian/whitelist/purge", function (data, status) {
         location.reload();

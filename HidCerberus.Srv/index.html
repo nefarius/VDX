@@ -48,7 +48,9 @@
                             <span data-bind="if: (!manufacturer)">Unknown</span>
                             <span data-bind="text: productName"></span>
                             <span data-bind="if: (!productName)">Unknown</span>
-                            <span class="pull-right"><button type="button" class="available-hide btn btn-success btn-xs">Hide</button></span>
+                            <span class="pull-right">
+                                <button type="button" class="available-hide btn btn-success btn-xs" data-bind="click: $parent.hideDevice">Hide</button>
+                            </span>
                         </h4>
                         <p class="list-group-item-text">
                             <span class="label label-default" data-bind="text: hardwareId"></span>

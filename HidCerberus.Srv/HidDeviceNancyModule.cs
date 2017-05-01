@@ -7,12 +7,7 @@ namespace HidCerberus.Srv
     {
         public HidDeviceNancyModule()
         {
-            Get["/v1/hid/devices/get"] = _ =>
-            {
-                var dl = new HidDeviceLoader();
-                
-                return Response.AsJson(dl.GetDevices());
-            };
+            Get["/v1/hid/devices/get"] = _ => Response.AsJson(new HidDeviceLoader().GetDevices());
         }
     }
 }

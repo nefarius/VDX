@@ -21,8 +21,8 @@
 ## How to use
 ### Native C/C++
 ``` C
-typedef void (WINAPI* HidGuardianOpen_t)();
-typedef void (WINAPI* HidGuardianClose_t)();
+typedef BOOL (WINAPI* HidGuardianOpen_t)();
+typedef BOOL (WINAPI* HidGuardianClose_t)();
 
 static HidGuardianOpen_t fpOpen;
 static HidGuardianOpen_t fpClose;
@@ -33,8 +33,8 @@ fpOpen = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardi
 fpClose = reinterpret_cast<HidGuardianOpen_t>(GetProcAddress(cerberus, "HidGuardianClose"));
 
 // Before opening HID device
-if (fpOpen) fpOpen();
+if (fpOpen && fpOpen()) printf("Success");
 
 // Before program exit
-if (fpClose) fpClose();
+if (fpClose && fpClose()) printf("Success");
 ```

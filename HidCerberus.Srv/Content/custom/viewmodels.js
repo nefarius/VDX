@@ -6,7 +6,7 @@ $.getJSON("/v1/hid/devices/get", function (data) {
 
         self.hideDevice = function (device) {
             $.post("/v1/hidguardian/affected/add", { hwids: device.hardwareId }, function(data, status) {
-                location.reload();
+                $("#submitted-hide-dialog").modal();
             });
         }
     }

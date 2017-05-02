@@ -74,3 +74,8 @@ $(document).on("click", ".whitelist-remove", function () {
             location.reload();
         });
 });
+
+/* Click handler for modal dialog close button  */
+$(document).on("click", ".hide-dialog-close", function () {
+    location.reload();
+});

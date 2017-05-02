@@ -37,7 +37,7 @@
             </div>
         </div>
 
-        <!-- List available devices -->
+        <!-- List/add available devices -->
         <div class="panel panel-default">
             <div class="panel-heading">Available USB/Bluetooth/HID devices</div>
             <div class="panel-body" id="available-devices">
@@ -84,6 +84,27 @@
                         <button id="purge-whitelisted-pids" type="submit" class="btn btn-danger btn-sm">Remove all</button>
                     </span>
                 </p>
+            </div>
+        </div>
+        
+        <div id="submitted-hide-dialog" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Device added to blocklist successfully</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Access to the selected device is now blocked from any process which is not whitelisted. 
+                            For the changes to take effect <strong>you have to unplug the device and plug it back in</strong>.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default hide-dialog-close" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>

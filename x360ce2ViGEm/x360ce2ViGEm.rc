@@ -61,8 +61,8 @@ IDI_ICON1               ICON                    "Xbox 360 Elite Pad.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,8,0,0
- PRODUCTVERSION 1,8,0,0
+ FILEVERSION 1,8,1,0
+ PRODUCTVERSION 1,8,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -79,12 +79,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Nefarius Software Solutions"
             VALUE "FileDescription", "x360ce2ViGEm"
-VALUE "FileVersion", "1.8.0.0"
+VALUE "FileVersion", "1.8.1.0"
             VALUE "InternalName", "x360ce2ViGEm"
             VALUE "LegalCopyright", "Copyright (C) Benjamin Höglinger 2016"
             VALUE "OriginalFilename", "x360ce2V.exe"
             VALUE "ProductName", "x360ce2ViGEm"
-VALUE "ProductVersion", "1.8.0.0"
+VALUE "ProductVersion", "1.8.1.0"
         END
     END
     BLOCK "VarFileInfo"

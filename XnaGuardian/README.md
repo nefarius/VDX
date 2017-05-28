@@ -12,10 +12,16 @@ This projects satisfies a fairly specific demand. Picture the following setup:
  * The button/axis override/merging behavior should be as open and dynamic as possible.
 
 ## How
-TDB
+To achive the described demand the flow of input data has to be intercepted and manipulated at multiple levels in different driver stacks. A class filter driver provides the necessary logic and attaches itself at multiple device classes where it fulfills class-specific filtering.
 
-## The Real Solution
-TDB
+### XnaComposite
+TBD
+
+### XboxComposite
+TBD
+
+### HIDClass
+TBD
 
 ## Demo
 TDB

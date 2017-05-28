@@ -1,5 +1,6 @@
 # HidCerberus Library
 ## 3rd party dependencies
+ * [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk)
  * [POCO C++ libraries](https://pocoproject.org/)
 
 ## How to build

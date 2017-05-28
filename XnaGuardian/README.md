@@ -15,7 +15,7 @@ This projects satisfies a fairly specific demand. Picture the following setup:
 To achive the described demand the flow of input data has to be intercepted and manipulated at multiple levels in different driver stacks. A class filter driver provides the necessary logic and attaches itself at multiple device classes where it fulfills class-specific filtering.
 
 ### XnaComposite
-TBD
+Microsoft Xbox 360 (wired or wireless) and compatible controllers are grouped by the `XnaComposite` (`{D61CA365-5AF4-4486-998B-9DB4734C6CA3}`) class. Currently the official Microsoft `XUSB22.sys` function driver gets attached to these devices, which - among other things - provides an interface for the `XInput*` user-mode libraries and axposes a virtual HID device for DirectInput compatibility.
 
 ### XboxComposite
 TBD

@@ -1,5 +1,5 @@
 ﻿/* Publish list of affected devices */
-$.getJSON("/v1/hidguardian/affected/get", function (data) {
+$.getJSON("/api/v1/hidguardian/affected/get", function (data) {
     var items = [];
     $.each(data, function (key, val) {
         items.push('<li class="list-group-item">'
@@ -18,7 +18,7 @@ $.getJSON("/v1/hidguardian/affected/get", function (data) {
 });
 
 /* Publish list of whitelisted PIDs */
-$.getJSON("/v1/hidguardian/whitelist/get", function (data) {
+$.getJSON("/api/v1/hidguardian/whitelist/get", function (data) {
     var items = [];
     $.each(data, function (key, val) {
         items.push('<li class="list-group-item">'
@@ -45,21 +45,21 @@ $(function () {
 
 /* Purge affected devices */
 $(document).on("click", "#purge-affected-devices", function () {
-    $.get("/v1/hidguardian/affected/purge", function (data, status) {
+    $.get("/api/v1/hidguardian/affected/purge", function (data, status) {
         location.reload();
     });
 });
 
 /* Purge whitelisted devices */
 $(document).on("click", "#purge-whitelisted-pids", function () {
-    $.get("/v1/hidguardian/whitelist/purge", function (data, status) {
+    $.get("/api/v1/hidguardian/whitelist/purge", function (data, status) {
         location.reload();
     });
 });
 
 /* Click handler for individual affected remove button  */
 $(document).on("click", ".affected-remove", function () {
-    $.post("/v1/hidguardian/affected/remove", {
+    $.post("/api/v1/hidguardian/affected/remove", {
         hwids: $(this).closest('li').clone().children().remove().end().text()
     })
         .done(function (data) {
@@ -69,7 +69,7 @@ $(document).on("click", ".affected-remove", function () {
 
 /* Click handler for individual whitelist remove button  */
 $(document).on("click", ".whitelist-remove", function () {
-    $.get("/v1/hidguardian/whitelist/remove/"
+    $.get("/api/v1/hidguardian/whitelist/remove/"
         + $(this).closest('li').clone().children().remove().end().text(), function (data, status) {
             location.reload();
         });

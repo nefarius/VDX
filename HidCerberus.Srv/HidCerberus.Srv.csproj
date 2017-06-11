@@ -84,9 +84,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HidDeviceNancyModule.cs" />
-    <Compile Include="HidGuardianNancyModule.cs" />
-    <Compile Include="NancySelfHost.cs" />
+    <Compile Include="NancyFx\Modules\HidDeviceNancyModuleV1.cs" />
+    <Compile Include="NancyFx\Modules\HidGuardianNancyModuleV1.cs" />
+    <Compile Include="NancyFx\Modules\IndexModule.cs" />
+    <Compile Include="NancyFx\NancySelfHost.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">

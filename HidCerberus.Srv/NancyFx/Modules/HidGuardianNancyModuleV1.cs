@@ -6,9 +6,9 @@ using Microsoft.Win32;
 using Nancy;
 using Nancy.Extensions;
 
-namespace HidCerberus.Srv
+namespace HidCerberus.Srv.NancyFx.Modules
 {
-    public class HidGuardianNancyModule : NancyModule
+    public class HidGuardianNancyModuleV1 : NancyModule
     {
         private static readonly IEnumerable<object> ResponseOk = new[] {"OK"};
         private static readonly string[] HardwareIdSplitters = {"\r\n", "\n"};
@@ -17,17 +17,11 @@ namespace HidCerberus.Srv
             new Regex(
                 @"HID\\[{(]?[0-9A-Fa-z]{8}[-]?([0-9A-Fa-z]{4}[-]?){3}[0-9A-Fa-z]{12}[)}]?|HID\\VID_[a-zA-Z0-9]{4}&PID_[a-zA-Z0-9]{4}");
 
-        public HidGuardianNancyModule()
+        public HidGuardianNancyModuleV1() : base("/api/v1")
         {
-            #region Index
-
-            Get["/"] = _ => View["index"];
-
-            #endregion
-
             #region Whitelist
 
-            Get["/v1/hidguardian/whitelist/add/{id:int}"] = parameters =>
+            Get["/hidguardian/whitelist/add/{id:int}"] = parameters =>
             {
                 var id = int.Parse(parameters.id);
 
@@ -36,7 +30,7 @@ namespace HidCerberus.Srv
                 return Response.AsJson(ResponseOk);
             };
 
-            Get["/v1/hidguardian/whitelist/remove/{id:int}"] = parameters =>
+            Get["/hidguardian/whitelist/remove/{id:int}"] = parameters =>
             {
                 var id = int.Parse(parameters.id);
 
@@ -45,7 +39,7 @@ namespace HidCerberus.Srv
                 return Response.AsJson(ResponseOk);
             };
 
-            Get["/v1/hidguardian/whitelist/get"] = _ =>
+            Get["/hidguardian/whitelist/get"] = _ =>
             {
                 var wlKey = Registry.LocalMachine.OpenSubKey(HidWhitelistRegistryKeyBase);
                 var list = wlKey?.GetSubKeyNames();
@@ -54,7 +48,7 @@ namespace HidCerberus.Srv
                 return Response.AsJson(list);
             };
 
-            Get["/v1/hidguardian/whitelist/purge"] = _ =>
+            Get["/hidguardian/whitelist/purge"] = _ =>
             {
                 var wlKey = Registry.LocalMachine.OpenSubKey(HidWhitelistRegistryKeyBase);
 
@@ -68,7 +62,7 @@ namespace HidCerberus.Srv
 
             #region Force
 
-            Get["/v1/hidguardian/force/get"] = _ =>
+            Get["/hidguardian/force/get"] = _ =>
             {
                 var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase);
                 var force = wlKey?.GetValue("Force");
@@ -77,7 +71,7 @@ namespace HidCerberus.Srv
                 return Response.AsJson(force);
             };
 
-            Get["/v1/hidguardian/force/enable"] = _ =>
+            Get["/hidguardian/force/enable"] = _ =>
             {
                 var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true);
                 wlKey?.SetValue("Force", 1);
@@ -86,7 +80,7 @@ namespace HidCerberus.Srv
                 return Response.AsJson(ResponseOk);
             };
 
-            Get["/v1/hidguardian/force/disable"] = _ =>
+            Get["/hidguardian/force/disable"] = _ =>
             {
                 var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true);
                 wlKey?.SetValue("Force", 0);
@@ -99,7 +93,7 @@ namespace HidCerberus.Srv
 
             #region Affected
 
-            Get["/v1/hidguardian/affected/get"] = _ =>
+            Get["/hidguardian/affected/get"] = _ =>
             {
                 var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase);
                 var affected = wlKey?.GetValue("AffectedDevices") as string[];
@@ -108,7 +102,7 @@ namespace HidCerberus.Srv
                 return Response.AsJson(affected);
             };
 
-            Post["/v1/hidguardian/affected/add"] = parameters =>
+            Post["/hidguardian/affected/add"] = parameters =>
             {
                 var hwids = Uri.UnescapeDataString(Request.Body.AsString().Split('=')[1]);
 
@@ -138,7 +132,7 @@ namespace HidCerberus.Srv
                 return Response.AsJson(ResponseOk);
             };
 
-            Post["/v1/hidguardian/affected/remove"] = parameters =>
+            Post["/hidguardian/affected/remove"] = parameters =>
             {
                 var hwids = Uri.UnescapeDataString(Request.Body.AsString().Split('=')[1]);
 
@@ -167,7 +161,7 @@ namespace HidCerberus.Srv
                 return Response.AsJson(ResponseOk);
             };
 
-            Get["/v1/hidguardian/affected/purge"] = _ =>
+            Get["/hidguardian/affected/purge"] = _ =>
             {
                 var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true);
                 wlKey?.SetValue("AffectedDevices", new string[] {}, RegistryValueKind.MultiString);

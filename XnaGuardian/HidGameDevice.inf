@@ -1,0 +1,116 @@
+[Version]
+Signature="$Windows NT$"
+Class=HIDClass
+ClassGUID={745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Provider=%Provider%
+DriverVer=
+CatalogFile=XnaGuardian.cat
+
+[DestinationDirs]
+DefaultDestDir = 12 ; DIRID_DRIVERS
+XnaGuardian_Inst_CoInstaller_CopyFiles = 11
+
+[ControlFlags]
+; We don't want our device to be installable via the non-PnP hardware dialogs
+ExcludeFromSelect = *
+
+; Manufacturer Section
+; ---------------------------------------------------------
+[Manufacturer]
+%NSS%=NefariusSoftwareSolutions,NT$ARCH$
+
+; Devices Section
+; ---------------------------------------------------------
+[NefariusSoftwareSolutions.NT$ARCH$]
+%HidUsbDeviceName%=XnaGuardian_Inst, HID_DEVICE_SYSTEM_GAME
+
+; Install Section
+; ---------------------------------------------------------
+[XnaGuardian_Inst.NT]
+Include = INPUT.INF
+Needs = HID_Inst.NT
+CopyFiles = XnaGuardian_Inst_CopyFiles.NT
+
+[XnaGuardian_Inst.NT.HW]
+Include = INPUT.INF
+Needs = HID_Inst.NT.Hw
+AddReg = XnaGuardian_Inst_HWAddReg.NT
+
+[XnaGuardian_Inst_HWAddReg.NT]
+HKR,,"LowerFilters",0x00010000,"XnaGuardian"
+
+[XnaGuardian_Inst_CopyFiles.NT]
+XnaGuardian.sys
+
+[XnaGuardian_Inst.NT.Services]
+Include = INPUT.INF
+Needs = HID_Inst.NT.Services
+AddService = XnaGuardian, , XnaGuardian_Service_Inst
+
+[XnaGuardian_Service_Inst]
+DisplayName    = %XnaGuardian.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\XnaGuardian.sys
+
+; Source Media Section
+; ---------------------------------------------------------
+[SourceDisksNames]
+1 = %DiskName%
+
+[SourceDisksFiles]
+XnaGuardian.sys = 1
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;
+;--- XnaGuardian_Inst WDF Coinstaller installation ------
+;
+
+[XnaGuardian_Inst.NT.CoInstallers]
+AddReg=XnaGuardian_Inst_CoInstaller_AddReg
+CopyFiles=XnaGuardian_Inst_CoInstaller_CopyFiles
+
+[XnaGuardian_Inst_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[XnaGuardian_Inst_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[XnaGuardian_Inst.NT.Wdf]
+KmdfService = XnaGuardian, XnaGuardian_wdfsect
+[XnaGuardian_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+
+; Strings Section
+; ---------------------------------------------------------
+[Strings]
+; Provider names
+Provider = "Nefarius Software Solutions"
+
+; Mfg names
+NSS = "Nefarius Software Solutions"
+
+; Service names
+XnaGuardian.SvcDesc = "XnaGuardian Service"
+
+; Media names
+DiskName = "XnaGuardian Driver Disk"
+
+; HID device IDs
+HidUsbDeviceName = "XnaGuardian Device"
+
+; Standard defs
+SPSVCINST_TAGTOFRONT  = 0x00000001
+SPSVCINST_ASSOCSERVICE= 0x00000002
+SERVICE_KERNEL_DRIVER = 1
+SERVICE_BOOT_START    = 0
+SERVICE_SYSTEM_START  = 1
+SERVICE_AUTO_START    = 2
+SERVICE_ERROR_NORMAL  = 1
+SERVICE_ERROR_IGNORE  = 0
+REG_EXPAND_SZ         = 0x00020000
+REG_DWORD             = 0x00010001
+REG_SZ                = 0x00000000
+

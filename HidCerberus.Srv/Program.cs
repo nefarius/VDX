@@ -1,4 +1,5 @@
-﻿using Nancy;
+﻿using HidCerberus.Srv.NancyFx;
+using Nancy;
 using Topshelf;
 
 namespace HidCerberus.Srv

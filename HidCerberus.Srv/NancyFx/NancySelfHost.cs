@@ -1,7 +1,7 @@
 ﻿using HidCerberus.Srv.Properties;
 using Nancy.Hosting.Self;
 
-namespace HidCerberus.Srv
+namespace HidCerberus.Srv.NancyFx
 {
     public class NancySelfHost
     {

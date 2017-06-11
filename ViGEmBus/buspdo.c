@@ -106,7 +106,15 @@ NTSTATUS Bus_CreatePdo(
     // Bus is power policy owner
     WdfDeviceInitSetPowerPolicyOwnership(DeviceInit, FALSE);
 
-    //WdfDeviceInitAssignWdmIrpPreprocessCallback(DeviceInit, Pdo_EvtDeviceWdmIrpPreprocess, IRP_MJ_PNP, NULL, 0);
+    //
+    // Catch IRP_MJ_PNP / IRP_MN_QUERY_DEVICE_RELATIONS requests
+    // 
+    // When emulating an Xbox 360 device, the XUSB.SYS driver tries to
+    // query for an attached headset and bring it online. This has to
+    // be suppressed when the POD receives IRP_MN_QUERY_DEVICE_RELATIONS.
+    //  
+    UCHAR mnCodes[] = { IRP_MN_QUERY_DEVICE_RELATIONS };
+    WdfDeviceInitAssignWdmIrpPreprocessCallback(DeviceInit, Pdo_EvtDeviceWdmIrpPreprocess, IRP_MJ_PNP, mnCodes, 1);
 
 #pragma region Enter RAW device mode
 
@@ -127,6 +135,8 @@ NTSTATUS Bus_CreatePdo(
     }
 
 #pragma endregion
+
+#pragma region Prepare PDO
 
     // set parameters matching desired target device
     switch (Description->TargetType)
@@ -177,8 +187,6 @@ NTSTATUS Bus_CreatePdo(
         KdPrint((DRIVERNAME "Unsupported target type\n"));
         status = STATUS_INVALID_PARAMETER;
         return status;
-
-        break;
     }
 
     // set device id
@@ -204,6 +212,8 @@ NTSTATUS Bus_CreatePdo(
     // default locale is English
     // TODO: add more locales
     WdfPdoInitSetDefaultLocale(DeviceInit, 0x409);
+
+#pragma endregion
 
 #pragma region PNP/Power event callbacks
 
@@ -385,6 +395,29 @@ NTSTATUS Bus_CreatePdo(
 #pragma endregion
 
     return status;
+}
+
+NTSTATUS Pdo_EvtDeviceWdmIrpPreprocess(
+    _In_    WDFDEVICE Device,
+    _Inout_ PIRP      Irp
+)
+{
+    PPDO_DEVICE_DATA    pdoData;
+
+    KdPrint((DRIVERNAME "Pdo_EvtDeviceWdmIrpPreprocess called\n"));
+
+    pdoData = PdoGetData(Device);
+
+    switch (pdoData->TargetType)
+    {
+    case Xbox360Wired:
+        Irp->IoStatus.Status = STATUS_NOT_SUPPORTED;
+        break;
+    default:
+        break;
+    }
+
+    return WdfDeviceWdmDispatchPreprocessedIrp(Device, Irp);
 }
 
 //

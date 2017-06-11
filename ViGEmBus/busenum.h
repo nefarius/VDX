@@ -94,6 +94,8 @@ EVT_WDF_TIMER Xgip_SysInitTimerFunc;
 
 EVT_WDF_DEVICE_RELATIONS_QUERY Pdo_EvtDeviceRelationsQuery;
 
+EVT_WDFDEVICE_WDM_IRP_PREPROCESS Pdo_EvtDeviceWdmIrpPreprocess;
+
 #pragma endregion
 
 #pragma region Bus enumeration-specific functions

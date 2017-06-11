@@ -313,14 +313,19 @@ Bus_FileClose(
         }
 
         KdPrint((DRIVERNAME "Bus_FileClose enumerate: status=%d devicePID=%d currentPID=%d fileSessionId=%d deviceSessionId=%d ownerIsDriver=%d\n",
-            (int)childInfo.Status, (int)description.OwnerProcessId, (int)CURRENT_PROCESS_ID(), (int)pFileData->SessionId, (int)description.SessionId, (int)description.OwnerIsDriver));
+            (int)childInfo.Status, 
+            (int)description.OwnerProcessId, 
+            (int)CURRENT_PROCESS_ID(),
+            (int)pFileData->SessionId, 
+            (int)description.SessionId, 
+            (int)description.OwnerIsDriver));
 
         // Only unplug devices with matching session id
         if (childInfo.Status == WdfChildListRetrieveDeviceSuccess
             && description.SessionId == pFileData->SessionId
             && !description.OwnerIsDriver)
         {
-            KdPrint((DRIVERNAME "Bus_FileClose unplugging"));
+            KdPrint((DRIVERNAME "Bus_FileClose unplugging\n"));
 
             // "Unplug" child
             status = WdfChildListUpdateChildDescriptionAsMissing(list, &description.Header);

@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using HidSharp;
 using Nancy;
 
-namespace HidCerberus.Srv
+namespace HidCerberus.Srv.NancyFx.Modules
 {
     internal static class HidDeviceExtensions
     {
@@ -28,11 +28,11 @@ namespace HidCerberus.Srv
         }
     }
 
-    public class HidDeviceNancyModule : NancyModule
+    public class HidDeviceNancyModuleV1 : NancyModule
     {
-        public HidDeviceNancyModule()
+        public HidDeviceNancyModuleV1() : base("/api/v1")
         {
-            Get["/v1/hid/devices/get"] = _ =>
+            Get["/hid/devices/get"] = _ =>
             {
                 var dl = from device in new HidDeviceLoader().GetDevices()
                          where !string.IsNullOrEmpty(device.GetHardwareId())

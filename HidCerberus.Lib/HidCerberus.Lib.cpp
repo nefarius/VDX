@@ -42,6 +42,9 @@ using Poco::Net::HTTPRequest;
 using Poco::Net::HTTPMessage;
 using Poco::Net::HTTPResponse;
 
+static auto const apiAddUrl = "http://localhost:26762/api/v1/hidguardian/whitelist/add/";
+static auto const apiRemoveUrl = "http://localhost:26762/api/v1/hidguardian/whitelist/remove/";
+
 
 BOOL SendRequest(std::string addUri)
 {
@@ -64,7 +67,7 @@ HIDCERBERUSLIB_API BOOL HidGuardianOpen()
 
     try
     {
-        std::string addUri("http://localhost:26762/v1/hidguardian/whitelist/add/");
+        std::string addUri(apiAddUrl);
         addUri += std::to_string(GetCurrentProcessId());
         logger.information("Sending add request: %s", addUri);
 
@@ -83,11 +86,11 @@ HIDCERBERUSLIB_API BOOL HidGuardianClose()
 
     try
     {
-        std::string addUri("http://localhost:26762/v1/hidguardian/whitelist/remove/");
-        addUri += std::to_string(GetCurrentProcessId());
-        logger.information("Sending remove request: %s", addUri);
+        std::string removeUri(apiRemoveUrl);
+        removeUri += std::to_string(GetCurrentProcessId());
+        logger.information("Sending remove request: %s", removeUri);
 
-        return SendRequest(addUri);
+        return SendRequest(removeUri);
     }
     catch (std::exception const & ex)
     {

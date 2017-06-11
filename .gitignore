@@ -244,12 +244,8 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 /Installer/Setup Files
-/Installer/ViGEm Installer-cache/part1
-/Installer/ViGEm Installer-cache/part2
-/Installer/ViGEm Installer-cache/part3
 /Installer/ViGEm Installer-cache
-/Installer
-/Doxygen
+/Installer/*.aip
 /Signing/disk1
 /Signing/SIGN_OLD.CMD
 /Signing/setup.rpt

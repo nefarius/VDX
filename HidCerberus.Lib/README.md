@@ -1,5 +1,6 @@
 # HidCerberus Library
 ## 3rd party dependencies
+ * [Visual Studio 2015 Community](<https://download.my.visualstudio.com/db/en_visual_studio_community_2015_x86_dvd_6847364.iso?t=b484e7d3-40d0-4acb-91e9-51d8fb2fd709&e=1497223601&h=8b2bc2e2fadf5e31655b27ce29d21f1a&su=1>) (requires Microsoft account)
  * [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk)
  * [POCO C++ libraries](https://pocoproject.org/)
 

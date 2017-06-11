@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace Nefarius.ViGEm
 {
@@ -14,16 +13,18 @@ namespace Nefarius.ViGEm
     {
         #region Enums
 
-        public enum VigemError
+        public enum VigemError : uint
         {
-            VigemErrorNone = 0x0000,
-            VigemErrorBusNotFound,
-            VigemErrorNoFreeSlot,
-            VigemErrorInvalidTarget,
-            VigemErrorRemovalFailed,
-            VigemErrorAlreadyConnected,
-            VigemErrorTargetUninitialized,
-            VigemErrorTargetNotPluggedIn
+            VigemErrorNone = 0x20000000,
+            VigemErrorBusNotFound = 0xE0000001,
+            VigemErrorNoFreeSlot = 0xE0000002,
+            VigemErrorInvalidTarget = 0xE0000003,
+            VigemErrorRemovalFailed = 0xE0000004,
+            VigemErrorAlreadyConnected = 0xE0000005,
+            VigemErrorTargetUninitialized = 0xE0000006,
+            VigemErrorTargetNotPluggedIn = 0xE0000007,
+            VigemErrorBusVersionMismatch = 0xE0000008,
+            VigemErrorBusAccessFailed = 0xE0000009
         }
 
         public enum VigemTargetState

@@ -9,5 +9,5 @@ The HidCerberus Service abstracts away configuration tasks for the [HidGuardian 
 
 ## Manual Installation
  * Either run `HidCerberus.Srv.exe` standalone or install it as a Windows Service with `HidCerberus.Srv.exe install` in an elevated command prompt.
- * While you're in an elevated prompt, start the service with `sc start HidCerberus.Srv`
+ * While you're in an elevated prompt, start the service with `HidCerberus.Srv.exe start`
  * You should now be able to navigate to the [configuration page](http://localhost:26762/).

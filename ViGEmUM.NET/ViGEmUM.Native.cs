@@ -43,9 +43,10 @@ namespace Nefarius.ViGEm
         public struct VigemTarget
         {
             public uint Size;
-            public ushort Version;
             public uint SerialNo;
             public VigemTargetState State;
+            public ushort VendorId;
+            public ushort ProductId;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -99,7 +100,6 @@ namespace Nefarius.ViGEm
             [In, Out] ref VigemTarget target)
         {
             target.Size = (uint)Marshal.SizeOf(typeof(VigemTarget));
-            target.Version = 1;
             target.State = VigemTargetState.VigemTargetInitialized;
         }
 

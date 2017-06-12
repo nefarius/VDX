@@ -70,11 +70,29 @@ namespace Nefarius.ViGEm {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Access error on opening the Virtual Gamepad Emulation Bus..
+        /// </summary>
+        internal static string VigemBusAccessFailedException {
+            get {
+                return ResourceManager.GetString("VigemBusAccessFailedException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The Virtual Gamepad Emulation Bus wasn&apos;t found. Please verify that the bus driver is installed and working properly..
         /// </summary>
         internal static string VigemBusNotFoundException {
             get {
                 return ResourceManager.GetString("VigemBusNotFoundException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The library version doesn&apos;t match the reported bus version. Please check if there&apos;s a software update available..
+        /// </summary>
+        internal static string VigemBusVersionMismatchException {
+            get {
+                return ResourceManager.GetString("VigemBusVersionMismatchException", resourceCulture);
             }
         }
         

@@ -41,10 +41,10 @@ namespace Nefarius.ViGEm
                         StringResource.VigemBusNotFoundException);
                 case ViGemUm.VigemError.VigemErrorBusAccessFailed:
                     throw new VigemBusAccessFailedException(
-                        "Access error on opening the Virtual Gamepad Emulation Bus.");
+                        StringResource.VigemBusAccessFailedException);
                 case ViGemUm.VigemError.VigemErrorBusVersionMismatch:
                     throw new VigemBusVersionMismatchException(
-                        "The library version doesn't match the reported bus version. Please check if there's a software update available.");
+                        StringResource.VigemBusVersionMismatchException);
             }
         }
 

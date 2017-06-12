@@ -116,4 +116,10 @@
   <data name="VigemNoFreeSlotException" xml:space="preserve">
     <value>The bus is currently full and can't add more devices.</value>
   </data>
+  <data name="VigemBusAccessFailedException" xml:space="preserve">
+    <value>Access error on opening the Virtual Gamepad Emulation Bus.</value>
+  </data>
+  <data name="VigemBusVersionMismatchException" xml:space="preserve">
+    <value>The library version doesn't match the reported bus version. Please check if there's a software update available.</value>
+  </data>
 </root>

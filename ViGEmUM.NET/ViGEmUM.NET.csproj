@@ -40,6 +40,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exceptions\VigemAlreadyConnectedException.cs" />
+    <Compile Include="Exceptions\VigemBusAccessFailedException.cs" />
+    <Compile Include="Exceptions\VigemBusNotFoundException.cs" />
+    <Compile Include="Exceptions\VigemBusVersionMismatchException.cs" />
+    <Compile Include="Exceptions\VigemInvalidTargetException.cs" />
+    <Compile Include="Exceptions\VigemNoFreeSlotException.cs" />
+    <Compile Include="Exceptions\VigemRemovalFailedException.cs" />
+    <Compile Include="Exceptions\VigemTargetNotPluggedInException.cs" />
+    <Compile Include="Exceptions\VigemTargetUninitializedException.cs" />
     <Compile Include="IViGEmTarget.cs" />
     <Compile Include="Targets\DualShock4Controller.cs" />
     <Compile Include="Targets\Xbox360Controller.cs" />

@@ -8,7 +8,7 @@ namespace Nefarius.ViGEm
     ///
     /// <remarks>   Benjamin "Nefarius" Höglinger, 12.06.2017. </remarks>
     ///-------------------------------------------------------------------------------------------------
-    public class ViGEmTarget : IDisposable
+    public partial class ViGEmTarget : IDisposable
     {
         private ViGemUm.VigemTarget _target;
 
@@ -48,6 +48,11 @@ namespace Nefarius.ViGEm
             }
         }
 
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Specialised default constructor for use only by derived class. </summary>
+        ///
+        /// <remarks>   Benjamin "Nefarius" Höglinger, 12.06.2017. </remarks>
+        ///-------------------------------------------------------------------------------------------------
         protected ViGEmTarget()
         {
             ViGemUm.VIGEM_TARGET_INIT(ref _target);
@@ -196,5 +201,12 @@ namespace Nefarius.ViGEm
         }
 
         #endregion
+
+        public enum VigemTargetType
+        {
+            Xbox360Wired,
+            XboxOneWired,
+            DualShock4Wired
+        }
     }
 }

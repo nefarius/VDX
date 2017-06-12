@@ -58,9 +58,8 @@
     <Compile Include="Targets\DualShock4Controller.cs" />
     <Compile Include="Targets\Xbox360Controller.cs" />
     <Compile Include="ViGEmTarget.cs" />
-    <Compile Include="ViGEmUM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ViGEmUM.Native.cs" />
+    <Compile Include="ViGEmTarget.Native.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="StringResource.resx">

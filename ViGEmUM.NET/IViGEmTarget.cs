@@ -3,5 +3,7 @@
     public interface IViGEmTarget
     {
         void PlugIn();
+
+        void UnPlug();
     }
 }

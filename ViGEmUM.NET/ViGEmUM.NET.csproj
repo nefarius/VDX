@@ -50,12 +50,23 @@
     <Compile Include="Exceptions\VigemTargetNotPluggedInException.cs" />
     <Compile Include="Exceptions\VigemTargetUninitializedException.cs" />
     <Compile Include="IViGEmTarget.cs" />
+    <Compile Include="StringResource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>StringResource.resx</DependentUpon>
+    </Compile>
     <Compile Include="Targets\DualShock4Controller.cs" />
     <Compile Include="Targets\Xbox360Controller.cs" />
     <Compile Include="ViGEmTarget.cs" />
     <Compile Include="ViGEmUM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViGEmUM.Native.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="StringResource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>StringResource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

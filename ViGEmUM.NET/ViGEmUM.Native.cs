@@ -115,7 +115,7 @@ namespace Nefarius.ViGEm
             [In, Out] ref VigemTarget target);
 
         [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        public static extern void vigem_target_unplug(
+        public static extern VigemError vigem_target_unplug(
             [In, Out] ref VigemTarget target);
 
         [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]

@@ -94,7 +94,6 @@ NTSTATUS Bus_CreatePdo(
     DECLARE_UNICODE_STRING_SIZE(deviceId, MAX_INSTANCE_ID_LEN);
 
 
-
     PAGED_CODE();
 
     UNREFERENCED_PARAMETER(Device);
@@ -220,7 +219,6 @@ NTSTATUS Bus_CreatePdo(
     WDF_PNPPOWER_EVENT_CALLBACKS_INIT(&pnpPowerCallbacks);
 
     pnpPowerCallbacks.EvtDevicePrepareHardware = Bus_EvtDevicePrepareHardware;
-    pnpPowerCallbacks.EvtDeviceRelationsQuery = Pdo_EvtDeviceRelationsQuery;
 
     WdfDeviceInitSetPnpPowerEventCallbacks(DeviceInit, &pnpPowerCallbacks);
 
@@ -688,19 +686,5 @@ VOID Pdo_EvtIoInternalDeviceControl(
     {
         WdfRequestComplete(Request, status);
     }
-}
-
-_Use_decl_annotations_
-VOID
-Pdo_EvtDeviceRelationsQuery(
-    WDFDEVICE  Device,
-    DEVICE_RELATION_TYPE  RelationType
-)
-{
-    UNREFERENCED_PARAMETER(Device);
-    UNREFERENCED_PARAMETER(RelationType);
-
-    KdPrint((DRIVERNAME "Pdo_EvtDeviceRelationsQuery Device: 0x%X\n", Device));
-    KdPrint((DRIVERNAME "Pdo_EvtDeviceRelationsQuery RelationType: 0x%X\n", RelationType));
 }
 

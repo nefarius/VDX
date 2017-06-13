@@ -92,8 +92,6 @@ EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Pdo_EvtIoInternalDeviceControl;
 
 EVT_WDF_TIMER Xgip_SysInitTimerFunc;
 
-EVT_WDF_DEVICE_RELATIONS_QUERY Pdo_EvtDeviceRelationsQuery;
-
 EVT_WDFDEVICE_WDM_IRP_PREPROCESS Pdo_EvtDeviceWdmIrpPreprocess;
 
 #pragma endregion

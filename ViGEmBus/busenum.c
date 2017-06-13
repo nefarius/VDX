@@ -122,6 +122,11 @@ NTSTATUS Bus_PlugInDevice(
             description.VendorId = 0x0E6F;
             description.ProductId = 0x0139;
 
+#if !DBG
+            // TODO: implement and remove!
+            return STATUS_NOT_SUPPORTED;
+#endif
+
             break;
         }
     }

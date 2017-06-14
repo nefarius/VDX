@@ -43,6 +43,15 @@ namespace Nefarius.ViGEm.Targets
             }
         }
 
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Un plug. </summary>
+        ///
+        /// <remarks>   Benjamin "Nefarius" Höglinger, 15.06.2017. </remarks>
+        ///
+        /// <exception cref="VigemCallbackNotFoundException">   Thrown when a Vigem Callback Not Found
+        ///                                                     error condition occurs.
+        /// </exception>
+        ///-------------------------------------------------------------------------------------------------
         public new void UnPlug()
         {
             var error = ViGemUm.vigem_unregister_ds4_notification(Ds4Notification);

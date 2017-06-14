@@ -110,10 +110,12 @@ int main()
         return 1;
     }
 
+    // Should succeed
     vigem_register_xusb_notification(
         (PVIGEM_XUSB_NOTIFICATION)my_xusb_notification,
         x360);
 
+    // Same function pointer passed, should fail
     vigem_register_xusb_notification(
         (PVIGEM_XUSB_NOTIFICATION)my_xusb_notification,
         x360);
@@ -121,6 +123,7 @@ int main()
     printf("X360 Success!\n\n");
     getchar();
 
+    // Should detach the callback function
     vigem_unregister_xusb_notification((PVIGEM_XUSB_NOTIFICATION)my_xusb_notification);
 #endif
 

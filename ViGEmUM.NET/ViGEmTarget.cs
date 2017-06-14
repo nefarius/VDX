@@ -10,7 +10,7 @@ namespace Nefarius.ViGEm
     ///-------------------------------------------------------------------------------------------------
     public partial class ViGEmTarget : IDisposable
     {
-        private ViGemUm.VigemTarget _target;
+        protected ViGemUm.VigemTarget Target;
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>   Static constructor. </summary>
@@ -55,7 +55,7 @@ namespace Nefarius.ViGEm
         ///-------------------------------------------------------------------------------------------------
         protected ViGEmTarget()
         {
-            ViGemUm.VIGEM_TARGET_INIT(ref _target);
+            ViGemUm.VIGEM_TARGET_INIT(ref Target);
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -76,9 +76,9 @@ namespace Nefarius.ViGEm
         ///                                                         error condition occurs.
         /// </exception>
         ///-------------------------------------------------------------------------------------------------
-        public void UnPlug()
+        protected void UnPlug()
         {
-            var error = ViGemUm.vigem_target_unplug(ref _target);
+            var error = ViGemUm.vigem_target_unplug(ref Target);
 
             // ReSharper disable once SwitchStatementMissingSomeCases
             switch (error)
@@ -122,7 +122,7 @@ namespace Nefarius.ViGEm
         ///-------------------------------------------------------------------------------------------------
         protected void PlugIn(VigemTargetType type)
         {
-            var error = ViGemUm.vigem_target_plugin(type, ref _target);
+            var error = ViGemUm.vigem_target_plugin(type, ref Target);
 
             // ReSharper disable once SwitchStatementMissingSomeCases
             switch (error)
@@ -142,29 +142,6 @@ namespace Nefarius.ViGEm
                     throw new VigemNoFreeSlotException(
                         StringResource.VigemNoFreeSlotException);
             }
-
-            switch (type)
-            {
-                case VigemTargetType.Xbox360Wired:
-                    ViGemUm.vigem_register_xusb_notification(XusbNotification, _target);
-                    break;
-                case VigemTargetType.DualShock4Wired:
-                    ViGemUm.vigem_register_ds4_notification(Ds4Notification, _target);
-                    break;
-                case VigemTargetType.XboxOneWired:
-                    throw new NotImplementedException();
-                default:
-                    throw new NotImplementedException();
-            }
-        }
-
-        private void Ds4Notification(ViGemUm.VigemTarget target, byte largeMotor, byte smallMotor,
-            ViGemUm.Ds4LightbarColor lightbarColor)
-        {
-        }
-
-        private void XusbNotification(ViGemUm.VigemTarget target, byte largeMotor, byte smallMotor, byte ledNumber)
-        {
         }
 
         #region IDisposable Support
@@ -176,7 +153,7 @@ namespace Nefarius.ViGEm
             if (!_disposedValue)
             {
                 if (disposing)
-                    ViGemUm.vigem_target_unplug(ref _target);
+                    ViGemUm.vigem_target_unplug(ref Target);
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
@@ -202,7 +179,7 @@ namespace Nefarius.ViGEm
 
         #endregion
 
-        public enum VigemTargetType
+        protected enum VigemTargetType
         {
             Xbox360Wired,
             XboxOneWired,

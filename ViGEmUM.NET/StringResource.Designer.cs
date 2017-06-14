@@ -97,6 +97,33 @@ namespace Nefarius.ViGEm {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The supplied callback is already registered with the supplied target object..
+        /// </summary>
+        internal static string VigemCallbackAlreadyRegistered {
+            get {
+                return ResourceManager.GetString("VigemCallbackAlreadyRegistered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The provided function wasn&apos;t registered..
+        /// </summary>
+        internal static string VigemCallbackNotFoundException {
+            get {
+                return ResourceManager.GetString("VigemCallbackNotFoundException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The provided target descriptor is invalid..
+        /// </summary>
+        internal static string VigemInvalidTargetException {
+            get {
+                return ResourceManager.GetString("VigemInvalidTargetException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The bus is currently full and can&apos;t add more devices..
         /// </summary>
         internal static string VigemNoFreeSlotException {

@@ -4,11 +4,11 @@ namespace Nefarius.ViGEm
 {
     public partial class ViGEmTarget
     {
-        internal static class ViGemUm
+        protected static class ViGemUm
         {
             #region Enums
 
-            internal enum VigemError : uint
+            public enum VigemError : uint
             {
                 VigemErrorNone = 0x20000000,
                 VigemErrorBusNotFound = 0xE0000001,
@@ -24,7 +24,7 @@ namespace Nefarius.ViGEm
                 VigemErrorCallbackNotFound = 0xE0000011
             }
 
-            internal enum VigemTargetState
+            public enum VigemTargetState
             {
                 VigemTargetNew,
                 VigemTargetInitialized,

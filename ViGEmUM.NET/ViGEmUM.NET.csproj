@@ -44,6 +44,8 @@
     <Compile Include="Exceptions\VigemBusAccessFailedException.cs" />
     <Compile Include="Exceptions\VigemBusNotFoundException.cs" />
     <Compile Include="Exceptions\VigemBusVersionMismatchException.cs" />
+    <Compile Include="Exceptions\VigemCallbackAlreadyRegisteredException.cs" />
+    <Compile Include="Exceptions\VigemCallbackNotFoundException.cs" />
     <Compile Include="Exceptions\VigemInvalidTargetException.cs" />
     <Compile Include="Exceptions\VigemNoFreeSlotException.cs" />
     <Compile Include="Exceptions\VigemRemovalFailedException.cs" />

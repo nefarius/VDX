@@ -19,7 +19,9 @@ namespace Nefarius.ViGEm
                 VigemErrorTargetUninitialized = 0xE0000006,
                 VigemErrorTargetNotPluggedIn = 0xE0000007,
                 VigemErrorBusVersionMismatch = 0xE0000008,
-                VigemErrorBusAccessFailed = 0xE0000009
+                VigemErrorBusAccessFailed = 0xE0000009,
+                VigemErrorCallbackAlreadyRegistered = 0xE0000010,
+                VigemErrorCallbackNotFound = 0xE0000011
             }
 
             internal enum VigemTargetState

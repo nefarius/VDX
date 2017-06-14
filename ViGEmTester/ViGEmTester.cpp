@@ -114,8 +114,14 @@ int main()
         (PVIGEM_XUSB_NOTIFICATION)my_xusb_notification,
         x360);
 
+    vigem_register_xusb_notification(
+        (PVIGEM_XUSB_NOTIFICATION)my_xusb_notification,
+        x360);
+
     printf("X360 Success!\n\n");
     getchar();
+
+    vigem_unregister_xusb_notification((PVIGEM_XUSB_NOTIFICATION)my_xusb_notification);
 #endif
 
 #ifdef VIGEM_TEST_DS4

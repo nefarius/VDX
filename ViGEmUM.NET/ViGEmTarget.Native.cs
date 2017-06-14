@@ -121,9 +121,17 @@ namespace Nefarius.ViGEm
                 [In] VigemTarget target);
 
             [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+            public static extern VigemError vigem_unregister_xusb_notification(
+                [In, MarshalAs(UnmanagedType.FunctionPtr)] VigemXusbNotification notification);
+
+            [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
             public static extern VigemError vigem_register_ds4_notification(
                 [In, MarshalAs(UnmanagedType.FunctionPtr)] VigemDs4Notification notification,
                 [In] VigemTarget target);
+
+            [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+            public static extern VigemError vigem_unregister_ds4_notification(
+                [In, MarshalAs(UnmanagedType.FunctionPtr)] VigemDs4Notification notification);
 
             [DllImport("ViGEmUM.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
             public static extern VigemError vigem_xusb_submit_report(

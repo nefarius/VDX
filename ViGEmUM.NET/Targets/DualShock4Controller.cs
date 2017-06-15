@@ -1,27 +1,28 @@
-﻿using Nefarius.ViGEm.Exceptions;
+﻿using System;
+using Nefarius.ViGEm.Exceptions;
+using Nefarius.ViGEm.Targets.DualShock4;
 
 namespace Nefarius.ViGEm.Targets
 {
-    using ViGEm;
-
     public class DualShock4Controller : ViGEmTarget, IViGEmTarget
     {
-        ///-------------------------------------------------------------------------------------------------
+        /// -------------------------------------------------------------------------------------------------
         /// <summary>   Plug in. </summary>
-        ///
         /// <remarks>   Benjamin "Nefarius" Höglinger, 15.06.2017. </remarks>
-        ///
-        /// <exception cref="VigemBusNotFoundException">                Thrown when a Vigem Bus Not Found
-        ///                                                             error condition occurs.
+        /// <exception cref="VigemBusNotFoundException">
+        ///     Thrown when a Vigem Bus Not Found
+        ///     error condition occurs.
         /// </exception>
-        /// <exception cref="VigemInvalidTargetException">              Thrown when a Vigem Invalid
-        ///                                                             Target error condition occurs.
+        /// <exception cref="VigemInvalidTargetException">
+        ///     Thrown when a Vigem Invalid
+        ///     Target error condition occurs.
         /// </exception>
-        /// <exception cref="VigemCallbackAlreadyRegisteredException">  Thrown when a Vigem Callback
-        ///                                                             Already Registered error
-        ///                                                             condition occurs.
+        /// <exception cref="VigemCallbackAlreadyRegisteredException">
+        ///     Thrown when a Vigem Callback
+        ///     Already Registered error
+        ///     condition occurs.
         /// </exception>
-        ///-------------------------------------------------------------------------------------------------
+        /// -------------------------------------------------------------------------------------------------
         public void PlugIn()
         {
             PlugIn(VigemTargetType.DualShock4Wired);
@@ -43,15 +44,14 @@ namespace Nefarius.ViGEm.Targets
             }
         }
 
-        ///-------------------------------------------------------------------------------------------------
+        /// -------------------------------------------------------------------------------------------------
         /// <summary>   Un plug. </summary>
-        ///
         /// <remarks>   Benjamin "Nefarius" Höglinger, 15.06.2017. </remarks>
-        ///
-        /// <exception cref="VigemCallbackNotFoundException">   Thrown when a Vigem Callback Not Found
-        ///                                                     error condition occurs.
+        /// <exception cref="VigemCallbackNotFoundException">
+        ///     Thrown when a Vigem Callback Not Found
+        ///     error condition occurs.
         /// </exception>
-        ///-------------------------------------------------------------------------------------------------
+        /// -------------------------------------------------------------------------------------------------
         public new void UnPlug()
         {
             var error = ViGemUm.vigem_unregister_ds4_notification(Ds4Notification);
@@ -67,9 +67,31 @@ namespace Nefarius.ViGEm.Targets
             base.UnPlug();
         }
 
+        public event DualShock4FeedbackReceivedEventHandler FeedbackReceived;
+
         private void Ds4Notification(ViGemUm.VigemTarget target, byte largeMotor, byte smallMotor,
             ViGemUm.Ds4LightbarColor lightbarColor)
         {
+            var color = new LightbarColor(lightbarColor.Red, lightbarColor.Green, lightbarColor.Blue);
+            FeedbackReceived?.Invoke(this, new DualShock4FeedbackReceivedEventArgs(largeMotor, smallMotor, color));
         }
+    }
+
+    public delegate void DualShock4FeedbackReceivedEventHandler(object sender, DualShock4FeedbackReceivedEventArgs e);
+
+    public class DualShock4FeedbackReceivedEventArgs : EventArgs
+    {
+        public DualShock4FeedbackReceivedEventArgs(byte largeMotor, byte smallMotor, LightbarColor color)
+        {
+            LargeMotor = largeMotor;
+            SmallMotor = smallMotor;
+            LightbarColor = color;
+        }
+
+        public byte LargeMotor { get; }
+
+        public byte SmallMotor { get; }
+
+        public LightbarColor LightbarColor { get; }
     }
 }

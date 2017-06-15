@@ -58,6 +58,7 @@
       <DependentUpon>StringResource.resx</DependentUpon>
     </Compile>
     <Compile Include="Targets\DualShock4Controller.cs" />
+    <Compile Include="Targets\DualShock4\LightbarColor.cs" />
     <Compile Include="Targets\Xbox360Controller.cs" />
     <Compile Include="ViGEmTarget.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

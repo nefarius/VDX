@@ -23,26 +23,6 @@ SOFTWARE.
 */
 
 
-#define INITGUID
+#pragma once
 
-#include <ntddk.h>
-#include <wdf.h>
-
-#include "device.h"
-#include "queue.h"
-#include "trace.h"
-#include "KmString.h"
-
-#define DRIVERNAME "HidGuardian: "
-
-EXTERN_C_START
-
-//
-// WDFDRIVER Events
-//
-
-DRIVER_INITIALIZE DriverEntry;
-EVT_WDF_DRIVER_DEVICE_ADD HidGuardianEvtDeviceAdd;
-EVT_WDF_OBJECT_CONTEXT_CLEANUP HidGuardianEvtDriverContextCleanup;
-
-EXTERN_C_END
+wchar_t *wcsistr(const wchar_t *String, const wchar_t *Pattern);

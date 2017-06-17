@@ -23,26 +23,38 @@ SOFTWARE.
 */
 
 
-#define INITGUID
-
+#include <stddef.h>
 #include <ntddk.h>
-#include <wdf.h>
 
-#include "device.h"
-#include "queue.h"
-#include "trace.h"
-#include "KmString.h"
+#define NUL '\0'
 
-#define DRIVERNAME "HidGuardian: "
+wchar_t *wcsistr(const wchar_t *String, const wchar_t *Pattern)
+{
+	wchar_t *pptr, *sptr, *start;
 
-EXTERN_C_START
+	for (start = (wchar_t *)String; *start != NUL; ++start)
+	{
+		while (((*start != NUL) && (RtlUpcaseUnicodeChar(*start)
+			!= RtlUpcaseUnicodeChar(*Pattern))))
+		{
+			++start;
+		}
 
-//
-// WDFDRIVER Events
-//
+		if (NUL == *start)
+			return NULL;
 
-DRIVER_INITIALIZE DriverEntry;
-EVT_WDF_DRIVER_DEVICE_ADD HidGuardianEvtDeviceAdd;
-EVT_WDF_OBJECT_CONTEXT_CLEANUP HidGuardianEvtDriverContextCleanup;
+		pptr = (wchar_t *)Pattern;
+		sptr = (wchar_t *)start;
 
-EXTERN_C_END
+		while (RtlUpcaseUnicodeChar(*sptr) == RtlUpcaseUnicodeChar(*pptr))
+		{
+			sptr++;
+			pptr++;
+
+			if (NUL == *pptr)
+				return (start);
+		}
+	}
+
+	return NULL;
+}

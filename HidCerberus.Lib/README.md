@@ -5,14 +5,14 @@
 ## How to build
 **Note:** this is currently built with Visual Studio 2015, adjust parameters accordingly for other versions!
  1. [Download the POCO libraries](https://pocoproject.org/download/index.html) (Basic Edition is fine)
- 2. Extract the archive to an arbitrary location
+ 2. Extract the archive to an arbitrary location (e.g. `C:\Build\POCO`)
  3. Launch the `VS2015 x86 Native Tools Command Prompt` (`%comspec% /k ""C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"" x86`)
- 4. Move to extracted POCO folder
+ 4. Move to extracted POCO folder (e.g. `cd C:\Build\POCO`)
  5. Build with `buildwin 140 build static_mt both Win32 nosamples`
  6. Launch the `VS2015 x64 Native Tools Command Prompt` (`%comspec% /k ""C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"" amd64`)
- 7. Move to extracted POCO directory
+ 7. Move to extracted POCO directory (e.g. `cd C:\Build\POCO`)
  8. Build with `buildwin 140 build static_mt both x64 nosamples`
- 9. Create an environment variable named `POCO_ROOT` pointing to the extracted POCO directory
+ 9. Create an environment variable named `POCO_ROOT` pointing to the extracted POCO directory (e.g. `POCO_ROOT=C:\Build\POCO`)
  10. Restart Visual Studio if necessary
  11. Build the library
  12. ???

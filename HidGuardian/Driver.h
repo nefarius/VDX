@@ -31,7 +31,6 @@ SOFTWARE.
 #include "device.h"
 #include "queue.h"
 #include "trace.h"
-#include "KmString.h"
 
 #define DRIVERNAME "HidGuardian: "
 

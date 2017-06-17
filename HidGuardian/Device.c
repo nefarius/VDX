@@ -319,6 +319,8 @@ NTSTATUS AmIAffected(PDEVICE_CONTEXT DeviceContext)
 
                 if (affected) break;
             }
+
+			if (affected) break;
         }
     }
 

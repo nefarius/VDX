@@ -1,20 +1,20 @@
 # HidCerberus Library
+The HidCerberus Library interacts with the [HidCerberus Service](../../../tree/master/HidCerberus.Srv) and allows the calling process to bypass the filter driver to gain access to hidden HID devices.
+
 ## 3rd party dependencies
- * [Visual Studio 2015 Community](<https://download.my.visualstudio.com/db/en_visual_studio_community_2015_x86_dvd_6847364.iso?t=b484e7d3-40d0-4acb-91e9-51d8fb2fd709&e=1497223601&h=8b2bc2e2fadf5e31655b27ce29d21f1a&su=1>) (requires Microsoft account)
- * [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk)
  * [POCO C++ libraries](https://pocoproject.org/)
 
 ## How to build
 **Note:** this is currently built with Visual Studio 2015, adjust parameters accordingly for other versions!
  1. [Download the POCO libraries](https://pocoproject.org/download/index.html) (Basic Edition is fine)
- 2. Extract the archive to an arbitrary location
+ 2. Extract the archive to an arbitrary location (e.g. `C:\Build\POCO`)
  3. Launch the `VS2015 x86 Native Tools Command Prompt` (`%comspec% /k ""C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"" x86`)
- 4. Move to extracted POCO folder
+ 4. Move to extracted POCO folder (e.g. `cd C:\Build\POCO`)
  5. Build with `buildwin 140 build static_mt both Win32 nosamples`
  6. Launch the `VS2015 x64 Native Tools Command Prompt` (`%comspec% /k ""C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"" amd64`)
- 7. Move to extracted POCO directory
+ 7. Move to extracted POCO directory (e.g. `cd C:\Build\POCO`)
  8. Build with `buildwin 140 build static_mt both x64 nosamples`
- 9. Create an environment variable named `POCO_ROOT` pointing to the extracted POCO directory
+ 9. Create an environment variable named `POCO_ROOT` pointing to the extracted POCO directory (e.g. `POCO_ROOT=C:\Build\POCO`)
  10. Restart Visual Studio if necessary
  11. Build the library
  12. ???

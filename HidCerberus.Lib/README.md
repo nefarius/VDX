@@ -1,4 +1,6 @@
 # HidCerberus Library
+The HidCerberus Library interacts with the [HidCerberus Service](../tree/master/HidCerberus.Srv) and allows the calling process to bypass the filter driver to gain access to hidden HID devices.
+
 ## 3rd party dependencies
  * [POCO C++ libraries](https://pocoproject.org/)
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using Nefarius.ViGEm.Targets;
+using Nefarius.ViGEm.Targets.Xbox360;
 
 namespace ViGEmTester.NET
 {
@@ -14,6 +15,15 @@ namespace ViGEmTester.NET
                     $"SM: {eventArgs.SmallMotor}, " +
                     $"LED: {eventArgs.LedNumber}");
             x360.PlugIn();
+
+            var report = new Xbox360Report();
+            report.SetButtons(Xbox360Buttons.A, Xbox360Buttons.B);
+            report.SetAxis(Xbox360Axes.LeftTrigger, 0xFF);
+            report.SetAxis(Xbox360Axes.RightTrigger, 0xFF);
+            x360.SendReport(report);
+            x360.SendReport(report);
+            x360.SendReport(report);
+            x360.SendReport(report);
 
             Console.ReadKey();
 

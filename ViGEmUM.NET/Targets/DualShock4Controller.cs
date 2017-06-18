@@ -78,20 +78,4 @@ namespace Nefarius.ViGEm.Targets
     }
 
     public delegate void DualShock4FeedbackReceivedEventHandler(object sender, DualShock4FeedbackReceivedEventArgs e);
-
-    public class DualShock4FeedbackReceivedEventArgs : EventArgs
-    {
-        public DualShock4FeedbackReceivedEventArgs(byte largeMotor, byte smallMotor, LightbarColor color)
-        {
-            LargeMotor = largeMotor;
-            SmallMotor = smallMotor;
-            LightbarColor = color;
-        }
-
-        public byte LargeMotor { get; }
-
-        public byte SmallMotor { get; }
-
-        public LightbarColor LightbarColor { get; }
-    }
 }

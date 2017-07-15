@@ -24,7 +24,7 @@ This repository contains projects related to USB device emulation and HID device
 Additional build instructions are mentioned in the respective project READMEs, although you'd *at least* need the following tools installed:
  - Visual Studio **2015** ([Community Edition](https://go.microsoft.com/fwlink/p/?LinkId=534599) is just fine)
    - [Building drivers isn't yet supported by Visual Studio 2017](https://www.osr.com/blog/2017/03/07/visual-studio-2017-released-driver-devs-must-stay-vs-2015/)
- - [Windows 10 SDK](https://developer.microsoft.com/de-de/windows/downloads/windows-10-sdk)
+ - [Windows 10 SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk)
  - [Windows Driver Kit](https://developer.microsoft.com/en-us/windows/hardware/windows-driver-kit)
 
 ## Sponsors

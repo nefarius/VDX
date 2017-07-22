@@ -92,7 +92,9 @@ EVT_WDF_IO_QUEUE_IO_INTERNAL_DEVICE_CONTROL Pdo_EvtIoInternalDeviceControl;
 
 EVT_WDF_TIMER Xgip_SysInitTimerFunc;
 
+#ifdef FIXME
 EVT_WDFDEVICE_WDM_IRP_PREPROCESS Pdo_EvtDeviceWdmIrpPreprocess;
+#endif
 
 #pragma endregion
 

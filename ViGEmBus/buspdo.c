@@ -105,6 +105,7 @@ NTSTATUS Bus_CreatePdo(
     // Bus is power policy owner
     WdfDeviceInitSetPowerPolicyOwnership(DeviceInit, FALSE);
 
+#ifdef FIXME
     //
     // Catch IRP_MJ_PNP / IRP_MN_QUERY_DEVICE_RELATIONS requests
     // 
@@ -114,6 +115,7 @@ NTSTATUS Bus_CreatePdo(
     //  
     UCHAR mnCodes[] = { IRP_MN_QUERY_DEVICE_RELATIONS };
     WdfDeviceInitAssignWdmIrpPreprocessCallback(DeviceInit, Pdo_EvtDeviceWdmIrpPreprocess, IRP_MJ_PNP, mnCodes, 1);
+#endif
 
 #pragma region Enter RAW device mode
 
@@ -395,6 +397,7 @@ NTSTATUS Bus_CreatePdo(
     return status;
 }
 
+#ifdef FIXME
 NTSTATUS Pdo_EvtDeviceWdmIrpPreprocess(
     _In_    WDFDEVICE Device,
     _Inout_ PIRP      Irp
@@ -417,6 +420,7 @@ NTSTATUS Pdo_EvtDeviceWdmIrpPreprocess(
 
     return WdfDeviceWdmDispatchPreprocessedIrp(Device, Irp);
 }
+#endif
 
 //
 // Exposes necessary interfaces on PDO power-up.

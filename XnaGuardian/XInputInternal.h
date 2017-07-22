@@ -45,3 +45,6 @@ SOFTWARE.
 
 #define XINPUT_LED_OFFSET                       0x06
 
+EVT_WDF_REQUEST_COMPLETION_ROUTINE XInputGetInformationCompleted;
+EVT_WDF_REQUEST_COMPLETION_ROUTINE XInputGetGamepadStateCompleted;
+

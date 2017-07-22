@@ -42,6 +42,7 @@
     <ClCompile Include="Queue.c" />
     <ClCompile Include="Sideband.c" />
     <ClCompile Include="KmString.c" />
+    <ClCompile Include="XInput.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\XInputOverrides.h" />

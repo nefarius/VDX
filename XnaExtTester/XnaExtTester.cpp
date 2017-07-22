@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "../XInputExtensions/XInputExtensions.h"
 #include "../Common/XInputOverrides.h"
+#include <climits>
 
 int main()
 {
@@ -18,18 +19,14 @@ int main()
 
     while (TRUE)
     {
-        XInputOverridePeekState(0, &pad);
-        printf("%X\n", pad.wButtons);
         Sleep(100);
 
-        counter += 1000;
+        pad.sThumbLX = SHRT_MIN;
+        pad.sThumbLY = SHRT_MIN;
+        pad.sThumbRX = SHRT_MIN;
+        pad.sThumbRY = SHRT_MIN;
 
-        pad.sThumbLX = counter;
-        pad.sThumbLY = counter;
-        pad.sThumbRX = counter;
-        pad.sThumbRY = counter;
-
-        XInputOverrideSetState(0, &pad);
+        printf("%d\n", XInputOverrideSetState(0, &pad));
     }
 
     return 0;

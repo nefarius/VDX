@@ -25,9 +25,11 @@ SOFTWARE.
 
 #pragma once
 
+#include <limits.h>
+
 #define X360_HID_USB_INPUT_REPORT_BUFFER_LENGTH     0x0E
 #define XBONE_HID_USB_INPUT_REPORT_BUFFER_LENGTH    0x11
-#define XBONE_HID_USB_THUMB_AXIS_OFFSET             0x87B2
+#define XBONE_HID_USB_THUMB_AXIS_OFFSET             ((USHRT_MAX / 2) + 1)
 
 
 typedef struct _X360_HID_USB_INPUT_REPORT
@@ -43,16 +45,16 @@ typedef struct _X360_HID_USB_INPUT_REPORT
 
 typedef struct _XBONE_HID_USB_INPUT_REPORT
 {
-    SHORT LeftThumbX;
-    SHORT LeftThumbY;
-    SHORT RightThumbX;
-    SHORT RightThumbY;
-    UCHAR LeftTriggerValue;
-    UCHAR LeftTriggerLevel;
-    UCHAR RightTriggerValue;
-    UCHAR RightTriggerLevel;
+    USHORT LeftThumbX;
+    USHORT LeftThumbY;
+    USHORT RightThumbX;
+    USHORT RightThumbY;
+    UCHAR  LeftTriggerValue;
+    UCHAR  LeftTriggerLevel;
+    UCHAR  RightTriggerValue;
+    UCHAR  RightTriggerLevel;
     USHORT Buttons;
-    UCHAR Dpad;
+    UCHAR  Dpad;
 } XBONE_HID_USB_INPUT_REPORT, *PXBONE_HID_USB_INPUT_REPORT;
 
 typedef enum _XBONE_HID_USB_INPUT_REPORT_BUTTONS

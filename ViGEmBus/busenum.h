@@ -146,6 +146,11 @@ Bus_SubmitReport(
     _In_ BOOLEAN FromInterface
 );
 
+WDFDEVICE 
+Bus_GetPdo(
+    IN WDFDEVICE Device, 
+    IN ULONG SerialNo);
+
 
 #pragma endregion
 

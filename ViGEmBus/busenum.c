@@ -271,8 +271,6 @@ NTSTATUS Bus_XusbSubmitReport(WDFDEVICE Device, ULONG SerialNo, PXUSB_SUBMIT_REP
 NTSTATUS Bus_QueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Request)
 {
     NTSTATUS                    status = STATUS_INVALID_PARAMETER;
-    WDFCHILDLIST                list;
-    WDF_CHILD_RETRIEVE_INFO     info;
     WDFDEVICE                   hChild;
     PPDO_DEVICE_DATA            pdoData;
     PXUSB_DEVICE_DATA           xusbData;
@@ -281,21 +279,7 @@ NTSTATUS Bus_QueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Requ
 
     KdPrint((DRIVERNAME "Entered Bus_QueueNotification\n"));
 
-#pragma region Get PDO from child list
-
-    list = WdfFdoGetDefaultChildList(Device);
-
-    PDO_IDENTIFICATION_DESCRIPTION description;
-
-    WDF_CHILD_IDENTIFICATION_DESCRIPTION_HEADER_INIT(&description.Header, sizeof(description));
-
-    description.SerialNo = SerialNo;
-
-    WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
-
-    hChild = WdfChildListRetrievePdo(list, &info);
-
-#pragma endregion
+    hChild = Bus_GetPdo(Device, SerialNo);
 
     // Validate child
     if (hChild == NULL)
@@ -368,21 +352,10 @@ NTSTATUS Bus_XgipSubmitInterrupt(WDFDEVICE Device, ULONG SerialNo, PXGIP_SUBMIT_
     return Bus_SubmitReport(Device, SerialNo, Report, FromInterface);
 }
 
-NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report, BOOLEAN FromInterface)
+WDFDEVICE Bus_GetPdo(IN WDFDEVICE Device, IN ULONG SerialNo)
 {
-    NTSTATUS                    status = STATUS_SUCCESS;
     WDFCHILDLIST                list;
     WDF_CHILD_RETRIEVE_INFO     info;
-    WDFDEVICE                   hChild;
-    PPDO_DEVICE_DATA            pdoData;
-    WDFREQUEST                  usbRequest;
-    PIRP                        pendingIrp;
-    BOOLEAN                     changed;
-
-
-    KdPrint((DRIVERNAME "Entered Bus_SubmitReport\n"));
-
-#pragma region Get PDO from child list
 
     list = WdfFdoGetDefaultChildList(Device);
 
@@ -394,9 +367,22 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report, BOOLEA
 
     WDF_CHILD_RETRIEVE_INFO_INIT(&info, &description.Header);
 
-    hChild = WdfChildListRetrievePdo(list, &info);
+    return WdfChildListRetrievePdo(list, &info);
+}
 
-#pragma endregion
+NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report, BOOLEAN FromInterface)
+{
+    NTSTATUS                    status = STATUS_SUCCESS;
+    WDFDEVICE                   hChild;
+    PPDO_DEVICE_DATA            pdoData;
+    WDFREQUEST                  usbRequest;
+    PIRP                        pendingIrp;
+    BOOLEAN                     changed;
+
+
+    KdPrint((DRIVERNAME "Entered Bus_SubmitReport\n"));
+
+    hChild = Bus_GetPdo(Device, SerialNo);
 
     // Validate child
     if (hChild == NULL)
@@ -425,7 +411,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report, BOOLEA
     {
     case Xbox360Wired:
 
-        changed = (RtlCompareMemory(XusbGetData(hChild)->Report,
+        changed = (RtlCompareMemory(XusbGetData(hChild)->Report + 2,
             &((PXUSB_SUBMIT_REPORT)Report)->Report,
             sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
 

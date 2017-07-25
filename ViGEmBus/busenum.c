@@ -312,7 +312,9 @@ NTSTATUS Bus_QueueNotification(WDFDEVICE Device, ULONG SerialNo, WDFREQUEST Requ
 
         if (xusbData == NULL) break;
 
+        WdfSpinLockAcquire(xusbData->PendingNotificationRequestsLock);
         status = WdfRequestForwardToIoQueue(Request, xusbData->PendingNotificationRequests);
+        WdfSpinLockRelease(xusbData->PendingNotificationRequestsLock);
 
         break;
     case DualShock4Wired:
@@ -445,7 +447,9 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report, BOOLEA
     {
     case Xbox360Wired:
 
+        WdfSpinLockAcquire(XusbGetData(hChild)->PendingUsbInRequestsLock);
         status = WdfIoQueueRetrieveNextRequest(XusbGetData(hChild)->PendingUsbInRequests, &usbRequest);
+        WdfSpinLockRelease(XusbGetData(hChild)->PendingUsbInRequestsLock);
 
         break;
     case DualShock4Wired:

@@ -507,14 +507,18 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
                 /* This request is sent periodically and relies on data the "feeder"
                 * has to supply, so we queue this request and return with STATUS_PENDING.
                 * The request gets completed as soon as the "feeder" sent an update. */
+                WdfSpinLockAcquire(xusb->PendingUsbInRequestsLock);
                 status = WdfRequestForwardToIoQueue(Request, xusb->PendingUsbInRequests);
+                WdfSpinLockRelease(xusb->PendingUsbInRequestsLock);
 
                 return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
             }
 
             if (XUSB_IS_CONTROL_PIPE(pTransfer))
             {
+                WdfSpinLockAcquire(xusb->HoldingUsbInRequestsLock);
                 status = WdfRequestForwardToIoQueue(Request, xusb->HoldingUsbInRequests);
+                WdfSpinLockRelease(xusb->HoldingUsbInRequestsLock);
 
                 return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
             }
@@ -563,7 +567,9 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         }
 
         // Notify user-mode process that new data is available
+        WdfSpinLockAcquire(xusb->PendingNotificationRequestsLock);
         status = WdfIoQueueRetrieveNextRequest(xusb->PendingNotificationRequests, &notifyRequest);
+        WdfSpinLockRelease(xusb->PendingNotificationRequestsLock);
 
         if (NT_SUCCESS(status))
         {

@@ -26,10 +26,10 @@ SOFTWARE.
 #include "busenum.h"
 
 NTSTATUS Xusb_PreparePdo(
-    PWDFDEVICE_INIT DeviceInit, 
-    USHORT VendorId, 
-    USHORT ProductId, 
-    PUNICODE_STRING DeviceId, 
+    PWDFDEVICE_INIT DeviceInit,
+    USHORT VendorId,
+    USHORT ProductId,
+    PUNICODE_STRING DeviceId,
     PUNICODE_STRING DeviceDescription)
 {
     NTSTATUS status;
@@ -42,7 +42,7 @@ NTSTATUS Xusb_PreparePdo(
 
     // Set hardware ID
     RtlUnicodeStringPrintf(&buffer, L"USB\\VID_%04X&PID_%04X", VendorId, ProductId);
-    
+
     RtlUnicodeStringCopy(DeviceId, &buffer);
 
     status = WdfPdoInitAddHardwareID(DeviceInit, &buffer);
@@ -199,6 +199,10 @@ NTSTATUS Xusb_PrepareHardware(WDFDEVICE Device)
 NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION Description)
 {
     NTSTATUS status;
+    WDF_OBJECT_ATTRIBUTES attributes;
+
+    WDF_OBJECT_ATTRIBUTES_INIT(&attributes);
+    attributes.ParentObject = Device;
 
     KdPrint((DRIVERNAME "Initializing XUSB context...\n"));
 
@@ -224,6 +228,14 @@ NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION
         return status;
     }
 
+    // Create lock for queue
+    status = WdfSpinLockCreate(&attributes, &xusb->PendingUsbInRequestsLock);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfSpinLockCreate failed 0x%x\n", status));
+        return status;
+    }
+
     // Create and assign queue for user-land notification requests
     WDF_IO_QUEUE_CONFIG_INIT(&notificationsQueueConfig, WdfIoQueueDispatchManual);
 
@@ -234,6 +246,14 @@ NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION
         return status;
     }
 
+    // Create lock for queue
+    status = WdfSpinLockCreate(&attributes, &xusb->PendingNotificationRequestsLock);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfSpinLockCreate failed 0x%x\n", status));
+        return status;
+    }
+
     // Create and assign queue for unhandled interrupt requests
     WDF_IO_QUEUE_CONFIG_INIT(&holdingInQueueConfig, WdfIoQueueDispatchManual);
 
@@ -241,6 +261,14 @@ NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION
     if (!NT_SUCCESS(status))
     {
         KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));
+        return status;
+    }
+
+    // Create lock for queue
+    status = WdfSpinLockCreate(&attributes, &xusb->HoldingUsbInRequestsLock);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfSpinLockCreate failed 0x%x\n", status));
         return status;
     }
 

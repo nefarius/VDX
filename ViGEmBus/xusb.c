@@ -209,10 +209,10 @@ NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION
     // Is later overwritten by actual XInput slot
     xusb->LedNumber = (UCHAR)Description->SerialNo;
     // Packet size (20 bytes = 0x14)
-    xusb->Report[1] = 0x14;
+    xusb->Packet.Size = 0x14;
 
     // I/O Queue for pending IRPs
-    WDF_IO_QUEUE_CONFIG usbInQueueConfig, notificationsQueueConfig;
+    WDF_IO_QUEUE_CONFIG usbInQueueConfig, notificationsQueueConfig, holdingInQueueConfig;
 
     // Create and assign queue for incoming interrupt transfer
     WDF_IO_QUEUE_CONFIG_INIT(&usbInQueueConfig, WdfIoQueueDispatchManual);
@@ -228,6 +228,16 @@ NTSTATUS Xusb_AssignPdoContext(WDFDEVICE Device, PPDO_IDENTIFICATION_DESCRIPTION
     WDF_IO_QUEUE_CONFIG_INIT(&notificationsQueueConfig, WdfIoQueueDispatchManual);
 
     status = WdfIoQueueCreate(Device, &notificationsQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xusb->PendingNotificationRequests);
+    if (!NT_SUCCESS(status))
+    {
+        KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));
+        return status;
+    }
+
+    // Create and assign queue for unhandled interrupt requests
+    WDF_IO_QUEUE_CONFIG_INIT(&holdingInQueueConfig, WdfIoQueueDispatchManual);
+
+    status = WdfIoQueueCreate(Device, &holdingInQueueConfig, WDF_NO_OBJECT_ATTRIBUTES, &xusb->HoldingUsbInRequests);
     if (!NT_SUCCESS(status))
     {
         KdPrint((DRIVERNAME "WdfIoQueueCreate failed 0x%x\n", status));

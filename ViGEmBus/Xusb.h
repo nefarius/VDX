@@ -49,10 +49,22 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB_UNKNOWN_2,
 #define XUSB_CONFIGURATION_SIZE         0x0130
 #endif
 #define XUSB_DESCRIPTOR_SIZE	        0x0099
-#define XUSB_REPORT_SIZE                0x14
 #define XUSB_RUMBLE_SIZE                0x08
 #define XUSB_LEDSET_SIZE                0x03
 #define XUSB_LEDNUM_SIZE                0x01
+
+#define XUSB_IS_DATA_PIPE(_x_)          ((BOOLEAN)(_x_->PipeHandle == (USBD_PIPE_HANDLE)0xFFFF0081))
+#define XUSB_IS_CONTROL_PIPE(_x_)       ((BOOLEAN)(_x_->PipeHandle == (USBD_PIPE_HANDLE)0xFFFF0083))
+
+typedef struct _XUSB_INTERRUPT_IN_PACKET
+{
+    UCHAR Id;
+
+    UCHAR Size;
+
+    XUSB_REPORT Report;
+
+} XUSB_INTERRUPT_IN_PACKET, *PXUSB_INTERRUPT_IN_PACKET;
 
 //
 // XUSB-specific device context data.
@@ -70,14 +82,19 @@ typedef struct _XUSB_DEVICE_DATA
     UCHAR LedNumber;
 
     //
-    // Report buffer
+    // Report packet
     //
-    UCHAR Report[XUSB_REPORT_SIZE];
+    XUSB_INTERRUPT_IN_PACKET Packet;
 
     //
-    // Queue for incoming interrupt transfer
+    // Queue for incoming data interrupt transfer
     //
     WDFQUEUE PendingUsbInRequests;
+
+    //
+    // Queue for incoming control interrupt transfer
+    //
+    WDFQUEUE HoldingUsbInRequests;
 
     //
     // Queue for inverted calls

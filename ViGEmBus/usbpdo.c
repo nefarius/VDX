@@ -502,12 +502,22 @@ NTSTATUS UsbPdo_BulkOrInterruptTransfer(PURB urb, WDFDEVICE Device, WDFREQUEST R
         {
             KdPrint((DRIVERNAME ">> >> >> Incoming request, queuing...\n"));
 
-            /* This request is sent periodically and relies on data the "feeder"
-            * has to supply, so we queue this request and return with STATUS_PENDING.
-            * The request gets completed as soon as the "feeder" sent an update. */
-            status = WdfRequestForwardToIoQueue(Request, xusb->PendingUsbInRequests);
+            if (XUSB_IS_DATA_PIPE(pTransfer))
+            {
+                /* This request is sent periodically and relies on data the "feeder"
+                * has to supply, so we queue this request and return with STATUS_PENDING.
+                * The request gets completed as soon as the "feeder" sent an update. */
+                status = WdfRequestForwardToIoQueue(Request, xusb->PendingUsbInRequests);
 
-            return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
+                return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
+            }
+
+            if (XUSB_IS_CONTROL_PIPE(pTransfer))
+            {
+                status = WdfRequestForwardToIoQueue(Request, xusb->HoldingUsbInRequests);
+
+                return (NT_SUCCESS(status)) ? STATUS_PENDING : status;
+            }
         }
 
         // Data coming FROM the higher driver TO us

@@ -20,9 +20,7 @@ namespace ViGEmTester.NET
             report.SetButtons(Xbox360Buttons.A, Xbox360Buttons.B);
             report.SetAxis(Xbox360Axes.LeftTrigger, 0xFF);
             report.SetAxis(Xbox360Axes.RightTrigger, 0xFF);
-            x360.SendReport(report);
-            x360.SendReport(report);
-            x360.SendReport(report);
+
             x360.SendReport(report);
 
             Console.ReadKey();

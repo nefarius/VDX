@@ -105,18 +105,6 @@ NTSTATUS Bus_CreatePdo(
     // Bus is power policy owner
     WdfDeviceInitSetPowerPolicyOwnership(DeviceInit, FALSE);
 
-#ifdef FIXME
-    //
-    // Catch IRP_MJ_PNP / IRP_MN_QUERY_DEVICE_RELATIONS requests
-    // 
-    // When emulating an Xbox 360 device, the XUSB.SYS driver tries to
-    // query for an attached headset and bring it online. This has to
-    // be suppressed when the POD receives IRP_MN_QUERY_DEVICE_RELATIONS.
-    //  
-    UCHAR mnCodes[] = { IRP_MN_QUERY_DEVICE_RELATIONS };
-    WdfDeviceInitAssignWdmIrpPreprocessCallback(DeviceInit, Pdo_EvtDeviceWdmIrpPreprocess, IRP_MJ_PNP, mnCodes, 1);
-#endif
-
 #pragma region Enter RAW device mode
 
     status = WdfPdoInitAssignRawDevice(DeviceInit, &GUID_DEVCLASS_VIGEM_RAWPDO);
@@ -396,31 +384,6 @@ NTSTATUS Bus_CreatePdo(
 
     return status;
 }
-
-#ifdef FIXME
-NTSTATUS Pdo_EvtDeviceWdmIrpPreprocess(
-    _In_    WDFDEVICE Device,
-    _Inout_ PIRP      Irp
-)
-{
-    PPDO_DEVICE_DATA    pdoData;
-
-    KdPrint((DRIVERNAME "Pdo_EvtDeviceWdmIrpPreprocess called\n"));
-
-    pdoData = PdoGetData(Device);
-
-    switch (pdoData->TargetType)
-    {
-    case Xbox360Wired:
-        Irp->IoStatus.Status = STATUS_NOT_SUPPORTED;
-        break;
-    default:
-        break;
-    }
-
-    return WdfDeviceWdmDispatchPreprocessedIrp(Device, Irp);
-}
-#endif
 
 //
 // Exposes necessary interfaces on PDO power-up.

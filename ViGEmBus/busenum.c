@@ -411,7 +411,7 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report, BOOLEA
     {
     case Xbox360Wired:
 
-        changed = (RtlCompareMemory(XusbGetData(hChild)->Report + 2,
+        changed = (RtlCompareMemory(&XusbGetData(hChild)->Packet.Report,
             &((PXUSB_SUBMIT_REPORT)Report)->Report,
             sizeof(XUSB_REPORT)) != sizeof(XUSB_REPORT));
 
@@ -530,12 +530,12 @@ NTSTATUS Bus_SubmitReport(WDFDEVICE Device, ULONG SerialNo, PVOID Report, BOOLEA
     {
     case Xbox360Wired:
 
-        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = XUSB_REPORT_SIZE;
+        urb->UrbBulkOrInterruptTransfer.TransferBufferLength = sizeof(XUSB_INTERRUPT_IN_PACKET);
 
-        /* Copy report to cache and transfer buffer
-         * The first two bytes are always the same, so we skip them */
-        RtlCopyBytes(XusbGetData(hChild)->Report + 2, &((PXUSB_SUBMIT_REPORT)Report)->Report, sizeof(XUSB_REPORT));
-        RtlCopyBytes(Buffer, XusbGetData(hChild)->Report, XUSB_REPORT_SIZE);
+        // Copy submitted report to cache
+        RtlCopyBytes(&XusbGetData(hChild)->Packet.Report, &((PXUSB_SUBMIT_REPORT)Report)->Report, sizeof(XUSB_REPORT));
+        // Copy cached report to URB transfer buffer
+        RtlCopyBytes(Buffer, &XusbGetData(hChild)->Packet, sizeof(XUSB_INTERRUPT_IN_PACKET));
 
         break;
     case DualShock4Wired:

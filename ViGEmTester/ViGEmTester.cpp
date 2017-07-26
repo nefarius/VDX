@@ -124,7 +124,14 @@ int main()
     getchar();
 
     // Should detach the callback function
-    vigem_unregister_xusb_notification((PVIGEM_XUSB_NOTIFICATION)my_xusb_notification);
+    vigem_unregister_xusb_notification(
+        (PVIGEM_XUSB_NOTIFICATION)my_xusb_notification, 
+        x360);
+
+    // Should fail
+    vigem_unregister_xusb_notification(
+        (PVIGEM_XUSB_NOTIFICATION)my_xusb_notification,
+        x360);
 #endif
 
 #ifdef VIGEM_TEST_DS4

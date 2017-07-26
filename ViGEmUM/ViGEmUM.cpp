@@ -677,7 +677,9 @@ VIGEM_ERROR vigem_xgip_init_xboxgip(PVIGEM_TARGET Target)
     return VIGEM_ERROR_NONE;
 }
 
-VIGEM_API VIGEM_ERROR vigem_unregister_xusb_notification(VIGEM_TARGET Target, PVIGEM_XUSB_NOTIFICATION Notification)
+VIGEM_API VIGEM_ERROR vigem_unregister_xusb_notification(
+    PVIGEM_XUSB_NOTIFICATION Notification,
+    VIGEM_TARGET Target)
 {
     std::lock_guard<std::mutex> lock(g_xusbMutex);
 
@@ -691,7 +693,9 @@ VIGEM_API VIGEM_ERROR vigem_unregister_xusb_notification(VIGEM_TARGET Target, PV
     return VIGEM_ERROR_CALLBACK_NOT_FOUND;
 }
 
-VIGEM_API VIGEM_ERROR vigem_unregister_ds4_notification(VIGEM_TARGET Target, PVIGEM_DS4_NOTIFICATION Notification)
+VIGEM_API VIGEM_ERROR vigem_unregister_ds4_notification(
+    PVIGEM_DS4_NOTIFICATION Notification, 
+    VIGEM_TARGET Target)
 {
     std::lock_guard<std::mutex> lock(g_ds4Mutex);
 

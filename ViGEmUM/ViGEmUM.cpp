@@ -35,11 +35,12 @@ SOFTWARE.
 #include <vector>
 #include <list>
 #include <mutex>
+#include <map>
 
 HANDLE g_hViGEmBus = INVALID_HANDLE_VALUE;
-std::list<PVIGEM_XUSB_NOTIFICATION> g_xusbCallbacks;
+std::map<ULONG, std::list<PVIGEM_XUSB_NOTIFICATION>> g_xusbCallbacks;
 std::mutex g_xusbMutex;
-std::list<PVIGEM_DS4_NOTIFICATION> g_ds4Callbacks;
+std::map<ULONG, std::list<PVIGEM_DS4_NOTIFICATION>> g_ds4Callbacks;
 std::mutex g_ds4Mutex;
 
 // NOTE: used internally
@@ -153,13 +154,13 @@ VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
 
     std::lock_guard<std::mutex> lock(g_xusbMutex);
 
-    auto findIter = std::find(g_xusbCallbacks.begin(), g_xusbCallbacks.end(), Notification);
-    if (findIter != std::end(g_xusbCallbacks))
+    auto findIter = std::find(g_xusbCallbacks[Target.SerialNo].begin(), g_xusbCallbacks[Target.SerialNo].end(), Notification);
+    if (findIter != std::end(g_xusbCallbacks[Target.SerialNo]))
     {
         return VIGEM_ERROR_CALLBACK_ALREADY_REGISTERED;
     }
 
-    g_xusbCallbacks.push_front(Notification);
+    g_xusbCallbacks[Target.SerialNo].push_front(Notification);
 
     std::thread _async{ [](
         PVIGEM_XUSB_NOTIFICATION _Notification,
@@ -181,9 +182,10 @@ VIGEM_API VIGEM_ERROR vigem_register_xusb_notification(
             {
                 std::lock_guard<std::mutex> lock(g_xusbMutex);
 
-                auto findIter = std::find(g_xusbCallbacks.begin(), g_xusbCallbacks.end(), _Notification);
-                if (findIter == std::end(g_xusbCallbacks))
+                auto findIter = std::find(g_xusbCallbacks[_Target.SerialNo].begin(), g_xusbCallbacks[_Target.SerialNo].end(), _Notification);
+                if (findIter == std::end(g_xusbCallbacks[_Target.SerialNo]))
                 {
+                    CloseHandle(lOverlapped.hEvent);
                     return;
                 }
 
@@ -288,6 +290,10 @@ VIGEM_API VIGEM_ERROR vigem_target_unplug(PVIGEM_TARGET Target)
     {
         Target->State = VIGEM_TARGET_DISCONNECTED;
         CloseHandle(lOverlapped.hEvent);
+
+        g_xusbCallbacks.erase(Target->SerialNo);
+        g_ds4Callbacks.erase(Target->SerialNo);
+
         return VIGEM_ERROR_NONE;
     }
 
@@ -314,13 +320,13 @@ VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
 
     std::lock_guard<std::mutex> lock(g_ds4Mutex);
 
-    auto findIter = std::find(g_ds4Callbacks.begin(), g_ds4Callbacks.end(), Notification);
-    if (findIter != std::end(g_ds4Callbacks))
+    auto findIter = std::find(g_ds4Callbacks[Target.SerialNo].begin(), g_ds4Callbacks[Target.SerialNo].end(), Notification);
+    if (findIter != std::end(g_ds4Callbacks[Target.SerialNo]))
     {
         return VIGEM_ERROR_CALLBACK_ALREADY_REGISTERED;
     }
 
-    g_ds4Callbacks.push_front(Notification);
+    g_ds4Callbacks[Target.SerialNo].push_front(Notification);
 
     std::thread _async{ [](
         PVIGEM_DS4_NOTIFICATION _Notification,
@@ -342,9 +348,10 @@ VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
             {
                 std::lock_guard<std::mutex> lock(g_ds4Mutex);
 
-                auto findIter = std::find(g_ds4Callbacks.begin(), g_ds4Callbacks.end(), _Notification);
-                if (findIter == std::end(g_ds4Callbacks))
+                auto findIter = std::find(g_ds4Callbacks[_Target.SerialNo].begin(), g_ds4Callbacks[_Target.SerialNo].end(), _Notification);
+                if (findIter == std::end(g_ds4Callbacks[_Target.SerialNo]))
                 {
+                    CloseHandle(lOverlapped.hEvent);
                     return;
                 }
 
@@ -670,28 +677,28 @@ VIGEM_ERROR vigem_xgip_init_xboxgip(PVIGEM_TARGET Target)
     return VIGEM_ERROR_NONE;
 }
 
-VIGEM_API VIGEM_ERROR vigem_unregister_xusb_notification(PVIGEM_XUSB_NOTIFICATION Notification)
+VIGEM_API VIGEM_ERROR vigem_unregister_xusb_notification(VIGEM_TARGET Target, PVIGEM_XUSB_NOTIFICATION Notification)
 {
     std::lock_guard<std::mutex> lock(g_xusbMutex);
 
-    auto findIter = std::find(g_xusbCallbacks.begin(), g_xusbCallbacks.end(), Notification);
-    if (findIter != std::end(g_xusbCallbacks))
+    auto findIter = std::find(g_xusbCallbacks[Target.SerialNo].begin(), g_xusbCallbacks[Target.SerialNo].end(), Notification);
+    if (findIter != std::end(g_xusbCallbacks[Target.SerialNo]))
     {
-        g_xusbCallbacks.remove(Notification);
+        g_xusbCallbacks[Target.SerialNo].remove(Notification);
         return VIGEM_ERROR_NONE;
     }
 
     return VIGEM_ERROR_CALLBACK_NOT_FOUND;
 }
 
-VIGEM_API VIGEM_ERROR vigem_unregister_ds4_notification(PVIGEM_DS4_NOTIFICATION Notification)
+VIGEM_API VIGEM_ERROR vigem_unregister_ds4_notification(VIGEM_TARGET Target, PVIGEM_DS4_NOTIFICATION Notification)
 {
     std::lock_guard<std::mutex> lock(g_ds4Mutex);
 
-    auto findIter = std::find(g_ds4Callbacks.begin(), g_ds4Callbacks.end(), Notification);
-    if (findIter != std::end(g_ds4Callbacks))
+    auto findIter = std::find(g_ds4Callbacks[Target.SerialNo].begin(), g_ds4Callbacks[Target.SerialNo].end(), Notification);
+    if (findIter != std::end(g_ds4Callbacks[Target.SerialNo]))
     {
-        g_ds4Callbacks.remove(Notification);
+        g_ds4Callbacks[Target.SerialNo].remove(Notification);
         return VIGEM_ERROR_NONE;
     }
 

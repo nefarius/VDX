@@ -125,6 +125,7 @@ extern "C"
         _In_ VIGEM_TARGET Target);
 
     VIGEM_API VIGEM_ERROR vigem_unregister_xusb_notification(
+        _In_ VIGEM_TARGET Target,
         _In_ PVIGEM_XUSB_NOTIFICATION Notification);
 
     VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
@@ -132,6 +133,7 @@ extern "C"
         _In_ VIGEM_TARGET Target);
 
     VIGEM_API VIGEM_ERROR vigem_unregister_ds4_notification(
+        _In_ VIGEM_TARGET Target,
         _In_ PVIGEM_DS4_NOTIFICATION Notification);
 
     VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(

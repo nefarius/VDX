@@ -32,3 +32,12 @@ Additional build instructions are mentioned in the respective project READMEs, a
 ## Sponsors
 - [3dRudder](https://www.3drudder.com/eu/)
 - [Wohlfeil.IT e.U.](https://wohlfeil.it/)
+- [Parsec](https://parsec.tv/)
+
+## Users of ViGEm
+ - [3dRudder](https://www.3drudder.com/eu/)
+ - [Parsec](https://parsec.tv/)
+ - [GloSC](https://github.com/Alia5/GloSC)
+ - [UCR](https://github.com/evilC/UCR)
+ - [InputMapper](https://inputmapper.com/)
+ - [Oculus VR, LLC.](https://www.oculus.com/)

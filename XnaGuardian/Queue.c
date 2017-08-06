@@ -65,11 +65,11 @@ XnaGuardianQueueInitialize(
     // 
     queueConfig.EvtIoDefault = XnaGuardianEvtIoDefault;
     //
-    // Filter the interesting calls
+    // Filter the interesting calls if upper filter
     // 
     queueConfig.EvtIoDeviceControl = XnaGuardianEvtIoDeviceControl;
     //
-    // Hooks driver-to-driver communication
+    // Filter the interesting calls if lower filter
     // 
     queueConfig.EvtIoInternalDeviceControl = XnaGuardianEvtIoInternalDeviceControl;
 
@@ -99,10 +99,14 @@ UpperUsbInterruptRequestsQueueInitialize(
     NTSTATUS                status;
     WDF_IO_QUEUE_CONFIG     queueConfig;
     PDEVICE_CONTEXT         pDeviceContext;
+    WDF_OBJECT_ATTRIBUTES   attributes;
 
     PAGED_CODE();
 
     TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_QUEUE, "%!FUNC! Entry");
+
+    WDF_OBJECT_ATTRIBUTES_INIT(&attributes);
+    attributes.ParentObject = Device;
 
     pDeviceContext = DeviceGetContext(Device);
 
@@ -113,6 +117,14 @@ UpperUsbInterruptRequestsQueueInitialize(
     if (!NT_SUCCESS(status))
     {
         TraceEvents(TRACE_LEVEL_ERROR, TRACE_QUEUE, "WdfIoQueueCreate failed with status %!STATUS!", status);
+        return status;
+    }
+
+    // Create queue lock
+    status = WdfSpinLockCreate(&attributes, &pDeviceContext->UpperUsbInterruptRequestsLock);
+    if (!NT_SUCCESS(status))
+    {
+        TraceEvents(TRACE_LEVEL_ERROR, TRACE_QUEUE, "WdfSpinLockCreate failed with status %!STATUS!", status);
         return status;
     }
 
@@ -235,6 +247,10 @@ VOID XnaGuardianEvtIoDeviceControl(
             return;
         }
 
+        //
+        // We want the data AFTER the lower driver has processed this request
+        // so we add a completion routine and format it for re-sending.
+        // 
         WdfRequestFormatRequestUsingCurrentType(Request);
         WdfRequestSetCompletionRoutine(Request, XInputGetGamepadStateCompleted, Device);
 
@@ -386,7 +402,9 @@ VOID XnaGuardianEvtIoInternalDeviceControl(
             {
                 KdPrint((DRIVERNAME ">> >> Interrupt IN\n"));
 
+                URB_QUEUE_LOCK();
                 status = WdfRequestForwardToIoQueue(Request, pDeviceContext->UpperUsbInterruptRequests);
+                URB_QUEUE_UNLOCK();
 
                 if (!NT_SUCCESS(status))
                 {

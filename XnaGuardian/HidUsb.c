@@ -61,7 +61,9 @@ BOOLEAN GetUpperUsbRequest(
         return FALSE;
     }
 
+    URB_QUEUE_LOCK();
     status = WdfIoQueueRetrieveNextRequest(pDeviceContext->UpperUsbInterruptRequests, PendingRequest);
+    URB_QUEUE_UNLOCK();
 
     if (!NT_SUCCESS(status))
     {

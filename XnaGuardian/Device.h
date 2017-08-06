@@ -32,6 +32,8 @@ SOFTWARE.
 EXTERN_C_START
 
 #define MAX_HARDWARE_ID_SIZE        0xFF
+#define URB_QUEUE_LOCK()            WdfSpinLockAcquire(pDeviceContext->UpperUsbInterruptRequestsLock)
+#define URB_QUEUE_UNLOCK()          WdfSpinLockRelease(pDeviceContext->UpperUsbInterruptRequestsLock)
 
 //
 // Returns the current caller process id.
@@ -60,6 +62,7 @@ typedef struct _DEVICE_CONTEXT
     BOOLEAN             IsXnaDevice;
     BOOLEAN             IsHidUsbDevice;
     WDFQUEUE            UpperUsbInterruptRequests;
+    WDFSPINLOCK         UpperUsbInterruptRequestsLock;
     WDFUSBDEVICE        UsbDevice;
     WDFUSBINTERFACE     UsbInterface;
     WDFUSBPIPE          InterruptPipe;

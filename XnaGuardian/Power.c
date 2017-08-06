@@ -189,7 +189,9 @@ NTSTATUS XnaGuardianEvtDeviceD0Exit(
     if (pDeviceContext->IsHidUsbDevice)
     {
         WdfIoTargetStop(WdfUsbTargetPipeGetIoTarget(pDeviceContext->InterruptPipe), WdfIoTargetCancelSentIo);
+        URB_QUEUE_LOCK();
         WdfIoQueuePurgeSynchronously(pDeviceContext->UpperUsbInterruptRequests);
+        URB_QUEUE_UNLOCK();
     }
 
     TraceEvents(TRACE_LEVEL_INFORMATION, TRACE_POWER, "%!FUNC! Exit");

@@ -110,6 +110,14 @@ VOID FORCEINLINE XINPUT_GAMEPAD_TO_XBONE_HID_USB_INPUT_REPORT(
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y)
         pXboneReport->RightThumbY = pPad->Gamepad.sThumbRY + XBONE_HID_USB_THUMB_AXIS_OFFSET;
 
+    // Left Trigger
+    if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_TRIGGER)
+        pXboneReport->LeftTriggerLevel = pPad->Gamepad.bLeftTrigger;
+
+    // Right Trigger
+    if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_TRIGGER)
+        pXboneReport->RightTriggerLevel = pPad->Gamepad.bRightTrigger;
+
     // A
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_A)
         if ((pPad->Gamepad.wButtons & XINPUT_GAMEPAD_A) != 0)

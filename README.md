@@ -25,8 +25,19 @@ Additional build instructions are mentioned in the respective project READMEs, a
  - Visual Studio **2015** ([Community Edition](https://go.microsoft.com/fwlink/p/?LinkId=534599) is just fine)
    - [Building drivers isn't yet supported by Visual Studio 2017](https://www.osr.com/blog/2017/03/07/visual-studio-2017-released-driver-devs-must-stay-vs-2015/)
  - [Windows 10 SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk)
+   - Minimum required components:
+   ![](https://lh3.googleusercontent.com/-sVmz6EjNyR0/WXynV7ADGyI/AAAAAAAAAIM/MnjDfEsHg-omtrPD3qYoqnQTx2VsMfHAgCHMYCw/s0/winsdksetup%2B%25281%2529_2017-07-29_17-14-16.png)
  - [Windows Driver Kit](https://developer.microsoft.com/en-us/windows/hardware/windows-driver-kit)
 
 ## Sponsors
 - [3dRudder](https://www.3drudder.com/eu/)
 - [Wohlfeil.IT e.U.](https://wohlfeil.it/)
+- [Parsec](https://parsec.tv/)
+
+## Users of ViGEm
+ - [3dRudder](https://www.3drudder.com/eu/)
+ - [Parsec](https://parsec.tv/)
+ - [GloSC](https://github.com/Alia5/GloSC)
+ - [WhiteKnight](https://autohotkey.com/boards/viewtopic.php?t=34890)
+ - [InputMapper](https://inputmapper.com/)
+ - [Oculus VR, LLC.](https://www.oculus.com/)

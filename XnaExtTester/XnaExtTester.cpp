@@ -15,16 +15,20 @@ int main()
         XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_X | XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB_Y
         | XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_X | XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB_Y
         | XINPUT_GAMEPAD_OVERRIDE_LEFT_SHOULDER | XINPUT_GAMEPAD_OVERRIDE_RIGHT_SHOULDER
-        | XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB | XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB);
+        | XINPUT_GAMEPAD_OVERRIDE_LEFT_THUMB | XINPUT_GAMEPAD_OVERRIDE_RIGHT_THUMB
+        | XINPUT_GAMEPAD_OVERRIDE_LEFT_TRIGGER | XINPUT_GAMEPAD_OVERRIDE_RIGHT_TRIGGER);
 
     while (TRUE)
     {
         Sleep(100);
 
-        pad.sThumbLX = SHRT_MIN;
-        pad.sThumbLY = SHRT_MIN;
-        pad.sThumbRX = SHRT_MIN;
-        pad.sThumbRY = SHRT_MIN;
+        pad.sThumbLX = SHRT_MAX;
+        pad.sThumbLY = SHRT_MAX;
+        pad.sThumbRX = SHRT_MAX;
+        pad.sThumbRY = SHRT_MAX;
+
+        pad.bLeftTrigger = 10;
+        pad.bRightTrigger = 255;
 
         printf("%d\n", XInputOverrideSetState(0, &pad));
     }

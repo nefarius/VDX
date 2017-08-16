@@ -49,10 +49,8 @@ typedef struct _XBONE_HID_USB_INPUT_REPORT
     USHORT LeftThumbY;
     USHORT RightThumbX;
     USHORT RightThumbY;
-    UCHAR  LeftTriggerValue;
-    UCHAR  LeftTriggerLevel;
-    UCHAR  RightTriggerValue;
-    UCHAR  RightTriggerLevel;
+    USHORT LeftTrigger;
+    USHORT RightTrigger;
     USHORT Buttons;
     UCHAR  Dpad;
 } XBONE_HID_USB_INPUT_REPORT, *PXBONE_HID_USB_INPUT_REPORT;
@@ -112,11 +110,15 @@ VOID FORCEINLINE XINPUT_GAMEPAD_TO_XBONE_HID_USB_INPUT_REPORT(
 
     // Left Trigger
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_LEFT_TRIGGER)
-        pXboneReport->LeftTriggerLevel = pPad->Gamepad.bLeftTrigger;
+    {
+        pXboneReport->LeftTrigger = pPad->Gamepad.bLeftTrigger * 4;
+    }
 
     // Right Trigger
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_RIGHT_TRIGGER)
-        pXboneReport->RightTriggerLevel = pPad->Gamepad.bRightTrigger;
+    {
+        pXboneReport->RightTrigger = pPad->Gamepad.bRightTrigger * 4;
+    }
 
     // A
     if (pPad->Overrides & XINPUT_GAMEPAD_OVERRIDE_A)

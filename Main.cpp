@@ -136,7 +136,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
         //
         // Create main window
         // 
-        ImGui::SetNextWindowSize(ImVec2(550, 180));
+        ImGui::SetNextWindowSize(ImVec2(550, 130));
         ImGui::SetNextWindowPosCenter();
         ImGui::Begin("", nullptr,
             ImGuiWindowFlags_NoTitleBar

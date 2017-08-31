@@ -12,3 +12,7 @@ Adds ViGEm support to unmodified x360ce application.
   - `VDX.exe` (or `VDX_x64.exe` for the x64 version)
 - Run `VDX.exe`
 - Run your game and enjoy
+
+## 3rd party stuff used
+ - [Simple and Fast Multimedia Library](https://www.sfml-dev.org/)
+ - [dear imgui](https://github.com/ocornut/imgui)

@@ -1,3 +1,35 @@
+/*
+MIT License
+
+Copyright (c) 2017 Benjamin "Nefarius" Höglinger
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+/*
+ * TODO:
+ * Error checking
+ * Vibration feedback
+ * Async plugin
+ * 
+/* */
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -19,20 +51,36 @@ enum EmulationtargetType : int
     DS4
 };
 
+//
+// Helper object to keep track of state during every frame
+// 
 struct EmulationTarget
 {
+    //
+    // Is x360ce reporting a device for the current user index
+    // 
     bool isSourceConnected;
+
+    //
+    // Is the target device (virtual controller) currently alive
+    // 
     bool isTargetConnected;
+
+    //
+    // Device object referring to the emulation target
+    // 
     PVIGEM_TARGET target;
+
+    //
+    // Type of emulated device (from combo-list)
+    // 
+    // Currently either an X360 pad or a DS4
+    // 
     EmulationtargetType targetType;
 };
 
 static EmulationTarget targets[XUSER_MAX_COUNT];
 
-void clampAxis(PBYTE axis)
-{
-    if (*axis == 0) *axis = 0xFF;
-}
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow)
 {
@@ -49,10 +97,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
         SendMessage(window.getSystemHandle(), WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
     }
 
+    //
+    // Alloc ViGEm client
+    // 
     auto client = vigem_alloc();
 
+    //
+    // Dynamically load XInput1_3.dll provided by x360ce
+    // 
     auto xInputMod = LoadLibrary(L"XInput1_3.dll");
 
+    //
+    // Declare XInput functions 
+    // 
     auto pXInputEnable = reinterpret_cast<VOID(WINAPI*)(BOOL)>(GetProcAddress(xInputMod, "XInputEnable"));
     auto pXInputGetState = reinterpret_cast<DWORD(WINAPI*)(DWORD, XINPUT_STATE*)>(GetProcAddress(xInputMod, "XInputGetState"));
 
@@ -163,6 +220,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
                 switch (targets[i].targetType)
                 {
                 case X360:
+                    //
+                    // The XINPUT_GAMEPAD structure is identical to the XUSB_REPORT structure
+                    // so we can simply take it "as-is" and cast it.
+                    // 
                     vigem_target_x360_update(client, targets[i].target, *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
                     break;
                 case DS4:

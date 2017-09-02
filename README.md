@@ -13,6 +13,7 @@ Adds ViGEm support to unmodified x360ce application.
   - `XInput1_3.dll` (the one crated by x360ce!)
   - `VDX.exe` (or `VDX_x64.exe` for the x64 version)
 - Run `VDX.exe`
+- If you've set up x360ce correctly your configured Gamepad(s) should be in `Connected` state. Select the type of emulation you'd like to enable and hit `Connect`.
 - Run your game and enjoy
 
 ## 3rd party stuff used

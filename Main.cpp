@@ -44,6 +44,9 @@ SOFTWARE.
 #include <ViGEmClient.h>
 #include <ViGEmUtil.h>
 #include "resource.h"
+#include <Dwmapi.h>
+
+#pragma comment (lib, "Dwmapi.lib")
 
 
 enum EmulationtargetType : int
@@ -85,9 +88,17 @@ static EmulationTarget targets[XUSER_MAX_COUNT];
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow)
 {
-    sf::RenderWindow window(sf::VideoMode(640, 240), "x360ce to ViGEm demo application", sf::Style::Titlebar | sf::Style::Close);
+    sf::RenderWindow window(sf::VideoMode(560, 150), "x360ce to ViGEm demo application", sf::Style::None);
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window);
+
+    //
+    // Enable window transparency
+    // 
+    MARGINS margins;
+    margins.cxLeftWidth = -1;
+    SetWindowLong(window.getSystemHandle(), GWL_STYLE, WS_POPUP | WS_VISIBLE);
+    DwmExtendFrameIntoClientArea(window.getSystemHandle(), &margins);
 
     //
     // Set window icon
@@ -118,7 +129,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     pXInputEnable(TRUE);
 
     XINPUT_STATE state;
-
+    
+    sf::Vector2i grabbedOffset;
+    auto grabbedWindow = false;
     window.resetGLStates();
     sf::Clock deltaClock;
     while (window.isOpen()) {
@@ -129,6 +142,29 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
+            else if (event.type == sf::Event::KeyPressed)
+            {
+                if (event.key.code == sf::Keyboard::Escape)
+                    window.close();
+            }
+            else if (event.type == sf::Event::MouseButtonPressed)
+            {
+                if (event.mouseButton.button == sf::Mouse::Left)
+                {
+                    grabbedOffset = window.getPosition() - sf::Mouse::getPosition();
+                    grabbedWindow = true;
+                }
+            }
+            else if (event.type == sf::Event::MouseButtonReleased)
+            {
+                if (event.mouseButton.button == sf::Mouse::Left)
+                    grabbedWindow = false;
+            }
+            else if (event.type == sf::Event::MouseMoved)
+            {
+                if (grabbedWindow)
+                    window.setPosition(sf::Mouse::getPosition() + grabbedOffset);
+            }
         }
 
         ImGui::SFML::Update(window, deltaClock.restart());
@@ -136,11 +172,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
         //
         // Create main window
         // 
-        ImGui::SetNextWindowSize(ImVec2(550, 130));
+        ImGui::SetNextWindowSize(ImVec2(550, 140));
         ImGui::SetNextWindowPosCenter();
-        ImGui::Begin("", nullptr,
-            ImGuiWindowFlags_NoTitleBar
-            | ImGuiWindowFlags_NoResize
+        ImGui::Begin("x360ce to ViGEm sample application", nullptr,
+            ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_NoCollapse
             | ImGuiWindowFlags_NoMove
             | ImGuiWindowFlags_NoSavedSettings
             | ImGuiWindowFlags_AlwaysAutoResize);
@@ -245,7 +281,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
         ImGui::End();
 
-        window.clear(sf::Color(74, 165, 255));
+        window.clear(sf::Color::Transparent);
 
         ImGui::SFML::Render(window);
         window.display();

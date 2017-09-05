@@ -27,7 +27,7 @@ SOFTWARE.
  * Error checking
  * Vibration feedback
  * Async plugin
- * 
+ *
 /* */
 
 #define WIN32_LEAN_AND_MEAN
@@ -125,13 +125,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     auto pXInputEnable = reinterpret_cast<VOID(WINAPI*)(BOOL)>(GetProcAddress(xInputMod, "XInputEnable"));
     auto pXInputGetState = reinterpret_cast<DWORD(WINAPI*)(DWORD, XINPUT_STATE*)>(GetProcAddress(xInputMod, "XInputGetState"));
 
-    vigem_connect(client);
+    auto retval = vigem_connect(client);
+    if (!VIGEM_SUCCESS(retval))
+    {
+        MessageBox(window.getSystemHandle(), L"ViGEm Bus connection failed", L"Error", MB_ICONERROR);
+        return -1;
+    }
+
     pXInputEnable(TRUE);
 
     XINPUT_STATE state;
-    
+
     sf::Vector2i grabbedOffset;
     auto grabbedWindow = false;
+    auto isOpen = true;
     window.resetGLStates();
     sf::Clock deltaClock;
     while (window.isOpen()) {
@@ -174,12 +181,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
         // 
         ImGui::SetNextWindowSize(ImVec2(550, 140));
         ImGui::SetNextWindowPosCenter();
-        ImGui::Begin("x360ce to ViGEm sample application", nullptr,
+        ImGui::Begin("x360ce to ViGEm sample application", &isOpen,
             ImGuiWindowFlags_NoResize
             | ImGuiWindowFlags_NoCollapse
             | ImGuiWindowFlags_NoMove
             | ImGuiWindowFlags_NoSavedSettings
             | ImGuiWindowFlags_AlwaysAutoResize);
+
+        if (!isOpen) break;
 
         ImGui::Columns(4);
 
@@ -247,7 +256,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
                             break;
                         }
 
-                        targets[i].isTargetConnected = VIGEM_SUCCESS(vigem_target_add(client, targets[i].target));
+                        auto pir = vigem_target_add(client, targets[i].target);
+                        if (!VIGEM_SUCCESS(pir))
+                        {
+                            MessageBox(window.getSystemHandle(), L"Target plugin failed", L"Error", MB_ICONERROR);
+                            return -1;
+                        }
+
+                        targets[i].isTargetConnected = vigem_target_is_attached(targets[i].target);
                     }
                 }
             }

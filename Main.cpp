@@ -88,7 +88,7 @@ static EmulationTarget targets[XUSER_MAX_COUNT];
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow)
 {
-    sf::RenderWindow window(sf::VideoMode(560, 150), "x360ce to ViGEm demo application", sf::Style::None);
+    sf::RenderWindow window(sf::VideoMode(560, 150), "XInput to ViGEm sample application", sf::Style::None);
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window);
 
@@ -181,7 +181,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
         // 
         ImGui::SetNextWindowSize(ImVec2(550, 140));
         ImGui::SetNextWindowPosCenter();
-        ImGui::Begin("x360ce to ViGEm sample application", &isOpen,
+        ImGui::Begin("XInput to ViGEm sample application", &isOpen,
+            ImVec2(550, 140), 1.0f,
             ImGuiWindowFlags_NoResize
             | ImGuiWindowFlags_NoCollapse
             | ImGuiWindowFlags_NoMove

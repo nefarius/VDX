@@ -17,6 +17,7 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
 LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
+#pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -77,13 +78,13 @@ BEGIN
         BLOCK "0c0704b0"
         BEGIN
             VALUE "CompanyName", "Benjamin Höglinger-Stelzer"
-            VALUE "FileDescription", "x360ce to ViGEm sample application"
-VALUE "FileVersion", "1.13.0.0"
+            VALUE "FileDescription", "XInput to ViGEm sample application"
+            VALUE "FileVersion", "1.13.0.0"
             VALUE "InternalName", "VDX.exe"
             VALUE "LegalCopyright", "Copyright (C) Benjamin Höglinger-Stelzer 2017"
             VALUE "OriginalFilename", "VDX.exe"
-            VALUE "ProductName", "x360ce to ViGEm sample application"
-VALUE "ProductVersion", "1.13.0.0"
+            VALUE "ProductName", "XInput to ViGEm sample application"
+            VALUE "ProductVersion", "1.13.0.0"
         END
     END
     BLOCK "VarFileInfo"

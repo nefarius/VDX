@@ -1,7 +1,7 @@
 # x360ce to ViGEm sample application
 Adds ViGEm support to unmodified x360ce application.
 
-![](https://lh3.googleusercontent.com/-hkVia9DAzRA/WagauZ7JsZI/AAAAAAAAAQ0/emEbEHo4PjMvkIzTvx9EPkabw34xlJbOwCHMYCw/s0/VDX_2017-08-31_16-18-32.png)
+![](https://lh3.googleusercontent.com/-WND-yPLUyZI/Wd-qN0XTbNI/AAAAAAAAAZI/Yeumwl11FYM2HGVJbYP4H1I9o-O6FWn3ACHMYCw/s0/VDX_x64_2017-10-12_19-45-31.png)
 
 ## How to use
 - Get [x360ce](https://github.com/x360ce/x360ce#download) (don't mix x86 and x64!)

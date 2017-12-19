@@ -119,6 +119,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     // 
     auto xInputMod = LoadLibrary(L"XInput1_3.dll");
 
+    if (!xInputMod)
+    {
+        MessageBox(window.getSystemHandle(), L"XInput1_3.dll missing", L"Error", MB_ICONERROR);
+        return -1;
+    }
+
     //
     // Declare XInput functions 
     // 

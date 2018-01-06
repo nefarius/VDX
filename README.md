@@ -3,6 +3,9 @@ Adds ViGEm support to unmodified x360ce application.
 
 ![](https://lh3.googleusercontent.com/-WND-yPLUyZI/Wd-qN0XTbNI/AAAAAAAAAZI/Yeumwl11FYM2HGVJbYP4H1I9o-O6FWn3ACHMYCw/s0/VDX_x64_2017-10-12_19-45-31.png)
 
+## Requirements
+[ViGEm set up](https://github.com/nefarius/ViGEm/wiki/Driver-Installation), obviously.
+
 ## How to use
 - Get [x360ce](https://github.com/x360ce/x360ce#download) (don't mix x86 and x64!)
   - If x360ce is new to you [check out its requirements first](https://github.com/x360ce/x360ce#system-requirements).

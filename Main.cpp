@@ -45,6 +45,10 @@ SOFTWARE.
 #include <ViGEmUtil.h>
 #include "resource.h"
 #include <Dwmapi.h>
+#include <string>
+#include <iomanip>
+#include <iosfwd>
+#include <sstream>
 
 #pragma comment (lib, "Dwmapi.lib")
 
@@ -134,7 +138,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     auto retval = vigem_connect(client);
     if (!VIGEM_SUCCESS(retval))
     {
-        MessageBox(window.getSystemHandle(), L"ViGEm Bus connection failed", L"Error", MB_ICONERROR);
+        std::wstringstream stream;
+        stream << L"ViGEm Bus connection failed with error code: 0x" << std::hex << retval;
+        std::wstring result(stream.str());
+        MessageBox(window.getSystemHandle(), result.c_str(), L"Error", MB_ICONERROR);
         return -1;
     }
 

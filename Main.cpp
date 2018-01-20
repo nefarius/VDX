@@ -42,6 +42,7 @@ SOFTWARE.
 
 #include <Xinput.h>
 #include <ViGEmClient.h>
+#include <ViGEmUtil.h>
 #include "resource.h"
 #include <Dwmapi.h>
 #include <string>

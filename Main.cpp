@@ -298,7 +298,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
                 // Uses "secret" API function to listen for Guide button and injects it into 
                 // the original XINPUT_GAMEPAD structure if detected
                 // 
-                if (pXInputGetStateSecret(i, &secret) == ERROR_SUCCESS && (secret.wButtons & XUSB_GAMEPAD_GUIDE) != 0) {
+                if (
+                    (pXInputGetStateSecret != nullptr) 
+                    && (pXInputGetStateSecret(i, &secret) == ERROR_SUCCESS) 
+                    && ((secret.wButtons & XUSB_GAMEPAD_GUIDE) != 0)
+                    ) 
+                {
                     state.Gamepad.wButtons |= XUSB_GAMEPAD_GUIDE;
                 }
 

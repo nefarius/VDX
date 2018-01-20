@@ -145,6 +145,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     // 
     auto pXInputEnable = reinterpret_cast<VOID(WINAPI*)(BOOL)>(GetProcAddress(xInputMod, "XInputEnable"));
     auto pXInputGetState = reinterpret_cast<DWORD(WINAPI*)(DWORD, XINPUT_STATE*)>(GetProcAddress(xInputMod, "XInputGetState"));
+    //
+    // https://forums.tigsource.com/index.php?&topic=26792.msg847843#msg847843
+    // https://github.com/DieKatzchen/GuideButtonPoller/blob/master/GuideButtonPoller.cpp
+    // http://reverseengineerlog.blogspot.co.at/2016/06/xinputs-hidden-functions.html
+    // 
     auto pXInputGetStateSecret = reinterpret_cast<int(__stdcall *)(int, XINPUT_GAMEPAD_SECRET*)>(GetProcAddress(xInputMod, (LPCSTR)100));
 
     if (pXInputGetStateSecret == nullptr) {

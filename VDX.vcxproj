@@ -177,6 +177,7 @@
     <ClInclude Include="ImGui\stb_textedit.h" />
     <ClInclude Include="ImGui\stb_truetype.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Util.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="VDX.rc" />

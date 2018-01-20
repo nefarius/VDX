@@ -42,7 +42,6 @@ SOFTWARE.
 
 #include <Xinput.h>
 #include <ViGEmClient.h>
-#include <ViGEmUtil.h>
 #include "resource.h"
 #include <Dwmapi.h>
 #include <string>
@@ -52,6 +51,17 @@ SOFTWARE.
 
 #pragma comment (lib, "Dwmapi.lib")
 
+typedef struct
+{
+    unsigned long eventCount;
+    WORD                                wButtons;
+    BYTE                                bLeftTrigger;
+    BYTE                                bRightTrigger;
+    SHORT                               sThumbLX;
+    SHORT                               sThumbLY;
+    SHORT                               sThumbRX;
+    SHORT                               sThumbRY;
+} XINPUT_GAMEPAD_SECRET;
 
 enum EmulationtargetType : int
 {
@@ -134,6 +144,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     // 
     auto pXInputEnable = reinterpret_cast<VOID(WINAPI*)(BOOL)>(GetProcAddress(xInputMod, "XInputEnable"));
     auto pXInputGetState = reinterpret_cast<DWORD(WINAPI*)(DWORD, XINPUT_STATE*)>(GetProcAddress(xInputMod, "XInputGetState"));
+    auto pXInputGetStateSecret = reinterpret_cast<int(__stdcall *)(int, XINPUT_GAMEPAD_SECRET*)>(GetProcAddress(xInputMod, (LPCSTR)100));
+
+    if (pXInputGetStateSecret == nullptr) {
+        MessageBox(window.getSystemHandle(), L"XBOX Guide button not readable", L"Warning", MB_ICONWARNING);
+    }
 
     auto retval = vigem_connect(client);
     if (!VIGEM_SUCCESS(retval))
@@ -148,6 +163,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     pXInputEnable(TRUE);
 
     XINPUT_STATE state;
+    XINPUT_GAMEPAD_SECRET secret;
 
     sf::Vector2i grabbedOffset;
     auto grabbedWindow = false;
@@ -284,6 +300,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
             if (targets[i].isTargetConnected)
             {
+                //
+                // Uses "secret" API function to listen for Guide button and injects it into 
+                // the original XINPUT_GAMEPAD structure if detected
+                // 
+                if (
+                    (pXInputGetStateSecret != nullptr) 
+                    && (pXInputGetStateSecret(i, &secret) == ERROR_SUCCESS) 
+                    && ((secret.wButtons & XUSB_GAMEPAD_GUIDE) != 0)
+                    ) 
+                {
+                    state.Gamepad.wButtons |= XUSB_GAMEPAD_GUIDE;
+                }
+
                 switch (targets[i].targetType)
                 {
                 case X360:

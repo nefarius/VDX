@@ -42,9 +42,9 @@ SOFTWARE.
 
 #include <Xinput.h>
 #include <ViGEmClient.h>
-#include <ViGEmUtil.h>
 #include "resource.h"
 #include <Dwmapi.h>
+#include "Util.h"
 
 #pragma comment (lib, "Dwmapi.lib")
 
@@ -187,7 +187,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
         // 
         ImGui::SetNextWindowSize(ImVec2(550, 140));
         ImGui::SetNextWindowPosCenter();
-        ImGui::Begin("XInput to ViGEm sample application", &isOpen,
+        ImGui::Begin("XInput to ViGEm [GPD Win Edition]", &isOpen,
             ImVec2(550, 140), 1.0f,
             ImGuiWindowFlags_NoResize
             | ImGuiWindowFlags_NoCollapse

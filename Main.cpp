@@ -361,4 +361,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     vigem_free(client);
 
     ImGui::SFML::Shutdown();
+
+    return 0;
 }

@@ -61,8 +61,8 @@ IDI_ICON1               ICON                    "favicon.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,14,3,0
- PRODUCTVERSION 1,14,3,0
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -81,10 +81,10 @@ BEGIN
             VALUE "FileDescription", "XInput to ViGEm sample application"
 VALUE "FileVersion", "1.14.3.0"
             VALUE "InternalName", "VDX.exe"
-            VALUE "LegalCopyright", "Copyright (C) Benjamin Höglinger-Stelzer 2017"
+            VALUE "LegalCopyright", "Copyright (C) Benjamin Höglinger-Stelzer 2017-2018"
             VALUE "OriginalFilename", "VDX.exe"
             VALUE "ProductName", "XInput to ViGEm sample application"
-VALUE "ProductVersion", "1.14.3.0"
+VALUE "ProductVersion", "1.0.0.0"
         END
     END
     BLOCK "VarFileInfo"

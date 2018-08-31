@@ -3,3 +3,11 @@
 ################################################################################
 
 /.vs/VDX/v15
+/Release
+/Release (static)
+/src/.vs/VDX/v15
+/src/Debug
+/src/Release
+/src/x64/Release
+/x64
+*.user

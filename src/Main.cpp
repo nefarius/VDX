@@ -28,7 +28,7 @@ SOFTWARE.
  * Vibration feedback
  * Async plugin
  *
-/* */
+ */
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -46,11 +46,9 @@ SOFTWARE.
 #include "resource.h"
 #include <Dwmapi.h>
 #include <string>
-#include <iomanip>
 #include <iosfwd>
 #include <sstream>
 
-#pragma comment (lib, "Dwmapi.lib")
 
 typedef struct
 {
@@ -64,7 +62,7 @@ typedef struct
     SHORT                               sThumbRY;
 } XINPUT_GAMEPAD_SECRET;
 
-enum EmulationtargetType : int
+enum EmulationTargetType : int
 {
     X360,
     DS4
@@ -95,7 +93,7 @@ struct EmulationTarget
     // 
     // Currently either an X360 pad or a DS4
     // 
-    EmulationtargetType targetType;
+    EmulationTargetType targetType;
 };
 
 static EmulationTarget targets[XUSER_MAX_COUNT];

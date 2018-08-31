@@ -15,3 +15,11 @@ after_build:
     .\verpatch.exe .\bin\x64\VDX.exe /pv "$env:APPVEYOR_BUILD_VERSION"
     .\verpatch.exe .\bin\x86\VDX.exe "$env:APPVEYOR_BUILD_VERSION"
     .\verpatch.exe .\bin\x86\VDX.exe /pv "$env:APPVEYOR_BUILD_VERSION"
+artifacts:
+- path: bin
+  name: VDX_x86_amd64
+deploy:
+- provider: Environment
+  name: BUILDBOT
+  on:
+    appveyor_repo_tag: true

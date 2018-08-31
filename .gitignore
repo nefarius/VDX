@@ -11,3 +11,9 @@
 /src/x64/Release
 /x64
 *.user
+/.vs/VDX/DesignTimeBuild
+/bin/x64
+/build/bin/Release
+/build/obj
+*.DotSettings
+*.ini

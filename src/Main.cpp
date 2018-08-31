@@ -27,7 +27,7 @@ SOFTWARE.
  * Error checking
  * Vibration feedback
  * Async plugin
- *
+ * Performance improvements
  */
 
 #define WIN32_LEAN_AND_MEAN
@@ -105,32 +105,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window);
 
-    //
     // Enable window transparency
-    // 
     MARGINS margins;
     margins.cxLeftWidth = -1;
     SetWindowLong(window.getSystemHandle(), GWL_STYLE, WS_POPUP | WS_VISIBLE);
     DwmExtendFrameIntoClientArea(window.getSystemHandle(), &margins);
 
-    //
     // Set window icon
-    // 
     auto hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
     if (hIcon)
     {
         SendMessage(window.getSystemHandle(), WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
     }
 
-    //
     // Alloc ViGEm client
-    // 
-    auto client = vigem_alloc();
+    const auto client = vigem_alloc();
 
-    //
     // Dynamically load XInput1_3.dll provided by x360ce
-    // 
-    auto xInputMod = LoadLibrary(L"XInput1_3.dll");
+    const auto xInputMod = LoadLibrary(L"XInput1_3.dll");
 
     if (!xInputMod)
     {
@@ -138,23 +130,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
         return -1;
     }
 
-    //
-    // Declare XInput functions 
-    // 
-    auto pXInputEnable = reinterpret_cast<VOID(WINAPI*)(BOOL)>(GetProcAddress(xInputMod, "XInputEnable"));
-    auto pXInputGetState = reinterpret_cast<DWORD(WINAPI*)(DWORD, XINPUT_STATE*)>(GetProcAddress(xInputMod, "XInputGetState"));
-    //
-    // https://forums.tigsource.com/index.php?&topic=26792.msg847843#msg847843
-    // https://github.com/DieKatzchen/GuideButtonPoller/blob/master/GuideButtonPoller.cpp
-    // http://reverseengineerlog.blogspot.co.at/2016/06/xinputs-hidden-functions.html
-    // 
-    auto pXInputGetStateSecret = reinterpret_cast<int(__stdcall *)(int, XINPUT_GAMEPAD_SECRET*)>(GetProcAddress(xInputMod, (LPCSTR)100));
+    // Declare XInput functions  
+    const auto pXInputEnable = reinterpret_cast<VOID(WINAPI*)(BOOL)>(GetProcAddress(xInputMod, "XInputEnable"));
+    const auto pXInputGetState = reinterpret_cast<DWORD(WINAPI*)(DWORD, XINPUT_STATE*)>(GetProcAddress(xInputMod, "XInputGetState"));
+    /*
+     * https://forums.tigsource.com/index.php?&topic=26792.msg847843#msg847843
+     * https://github.com/DieKatzchen/GuideButtonPoller/blob/master/GuideButtonPoller.cpp
+     * http://reverseengineerlog.blogspot.co.at/2016/06/xinputs-hidden-functions.html
+     */
+    const auto pXInputGetStateSecret = reinterpret_cast<int(__stdcall *)(int, XINPUT_GAMEPAD_SECRET*)>(GetProcAddress(xInputMod, (LPCSTR)100));
 
     if (pXInputGetStateSecret == nullptr) {
         MessageBox(window.getSystemHandle(), L"XBOX Guide button not readable", L"Warning", MB_ICONWARNING);
     }
 
-    auto retval = vigem_connect(client);
+    const auto retval = vigem_connect(client);
     if (!VIGEM_SUCCESS(retval))
     {
         std::wstringstream stream;
@@ -209,9 +199,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
         ImGui::SFML::Update(window, deltaClock.restart());
 
-        //
         // Create main window
-        // 
         ImGui::SetNextWindowSize(ImVec2(550, 140));
         ImGui::SetNextWindowPosCenter();
         ImGui::Begin("XInput to ViGEm sample application", &isOpen,
@@ -226,9 +214,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
         ImGui::Columns(4);
 
-        //
         // Header
-        // 
         ImGui::Text("Player index");
         ImGui::NextColumn();
         ImGui::Text("Status");
@@ -243,14 +229,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
         ImGui::Separator();
 
-        //
         // Build main controls
-        // 
         for (auto i = 0; i < XUSER_MAX_COUNT; i++)
         {
             ImGui::Text("Player %d", i + 1); ImGui::NextColumn();
 
-            auto ret = pXInputGetState(i, &state);
+            // TODO: this is an expensive call, improve!
+            const auto ret = pXInputGetState(i, &state);
 
             targets[i].isSourceConnected = (ret == ERROR_SUCCESS);
 
@@ -268,7 +253,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
             {
                 ImGui::PushID(i);
 
-                auto clicked = ImGui::Button(targets[i].isTargetConnected ? "Disconnect" : "Connect");
+                const auto clicked = ImGui::Button(targets[i].isTargetConnected ? "Disconnect" : "Connect");
 
                 if (clicked)
                 {
@@ -280,6 +265,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
                     }
                     else
                     {
+                        // Allocate object depending on requested target type
                         switch (targets[i].targetType)
                         {
                         case X360:
@@ -290,7 +276,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
                             break;
                         }
 
-                        auto pir = vigem_target_add(client, targets[i].target);
+                        // Plug in the target
+                        const auto pir = vigem_target_add(client, targets[i].target);
+
+                        // Crude error handling
                         if (!VIGEM_SUCCESS(pir))
                         {
                             MessageBox(window.getSystemHandle(), L"Target plugin failed", L"Error", MB_ICONERROR);
@@ -304,10 +293,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
             if (targets[i].isTargetConnected)
             {
-                //
                 // Uses "secret" API function to listen for Guide button and injects it into 
                 // the original XINPUT_GAMEPAD structure if detected
-                // 
                 if (
                     (pXInputGetStateSecret != nullptr) 
                     && (pXInputGetStateSecret(i, &secret) == ERROR_SUCCESS) 
@@ -320,22 +307,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
                 switch (targets[i].targetType)
                 {
                 case X360:
-                    //
+
                     // The XINPUT_GAMEPAD structure is identical to the XUSB_REPORT structure
                     // so we can simply take it "as-is" and cast it.
-                    // 
                     vigem_target_x360_update(client, targets[i].target, *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
+
                     break;
                 case DS4:
                 {
                     DS4_REPORT rep;
                     DS4_REPORT_INIT(&rep);
 
-                    //
                     // The DualShock 4 expects a different report format, so we call a helper 
                     // function which will translate buttons and axes 1:1 from XUSB to DS4
                     // format and submit it to the update function afterwards.
-                    // 
                     XUSB_TO_DS4_REPORT(reinterpret_cast<PXUSB_REPORT>(&state.Gamepad), &rep);
 
                     vigem_target_ds4_update(client, targets[i].target, rep);
@@ -355,6 +340,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
         window.display();
     }
 
+    //
+    // Clean-up
+    //
     vigem_disconnect(client);
     vigem_free(client);
 

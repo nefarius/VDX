@@ -6,7 +6,7 @@ Adds ViGEm support to Xbox 360/One controllers and unmodified x360ce application
 
 ## Requirements
 
-[ViGEm set up](https://github.com/nefarius/ViGEm/wiki/Driver-Installation), obviously.
+[ViGEm set up](https://docs.vigem.org/#!vigem-bus-driver-installation.md), obviously.
 
 ## How to use
 

@@ -1,0 +1,17 @@
+version: 1.15.{build}.0
+image: Visual Studio 2017
+install:
+- cmd: git submodule -q update --init
+- cmd: vcpkg install sfml:x64-windows
+- cmd: vcpkg install sfml:x86-windows
+- cmd: vcpkg integrate install
+build_script:
+- ps: .\build.ps1 -configuration release
+after_build:
+- ps: |
+    Invoke-WebRequest "https://downloads.vigem.org/other/pavel-a/ddverpatch/verpatch-1.0.15.1-x86-codeplex.zip" -OutFile verpatch-1.0.15.1-x86-codeplex.zip
+    Expand-Archive verpatch-1.0.15.1-x86-codeplex.zip -DestinationPath .
+    .\verpatch.exe .\bin\x64\VDX.exe "$env:APPVEYOR_BUILD_VERSION"
+    .\verpatch.exe .\bin\x64\VDX.exe /pv "$env:APPVEYOR_BUILD_VERSION"
+    .\verpatch.exe .\bin\x86\VDX.exe "$env:APPVEYOR_BUILD_VERSION"
+    .\verpatch.exe .\bin\x86\VDX.exe /pv "$env:APPVEYOR_BUILD_VERSION"

@@ -257,10 +257,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
                 if (clicked)
                 {
+                    // Disconnect requested
                     if (targets[i].isTargetConnected)
                     {
+                        // Disconnect target
                         targets[i].isTargetConnected = !VIGEM_SUCCESS(vigem_target_remove(client, targets[i].target));
 
+                        // Free memory
                         vigem_target_free(targets[i].target);
                     }
                     else
@@ -286,6 +289,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
                             return -1;
                         }
 
+                        // Update state
                         targets[i].isTargetConnected = vigem_target_is_attached(targets[i].target);
                     }
                 }
@@ -340,9 +344,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
         window.display();
     }
 
-    //
     // Clean-up
-    //
     vigem_disconnect(client);
     vigem_free(client);
 

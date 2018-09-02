@@ -13,37 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// German (Austria) resources
+// English resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
-LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_NEUTRAL
 #pragma code_page(1252)
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#include ""winres.h""\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "\r\n"
-    "\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -75,23 +49,59 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "0c0704b0"
+        BLOCK "000904b0"
         BEGIN
             VALUE "CompanyName", "Benjamin Höglinger-Stelzer"
             VALUE "FileDescription", "XInput to ViGEm sample application"
-VALUE "FileVersion", "1.14.3.0"
+            VALUE "FileVersion", "1.14.3.0"
             VALUE "InternalName", "VDX.exe"
             VALUE "LegalCopyright", "Copyright (C) Benjamin Höglinger-Stelzer 2017-2018"
             VALUE "OriginalFilename", "VDX.exe"
             VALUE "ProductName", "XInput to ViGEm sample application"
-VALUE "ProductVersion", "1.0.0.0"
+            VALUE "ProductVersion", "1.0.0.0"
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0xc07, 1200
+        VALUE "Translation", 0x9, 1200
     END
 END
+
+#endif    // English resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Austria) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
 
 #endif    // German (Austria) resources
 /////////////////////////////////////////////////////////////////////////////

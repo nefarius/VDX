@@ -19,3 +19,4 @@
 *.ini
 /bin/x86
 /Release_LIB
+*.APS

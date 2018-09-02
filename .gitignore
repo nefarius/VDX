@@ -2,21 +2,18 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs/VDX/v15
-/Release
-/Release (static)
-/src/.vs/VDX/v15
+/.vs
+/Release*
+/src/.vs
 /src/Debug
 /src/Release
-/src/x64/Release
+/src/x64
 /x64
 *.user
 /.vs/VDX/DesignTimeBuild
-/bin/x64
 /build/bin/Release
 /build/obj
 *.DotSettings
 *.ini
-/bin/x86
-/Release_LIB
+/bin/*
 *.APS

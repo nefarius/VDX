@@ -26,10 +26,11 @@ Adds ViGEm support to Xbox 360/One controllers and unmodified x360ce application
 ### Prerequisites
 
 - Visual Studio **2017** ([Community Edition](https://www.visualstudio.com/thank-you-downloading-visual-studio/?sku=Community&rel=15) is just fine)
+- [.NET Core SDK 2.1](https://www.microsoft.com/net/download/dotnet-core/2.1) (or greater, required for building only)
 - [Vcpkg](https://github.com/Microsoft/vcpkg) (used to acquire SFML)
   - [Follow the Quick Start](https://github.com/Microsoft/vcpkg#quick-start)
-  - `.\vcpkg install sfml:x64-windows`
-  - `.\vcpkg install sfml:x86-windows`
+  - `.\vcpkg install sfml:x64-windows-static`
+  - `.\vcpkg install sfml:x86-windows-static`
   - `.\vcpkg.exe integrate install`
 
 ## 3rd party stuff used

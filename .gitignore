@@ -17,3 +17,5 @@
 /build/obj
 *.DotSettings
 *.ini
+/bin/x86
+/Release_LIB

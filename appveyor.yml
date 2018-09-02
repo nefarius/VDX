@@ -19,6 +19,7 @@ after_build:
 artifacts:
 - path: bin\**\*.exe
   name: VDX_x86_amd64
+  type: zip
 deploy:
 - provider: Environment
   name: BUILDBOT

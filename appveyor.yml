@@ -3,8 +3,6 @@ image: Visual Studio 2017
 cache: c:\tools\vcpkg\installed\
 install:
 - cmd: git submodule -q update --init
-- cmd: vcpkg install sfml:x64-windows-static
-- cmd: vcpkg install sfml:x86-windows-static
 - cmd: vcpkg integrate install
 build_script:
 - ps: .\build.ps1 -configuration release

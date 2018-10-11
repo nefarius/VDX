@@ -8,18 +8,7 @@ Adds ViGEm support to Xbox 360/One controllers and unmodified x360ce application
 
 ## How to use
 
-- [Setup ViGEm](https://docs.vigem.org/#!vigem-bus-driver-installation.md) if you haven't already.
-- Get [x360ce](https://github.com/x360ce/x360ce#download) (don't mix x86 and x64!)
-  - If x360ce is new to you [check out its requirements first](https://github.com/x360ce/x360ce#system-requirements).
-- Get the [Microsoft Visual C++ Redistributable für Visual Studio 2017](https://visualstudio.microsoft.com/de/downloads/) package
-- [Download VDX](https://buildbot.vigem.org/builds/VDX/master/) (grab highest version number for most recent build)
-- Configure your gamepad(s) with x360ce
-- Place x360ce and the following files in one common directory (**NOT** the game directory!):
-  - `XInput1_3.dll` (the one crated by x360ce!)
-  - `VDX.exe` (and DLLs)
-- Run `VDX.exe`
-- If you've set up x360ce correctly your configured Gamepad(s) should be in `Connected` state. Select the type of emulation you'd like to enable and hit `Connect`.
-- Run your game and enjoy
+👉 [Documentation](https://docs.vigem.org/#!x360ce-to-vigem.md)
 
 ## How to build
 

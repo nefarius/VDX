@@ -8,7 +8,6 @@ using Nuke.Common.Git;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Tools.MSBuild;
-using RunProcessAsTask;
 using Vestris.ResourceLib;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
@@ -46,26 +45,6 @@ class Build : NukeBuild
         .DependsOn(Restore)
         .Executes(() =>
         {
-            //
-            // Build x64 dependencies with Vcpkg
-            // 
-            Logger.Info("Building SFML (x64) and dependencies, this will take about 10 to 15 minutes...");
-            var x64ret = ProcessEx.RunAsync("vcpkg.exe", "install sfml:x64-windows-static").Result;
-            foreach (var output in x64ret.StandardOutput)
-            {
-                Logger.Info(output);
-            }
-
-            //
-            // Build x86 dependencies with Vcpkg
-            // 
-            Logger.Info("Building SFML (x86) and dependencies, this will take about 10 to 15 minutes...");
-            var x86ret = ProcessEx.RunAsync("vcpkg.exe", "install sfml:x86-windows-static").Result;
-            foreach (var output in x86ret.StandardOutput)
-            {
-                Logger.Info(output);
-            }
-
             //
             // Build x64
             // 

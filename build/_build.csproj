@@ -13,7 +13,6 @@
     <PackageReference Include="Nefarius.JsonConfig" Version="1.0.2" />
     <PackageReference Include="Nuke.Common" Version="0.9.1" />
     <PackageReference Include="GitVersion.CommandLine" Version="3.6.5" />
-    <PackageReference Include="RunProcessAsTask" Version="1.2.3" />
     <PackageReference Include="Vestris.ResourceLib" Version="2.0.0" />
   </ItemGroup>
 

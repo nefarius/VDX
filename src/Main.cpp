@@ -53,13 +53,13 @@ SOFTWARE.
 typedef struct
 {
     unsigned long eventCount;
-    WORD                                wButtons;
-    BYTE                                bLeftTrigger;
-    BYTE                                bRightTrigger;
-    SHORT                               sThumbLX;
-    SHORT                               sThumbLY;
-    SHORT                               sThumbRX;
-    SHORT                               sThumbRY;
+    WORD    wButtons;
+    BYTE    bLeftTrigger;
+    BYTE    bRightTrigger;
+    SHORT   sThumbLX;
+    SHORT   sThumbLY;
+    SHORT   sThumbRX;
+    SHORT   sThumbRY;
 } XINPUT_GAMEPAD_SECRET;
 
 enum EmulationTargetType : int
@@ -101,7 +101,7 @@ static EmulationTarget targets[XUSER_MAX_COUNT];
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow)
 {
-    sf::RenderWindow window(sf::VideoMode(560, 150), "XInput to ViGEm sample application", sf::Style::None);
+    sf::RenderWindow window(sf::VideoMode(560, 150), "XInput to ViGEm proxy application", sf::Style::None);
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window);
 

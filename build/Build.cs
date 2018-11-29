@@ -18,9 +18,12 @@ class Build : NukeBuild
 {
     public static int Main () => Execute<Build>(x => x.Compile);
 
+    [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
+    readonly string Configuration = IsLocalBuild ? "Debug" : "Release";
+
     [Solution("VDX.sln")] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
-    [GitVersion] private readonly GitVersion GitVersion;
+    [GitVersion] readonly GitVersion GitVersion;
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
@@ -80,18 +83,6 @@ class Build : NukeBuild
                     Path.Combine(RootDirectory, @"bin\x86\VDX.exe"),
                     version);
             }
-        });
-
-    private Target Pack => _ => _
-        .DependsOn(Compile)
-        .Executes(() =>
-        {
-            MSBuild(s => s
-                .SetTargetPath(Solution)
-                .SetTargets("Restore", "Pack")
-                .SetPackageOutputPath(ArtifactsDirectory)
-                .SetConfiguration(Configuration)
-                .EnableIncludeSymbols());
         });
 
     private static void StampVersion(string path, Version version)

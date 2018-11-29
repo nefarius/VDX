@@ -84,9 +84,7 @@ Global
 		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug_LIB|x86.ActiveCfg = Debug|Any CPU
 		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug_LIB|x86.Build.0 = Debug|Any CPU
 		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug|x64.Build.0 = Debug|Any CPU
 		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug|x86.Build.0 = Debug|Any CPU
 		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release_DLL|x64.ActiveCfg = Release|Any CPU
 		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release_DLL|x64.Build.0 = Release|Any CPU
 		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release_DLL|x86.ActiveCfg = Release|Any CPU
@@ -96,9 +94,7 @@ Global
 		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release_LIB|x86.ActiveCfg = Release|Any CPU
 		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release_LIB|x86.Build.0 = Release|Any CPU
 		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release|x64.ActiveCfg = Release|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release|x64.Build.0 = Release|Any CPU
 		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release|x86.ActiveCfg = Release|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,6 +4,7 @@ using System.Linq;
 using JsonConfig;
 using Nuke.Common;
 using Nuke.Common.BuildServers;
+using Nuke.Common.CI.AppVeyor;
 using Nuke.Common.Git;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.GitVersion;
@@ -73,7 +74,7 @@ class Build : NukeBuild
             if (Configuration.Equals("release", StringComparison.InvariantCultureIgnoreCase))
             {
                 var version =
-                    new Version(IsLocalBuild ? GitVersion.GetNormalizedFileVersion() : AppVeyor.Instance.BuildVersion);
+                    new Version(IsLocalBuild ? GitVersion.AssemblySemVer : AppVeyor.Instance.BuildVersion);
 
                 StampVersion(
                     Path.Combine(RootDirectory, @"bin\x64\VDX.exe"),

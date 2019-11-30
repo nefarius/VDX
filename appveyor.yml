@@ -1,5 +1,7 @@
 version: 1.16.{build}.0
 image: Visual Studio 2019
+cache:
+- C:\Tools\vcpkg -> appveyor.yml
 install:
 - cmd: git submodule -q update --init
 - cmd: |

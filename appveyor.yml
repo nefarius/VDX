@@ -1,11 +1,20 @@
 version: 1.16.{build}.0
-image: Visual Studio 2017
+image: Visual Studio 2019
 install:
 - cmd: git submodule -q update --init
+- cmd: |
+    cd "C:\Tools\vcpkg"
+    git pull > NUL
+    .\bootstrap-vcpkg.bat > NUL
+    cd %appveyor_build_folder%
+before_build:
+- cmd: vcpkg integrate install
+- cmd: vcpkg update
+- cmd: vcpkg install sfml:x86-windows-static sfml:x64-windows-static imgui:x86-windows-static imgui:x64-windows-static imgui-sfml:x86-windows-static imgui-sfml:x64-windows-static hidapi:x86-windows-static hidapi:x64-windows-static
 before_build:
 - nuget restore
 build_script:
-- ps: .\build.ps1 -configuration release
+- ps: .\build.ps1
 artifacts:
 - path: bin\**\*.exe
   name: VDX_x86_amd64

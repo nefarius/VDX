@@ -18,3 +18,4 @@
 /bin/*
 *.APS
 /packages
+/lib/release/x64

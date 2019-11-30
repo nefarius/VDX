@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2017 Benjamin "Nefarius" Höglinger
+Copyright (c) 2017-2019 Benjamin "Nefarius" Höglinger
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,71 +30,36 @@ SOFTWARE.
  * Performance improvements
  */
 
+// WinAPI
+#define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <Dwmapi.h>
 
+// ImGui + SFML helper
 #include "imgui.h"
 #include "imgui-SFML.h"
 
+// SFML
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
 
+// I/O
 #include <Xinput.h>
-#include <ViGEmClient.h>
-#include <ViGEmUtil.h>
+#include <ViGEm/Client.h>
+#include <ViGEm/Util.h>
 #include "resource.h"
-#include <Dwmapi.h>
+
+// STL
 #include <string>
 #include <iosfwd>
 #include <sstream>
 
+// Internals
+#include "VDX.h"
 
-typedef struct
-{
-    unsigned long eventCount;
-    WORD    wButtons;
-    BYTE    bLeftTrigger;
-    BYTE    bRightTrigger;
-    SHORT   sThumbLX;
-    SHORT   sThumbLY;
-    SHORT   sThumbRX;
-    SHORT   sThumbRY;
-} XINPUT_GAMEPAD_SECRET;
 
-enum EmulationTargetType : int
-{
-    X360,
-    DS4
-};
-
-//
-// Helper object to keep track of state during every frame
-// 
-struct EmulationTarget
-{
-    //
-    // Is x360ce reporting a device for the current user index
-    // 
-    bool isSourceConnected;
-
-    //
-    // Is the target device (virtual controller) currently alive
-    // 
-    bool isTargetConnected;
-
-    //
-    // Device object referring to the emulation target
-    // 
-    PVIGEM_TARGET target;
-
-    //
-    // Type of emulated device (from combo-list)
-    // 
-    // Currently either an X360 pad or a DS4
-    // 
-    EmulationTargetType targetType;
-};
 
 static EmulationTarget targets[XUSER_MAX_COUNT];
 
@@ -104,6 +69,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     sf::RenderWindow window(sf::VideoMode(560, 150), "XInput to ViGEm proxy application", sf::Style::None);
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window);
+
+	apply_imgui_style();
 
     // Enable window transparency
     MARGINS margins;
@@ -121,7 +88,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     // Alloc ViGEm client
     const auto client = vigem_alloc();
 
-    // Dynamically load XInput1_3.dll provided by x360ce
+    // Dynamically load XInput1_3.dll provided by x360ce or system
     const auto xInputMod = LoadLibrary(L"XInput1_3.dll");
 
     if (!xInputMod)
@@ -345,6 +312,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     }
 
     // Clean-up
+	pXInputEnable(FALSE);
     vigem_disconnect(client);
     vigem_free(client);
 

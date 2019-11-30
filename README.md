@@ -14,13 +14,17 @@ Adds ViGEm support to Xbox 360/One controllers and unmodified x360ce application
 
 ### Prerequisites
 
-- Visual Studio **2017** ([Community Edition](https://www.visualstudio.com/thank-you-downloading-visual-studio/?sku=Community&rel=15) is just fine)
+- Visual Studio **2019** ([Community Edition](https://www.visualstudio.com/thank-you-downloading-visual-studio/?sku=Community&rel=15) is just fine)
 - [.NET Core SDK 2.1](https://www.microsoft.com/net/download/dotnet-core/2.1) (or greater, required for building only)
 
 Then simply run the build from the command line:
 
 ```PowerShell
 powershell.exe .\build.ps1 -configuration release
+```
+
+```PowerShell
+.\vcpkg.exe install sfml:x86-windows-static sfml:x64-windows-static imgui:x86-windows-static imgui:x64-windows-static imgui-sfml:x86-windows-static imgui-sfml:x64-windows-static hidapi:x86-windows-static hidapi:x64-windows-static
 ```
 
 ## 3rd party stuff used

@@ -11,8 +11,6 @@ before_build:
 - cmd: vcpkg integrate install
 - cmd: vcpkg update
 - cmd: vcpkg install sfml:x86-windows-static sfml:x64-windows-static imgui:x86-windows-static imgui:x64-windows-static imgui-sfml:x86-windows-static imgui-sfml:x64-windows-static hidapi:x86-windows-static hidapi:x64-windows-static
-before_build:
-- nuget restore
 build_script:
 - ps: .\build.ps1
 artifacts:

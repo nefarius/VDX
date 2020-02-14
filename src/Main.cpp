@@ -65,7 +65,7 @@ static EmulationTarget g_targets[XUSER_MAX_COUNT];
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow)
 {
-	sf::RenderWindow window(sf::VideoMode(560, 150), "XInput to ViGEm proxy application", sf::Style::None);
+	sf::RenderWindow window(sf::VideoMode(580, 200), "XInput to ViGEm proxy application", sf::Style::None);
 	window.setFramerateLimit(60);
 	ImGui::SFML::Init(window);
 
@@ -191,15 +191,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 		ImGui::SFML::Update(window, deltaClock.restart());
 
 		// Create main window
-		//ImGui::SetNextWindowPosCenter();
+		ImGui::SetNextWindowSize(ImVec2(520, 140));
 		ImGui::Begin("XInput to ViGEm sample application", &isOpen,
 		             ImGuiWindowFlags_NoResize
 		             | ImGuiWindowFlags_NoCollapse
 		             | ImGuiWindowFlags_NoMove
 		             | ImGuiWindowFlags_NoSavedSettings
 		             | ImGuiWindowFlags_NoScrollbar);
-		// TODO: currently not working properly?
-		ImGui::SetWindowSize(ImVec2(550, 140));
 
 		if (!isOpen) break;
 

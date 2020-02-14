@@ -60,263 +60,297 @@ SOFTWARE.
 #include "VDX.h"
 
 
-
-static EmulationTarget targets[XUSER_MAX_COUNT];
+static EmulationTarget g_targets[XUSER_MAX_COUNT];
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow)
 {
-    sf::RenderWindow window(sf::VideoMode(560, 150), "XInput to ViGEm proxy application", sf::Style::None);
-    window.setFramerateLimit(60);
-    ImGui::SFML::Init(window);
+	sf::RenderWindow window(sf::VideoMode(560, 150), "XInput to ViGEm proxy application", sf::Style::None);
+	window.setFramerateLimit(60);
+	ImGui::SFML::Init(window);
 
 	apply_imgui_style();
 
-    // Enable window transparency
-    MARGINS margins;
-    margins.cxLeftWidth = -1;
-    SetWindowLong(window.getSystemHandle(), GWL_STYLE, WS_POPUP | WS_VISIBLE);
-    DwmExtendFrameIntoClientArea(window.getSystemHandle(), &margins);
+	// Enable window transparency
+	MARGINS margins;
+	margins.cxLeftWidth = -1;
+	SetWindowLong(window.getSystemHandle(), GWL_STYLE, WS_POPUP | WS_VISIBLE);
+	DwmExtendFrameIntoClientArea(window.getSystemHandle(), &margins);
 
-    // Set window icon
-    auto hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
-    if (hIcon)
-    {
-        SendMessage(window.getSystemHandle(), WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
-    }
+	// Set window icon
+	auto hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
+	if (hIcon)
+	{
+		SendMessage(window.getSystemHandle(), WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
+	}
 
-    // Alloc ViGEm client
-    const auto client = vigem_alloc();
+	// Alloc ViGEm client
+	const auto client = vigem_alloc();
 
-    // Dynamically load XInput1_3.dll provided by x360ce or system
-    const auto xInputMod = LoadLibrary(L"XInput1_3.dll");
+	// Dynamically load XInput1_3.dll provided by x360ce or system
+	const auto xInputMod = LoadLibrary(L"XInput1_3.dll");
 
-    if (!xInputMod)
-    {
-        MessageBox(window.getSystemHandle(), L"XInput1_3.dll missing", L"Error", MB_ICONERROR);
-        return -1;
-    }
+	if (!xInputMod)
+	{
+		MessageBox(window.getSystemHandle(), L"XInput1_3.dll missing", L"Error", MB_ICONERROR);
+		return -1;
+	}
 
-    // Declare XInput functions  
-    const auto pXInputEnable = reinterpret_cast<VOID(WINAPI*)(BOOL)>(GetProcAddress(xInputMod, "XInputEnable"));
-    const auto pXInputGetState = reinterpret_cast<DWORD(WINAPI*)(DWORD, XINPUT_STATE*)>(GetProcAddress(xInputMod, "XInputGetState"));
-    /*
-     * https://forums.tigsource.com/index.php?&topic=26792.msg847843#msg847843
-     * https://github.com/DieKatzchen/GuideButtonPoller/blob/master/GuideButtonPoller.cpp
-     * http://reverseengineerlog.blogspot.co.at/2016/06/xinputs-hidden-functions.html
-     */
-    const auto pXInputGetStateSecret = reinterpret_cast<int(__stdcall *)(int, XINPUT_GAMEPAD_SECRET*)>(GetProcAddress(xInputMod, (LPCSTR)100));
+	// Declare XInput functions  
+	const auto pXInputEnable = reinterpret_cast<VOID(WINAPI*)(BOOL)>(GetProcAddress(xInputMod, "XInputEnable"));
+	const auto pXInputGetState = reinterpret_cast<DWORD(WINAPI*)(DWORD, XINPUT_STATE*)>(GetProcAddress(
+		xInputMod, "XInputGetState"));
+	const auto pXInputGetCapabilities = reinterpret_cast<DWORD(WINAPI*)(DWORD, DWORD, XINPUT_CAPABILITIES*)>(
+		GetProcAddress(xInputMod, "XInputGetCapabilities"));
+	/*
+	 * https://forums.tigsource.com/index.php?&topic=26792.msg847843#msg847843
+	 * https://github.com/DieKatzchen/GuideButtonPoller/blob/master/GuideButtonPoller.cpp
+	 * http://reverseengineerlog.blogspot.co.at/2016/06/xinputs-hidden-functions.html
+	 */
+	const auto pXInputGetStateSecret = reinterpret_cast<int(__stdcall*)(int, XINPUT_GAMEPAD_SECRET*)>(GetProcAddress(
+		xInputMod, (LPCSTR)100));
 
-    if (pXInputGetStateSecret == nullptr) {
-        MessageBox(window.getSystemHandle(), L"XBOX Guide button not readable", L"Warning", MB_ICONWARNING);
-    }
+	if (pXInputGetStateSecret == nullptr)
+	{
+		MessageBox(window.getSystemHandle(), L"XBOX Guide button not readable", L"Warning", MB_ICONWARNING);
+	}
 
-    const auto retval = vigem_connect(client);
-    if (!VIGEM_SUCCESS(retval))
-    {
-        std::wstringstream stream;
-        stream << L"ViGEm Bus connection failed with error code: 0x" << std::hex << retval;
-        std::wstring result(stream.str());
-        MessageBox(window.getSystemHandle(), result.c_str(), L"Error", MB_ICONERROR);
-        return -1;
-    }
+	const auto retval = vigem_connect(client);
+	if (!VIGEM_SUCCESS(retval))
+	{
+		std::wstringstream stream;
+		stream << L"ViGEm Bus connection failed with error code: 0x" << std::hex << retval;
+		std::wstring result(stream.str());
+		MessageBox(window.getSystemHandle(), result.c_str(), L"Error", MB_ICONERROR);
+		return -1;
+	}
 
-    pXInputEnable(TRUE);
+	pXInputEnable(TRUE);
 
-    XINPUT_STATE state;
-    XINPUT_GAMEPAD_SECRET secret;
+	XINPUT_STATE state;
+	XINPUT_GAMEPAD_SECRET secret;
 
-    sf::Vector2i grabbedOffset;
-    auto grabbedWindow = false;
-    auto isOpen = true;
-    window.resetGLStates();
-    sf::Clock deltaClock;
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            ImGui::SFML::ProcessEvent(event);
+	sf::Vector2i grabbedOffset;
+	auto grabbedWindow = false;
+	auto isOpen = true;
+	window.resetGLStates();
+	sf::Clock deltaClock;
+	while (window.isOpen())
+	{
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			ImGui::SFML::ProcessEvent(event);
 
-            if (event.type == sf::Event::Closed) {
-                window.close();
-            }
-            else if (event.type == sf::Event::KeyPressed)
-            {
-                if (event.key.code == sf::Keyboard::Escape)
-                    window.close();
-            }
-            else if (event.type == sf::Event::MouseButtonPressed)
-            {
-                if (event.mouseButton.button == sf::Mouse::Left)
-                {
-                    grabbedOffset = window.getPosition() - sf::Mouse::getPosition();
-                    grabbedWindow = true;
-                }
-            }
-            else if (event.type == sf::Event::MouseButtonReleased)
-            {
-                if (event.mouseButton.button == sf::Mouse::Left)
-                    grabbedWindow = false;
-            }
-            else if (event.type == sf::Event::MouseMoved)
-            {
-                if (grabbedWindow)
-                    window.setPosition(sf::Mouse::getPosition() + grabbedOffset);
-            }
-        }
+			if (event.type == sf::Event::Closed)
+			{
+				window.close();
+			}
+			// Escape key closes window/application
+			else if (event.type == sf::Event::KeyPressed)
+			{
+				if (event.key.code == sf::Keyboard::Escape)
+					window.close();
+			}
+			// Mouse events used to react to dragging
+			else if (event.type == sf::Event::MouseButtonPressed)
+			{
+				if (event.mouseButton.button == sf::Mouse::Left)
+				{
+					grabbedOffset = window.getPosition() - sf::Mouse::getPosition();
+					grabbedWindow = true;
+				}
+			}
+			// Mouse events used to react to dragging
+			else if (event.type == sf::Event::MouseButtonReleased)
+			{
+				if (event.mouseButton.button == sf::Mouse::Left)
+					grabbedWindow = false;
+			}
+			// Mouse events used to react to dragging
+			else if (event.type == sf::Event::MouseMoved)
+			{
+				if (grabbedWindow)
+					window.setPosition(sf::Mouse::getPosition() + grabbedOffset);
+			}
+			// 
+			// Reacts to WM_DEVICECHANGE for better performance
+			// 
+			// See https://github.com/ocornut/imgui/blob/f0348ddffc41a9ef1e34e930796ab68fe959079e/examples/imgui_impl_win32.cpp#L162-L163
+			// 
+			else if (event.type == sf::Event::JoystickConnected || event.type == sf::Event::JoystickDisconnected)
+			{
+				// Joystick ID isn't reliable with XInput devices, so re-scan all
+				for (auto& g_target : g_targets)
+				{
+					g_target.hasPresenceChanged = true;
+				}
+			}
+		}
 
-        ImGui::SFML::Update(window, deltaClock.restart());
+		ImGui::SFML::Update(window, deltaClock.restart());
 
-        // Create main window
-        ImGui::SetNextWindowSize(ImVec2(550, 140));
-        ImGui::SetNextWindowPosCenter();
-        ImGui::Begin("XInput to ViGEm sample application", &isOpen,
-            ImVec2(550, 140), 1.0f,
-            ImGuiWindowFlags_NoResize
-            | ImGuiWindowFlags_NoCollapse
-            | ImGuiWindowFlags_NoMove
-            | ImGuiWindowFlags_NoSavedSettings
-            | ImGuiWindowFlags_NoScrollbar);
+		// Create main window
+		//ImGui::SetNextWindowPosCenter();
+		ImGui::Begin("XInput to ViGEm sample application", &isOpen,
+		             ImGuiWindowFlags_NoResize
+		             | ImGuiWindowFlags_NoCollapse
+		             | ImGuiWindowFlags_NoMove
+		             | ImGuiWindowFlags_NoSavedSettings
+		             | ImGuiWindowFlags_NoScrollbar);
+		// TODO: currently not working properly?
+		ImGui::SetWindowSize(ImVec2(550, 140));
 
-        if (!isOpen) break;
+		if (!isOpen) break;
 
-        ImGui::Columns(4);
+		ImGui::Columns(4);
 
-        // Header
-        ImGui::Text("Player index");
-        ImGui::NextColumn();
-        ImGui::Text("Status");
-        ImGui::SetColumnOffset(-1, 100);
-        ImGui::NextColumn();
-        ImGui::Text("Emulation type");
-        ImGui::SetColumnOffset(-1, 200);
-        ImGui::NextColumn();
-        ImGui::Text("Action");
-        ImGui::SetColumnOffset(-1, 450);
-        ImGui::NextColumn();
+		// Header
+		ImGui::Text("Player index");
+		ImGui::NextColumn();
+		ImGui::Text("Status");
+		ImGui::SetColumnOffset(-1, 100);
+		ImGui::NextColumn();
+		ImGui::Text("Emulation type");
+		ImGui::SetColumnOffset(-1, 200);
+		ImGui::NextColumn();
+		ImGui::Text("Action");
+		ImGui::SetColumnOffset(-1, 450);
+		ImGui::NextColumn();
 
-        ImGui::Separator();
+		ImGui::Separator();
 
-        // Build main controls
-        for (auto i = 0; i < XUSER_MAX_COUNT; i++)
-        {
-            ImGui::Text("Player %d", i + 1); ImGui::NextColumn();
+		// Build main controls
+		for (auto i = 0; i < XUSER_MAX_COUNT; i++)
+		{
+			auto& pad = g_targets[i];
 
-            // TODO: this is an expensive call, improve!
-            const auto ret = pXInputGetState(i, &state);
+			ImGui::Text("Player %d", i + 1);
+			ImGui::NextColumn();
 
-            targets[i].isSourceConnected = (ret == ERROR_SUCCESS);
+			// Pad for this player index had been added or removed, test if available
+			if (pad.hasPresenceChanged)
+			{
+				XINPUT_CAPABILITIES caps;
+				pad.isSourceConnected = (pXInputGetCapabilities(i, XINPUT_FLAG_GAMEPAD, &caps) == ERROR_SUCCESS);
+				pad.hasPresenceChanged = false;
+			}
 
-            ImGui::Text(targets[i].isSourceConnected ? "Connected" : "Disconnected");
+			ImGui::Text(pad.isSourceConnected ? "Connected" : "Disconnected");
 
-            ImGui::NextColumn();
-            ImGui::PushItemWidth(230);
-            ImGui::PushID(i);
-            ImGui::Combo("##dummy",
-                reinterpret_cast<int*>(&targets[i].targetType),
-                "Xbox 360 Controller\0DualShock 4 Controller\0\0");
-            ImGui::NextColumn();
+			ImGui::NextColumn();
+			ImGui::PushItemWidth(230);
+			ImGui::PushID(i);
+			ImGui::Combo("##dummy",
+			             reinterpret_cast<int*>(&pad.targetType),
+			             "Xbox 360 Controller\0DualShock 4 Controller\0\0");
+			ImGui::PopID();
+			ImGui::NextColumn();
 
-            if (targets[i].isSourceConnected)
-            {
-                ImGui::PushID(i);
+			// Only call expensive API to grab report if pad is present
+			if (pad.isSourceConnected && (pXInputGetState(i, &state) == ERROR_SUCCESS))
+			{
+				ImGui::PushID(i);
 
-                const auto clicked = ImGui::Button(targets[i].isTargetConnected ? "Disconnect" : "Connect");
+				const auto clicked = ImGui::Button(pad.isTargetConnected ? "Disconnect" : "Connect");
 
-                if (clicked)
-                {
-                    // Disconnect requested
-                    if (targets[i].isTargetConnected)
-                    {
-                        // Disconnect target
-                        targets[i].isTargetConnected = !VIGEM_SUCCESS(vigem_target_remove(client, targets[i].target));
+				if (clicked)
+				{
+					// Disconnect requested
+					if (pad.isTargetConnected)
+					{
+						// Disconnect target
+						pad.isTargetConnected = !VIGEM_SUCCESS(vigem_target_remove(client, pad.target));
 
-                        // Free memory
-                        vigem_target_free(targets[i].target);
-                    }
-                    else
-                    {
-                        // Allocate object depending on requested target type
-                        switch (targets[i].targetType)
-                        {
-                        case X360:
-                            targets[i].target = vigem_target_x360_alloc();
-                            break;
-                        case DS4:
-                            targets[i].target = vigem_target_ds4_alloc();
-                            break;
-                        }
+						// Free memory
+						vigem_target_free(pad.target);
+					}
+					else
+					{
+						// Allocate object depending on requested target type
+						switch (pad.targetType)
+						{
+						case X360:
+							pad.target = vigem_target_x360_alloc();
+							break;
+						case DS4:
+							pad.target = vigem_target_ds4_alloc();
+							break;
+						}
 
-                        // Plug in the target
-                        const auto pir = vigem_target_add(client, targets[i].target);
+						// Plug in the target
+						const auto pir = vigem_target_add(client, pad.target);
 
-                        // Crude error handling
-                        if (!VIGEM_SUCCESS(pir))
-                        {
-                            MessageBox(window.getSystemHandle(), L"Target plugin failed", L"Error", MB_ICONERROR);
-                            return -1;
-                        }
+						// Crude error handling
+						if (!VIGEM_SUCCESS(pir))
+						{
+							MessageBox(window.getSystemHandle(), L"Target plugin failed", L"Error", MB_ICONERROR);
+							return -1;
+						}
 
-                        // Update state
-                        targets[i].isTargetConnected = vigem_target_is_attached(targets[i].target);
-                    }
-                }
-            }
+						// Update state
+						pad.isTargetConnected = vigem_target_is_attached(pad.target);
+					}
+				}
 
-            if (targets[i].isTargetConnected)
-            {
-                // Uses "secret" API function to listen for Guide button and injects it into 
-                // the original XINPUT_GAMEPAD structure if detected
-                if (
-                    (pXInputGetStateSecret != nullptr) 
-                    && (pXInputGetStateSecret(i, &secret) == ERROR_SUCCESS) 
-                    && ((secret.wButtons & XUSB_GAMEPAD_GUIDE) != 0)
-                    ) 
-                {
-                    state.Gamepad.wButtons |= XUSB_GAMEPAD_GUIDE;
-                }
+				ImGui::PopID();
+			}
 
-                switch (targets[i].targetType)
-                {
-                case X360:
+			if (pad.isTargetConnected)
+			{
+				// Uses "secret" API function to listen for Guide button and injects it into 
+				// the original XINPUT_GAMEPAD structure if detected
+				if (
+					(pXInputGetStateSecret != nullptr)
+					&& (pXInputGetStateSecret(i, &secret) == ERROR_SUCCESS)
+					&& ((secret.wButtons & XUSB_GAMEPAD_GUIDE) != 0)
+				)
+				{
+					state.Gamepad.wButtons |= XUSB_GAMEPAD_GUIDE;
+				}
 
-                    // The XINPUT_GAMEPAD structure is identical to the XUSB_REPORT structure
-                    // so we can simply take it "as-is" and cast it.
-                    vigem_target_x360_update(client, targets[i].target, *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
+				switch (pad.targetType)
+				{
+				case X360:
 
-                    break;
-                case DS4:
-                {
-                    DS4_REPORT rep;
-                    DS4_REPORT_INIT(&rep);
+					// The XINPUT_GAMEPAD structure is identical to the XUSB_REPORT structure
+					// so we can simply take it "as-is" and cast it.
+					vigem_target_x360_update(client, pad.target, *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
 
-                    // The DualShock 4 expects a different report format, so we call a helper 
-                    // function which will translate buttons and axes 1:1 from XUSB to DS4
-                    // format and submit it to the update function afterwards.
-                    XUSB_TO_DS4_REPORT(reinterpret_cast<PXUSB_REPORT>(&state.Gamepad), &rep);
+					break;
+				case DS4:
+					{
+						DS4_REPORT rep;
+						DS4_REPORT_INIT(&rep);
 
-                    vigem_target_ds4_update(client, targets[i].target, rep);
-                }
-                break;
-                }
-            }
+						// The DualShock 4 expects a different report format, so we call a helper 
+						// function which will translate buttons and axes 1:1 from XUSB to DS4
+						// format and submit it to the update function afterwards.
+						XUSB_TO_DS4_REPORT(reinterpret_cast<PXUSB_REPORT>(&state.Gamepad), &rep);
 
-            ImGui::NextColumn();
-        }
+						vigem_target_ds4_update(client, pad.target, rep);
+					}
+					break;
+				}
+			}
 
-        ImGui::End();
+			ImGui::NextColumn();
+		}
 
-        window.clear(sf::Color::Transparent);
+		ImGui::End();
 
-        ImGui::SFML::Render(window);
-        window.display();
-    }
+		window.clear(sf::Color::Transparent);
 
-    // Clean-up
+		ImGui::SFML::Render(window);
+		window.display();
+	}
+
+	// Clean-up
 	pXInputEnable(FALSE);
-    vigem_disconnect(client);
-    vigem_free(client);
+	vigem_disconnect(client);
+	vigem_free(client);
 
-    ImGui::SFML::Shutdown();
+	ImGui::SFML::Shutdown();
 
-    return 0;
+	return 0;
 }

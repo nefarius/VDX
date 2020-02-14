@@ -19,3 +19,4 @@
 *.APS
 /packages
 /lib/release/x64
+/lib/debug/x64

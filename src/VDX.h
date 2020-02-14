@@ -28,6 +28,9 @@ struct EmulationTarget
 	// 
 	bool isSourceConnected;
 
+	
+	bool hasPresenceChanged;
+
 	//
 	// Is the target device (virtual controller) currently alive
 	// 

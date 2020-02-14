@@ -1,11 +1,18 @@
 version: 1.16.{build}.0
 image: Visual Studio 2019
+platform:
+- x86
+- x64
+configuration:
+- Release
 cache:
 - C:\Tools\vcpkg -> appveyor.yml
 install:
 - cmd: git submodule -q update --init
 - cmd: |
     cd "C:\Tools\vcpkg"
+    git fetch origin master
+    git reset --hard origin/master
     git pull > NUL
     .\bootstrap-vcpkg.bat > NUL
     cd %appveyor_build_folder%
@@ -13,8 +20,11 @@ before_build:
 - cmd: vcpkg integrate install
 - cmd: vcpkg update
 - cmd: vcpkg install sfml:x86-windows-static sfml:x64-windows-static imgui:x86-windows-static imgui:x64-windows-static imgui-sfml:x86-windows-static imgui-sfml:x64-windows-static
-build_script:
-- ps: .\build.ps1
+- ps: Invoke-WebRequest "https://downloads.vigem.org/other/nefarius/vpatch/vpatch.exe" -OutFile vpatch.exe
+- cmd: vpatch.exe --stamp-version "%APPVEYOR_BUILD_VERSION%" --target-file ".\src\%APPVEYOR_PROJECT_NAME%.vcxproj" --vcxproj.inf-time-stamp
+- cmd: vpatch.exe --stamp-version "%APPVEYOR_BUILD_VERSION%" --target-file ".\src\%APPVEYOR_PROJECT_NAME%.rc" --resource.file-version --resource.product-version
+build:
+  project: $(APPVEYOR_BUILD_FOLDER)\$(APPVEYOR_PROJECT_NAME).sln
 artifacts:
 - path: bin\**\*.exe
   name: VDX_x86_amd64

@@ -1,15 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2003
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VDX", "src\VDX.vcxproj", "{473DB71A-EBC1-47F0-AD4D-E472ED9AFA4D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ViGEmClient", "ViGEmClient\src\ViGEmClient.vcxproj", "{7DB06674-1F4F-464B-8E1C-172E9587F9DC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client", "client", "{36C70707-1952-4083-937A-95952F0BC45A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,26 +73,6 @@ Global
 		{7DB06674-1F4F-464B-8E1C-172E9587F9DC}.Release|x64.Build.0 = Release_LIB|x64
 		{7DB06674-1F4F-464B-8E1C-172E9587F9DC}.Release|x86.ActiveCfg = Release_LIB|Win32
 		{7DB06674-1F4F-464B-8E1C-172E9587F9DC}.Release|x86.Build.0 = Release_LIB|Win32
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug_DLL|x64.ActiveCfg = Debug|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug_DLL|x64.Build.0 = Debug|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug_DLL|x86.ActiveCfg = Debug|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug_DLL|x86.Build.0 = Debug|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug_LIB|x64.ActiveCfg = Debug|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug_LIB|x64.Build.0 = Debug|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug_LIB|x86.ActiveCfg = Debug|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug_LIB|x86.Build.0 = Debug|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release_DLL|x64.ActiveCfg = Release|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release_DLL|x64.Build.0 = Release|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release_DLL|x86.ActiveCfg = Release|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release_DLL|x86.Build.0 = Release|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release_LIB|x64.ActiveCfg = Release|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release_LIB|x64.Build.0 = Release|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release_LIB|x86.ActiveCfg = Release|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release_LIB|x86.Build.0 = Release|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release|x64.ActiveCfg = Release|Any CPU
-		{53DD7103-6566-46FD-AD46-CE9BEE1C04FA}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -185,11 +185,6 @@
   <ItemGroup>
     <Image Include="favicon.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ViGEmClient\src\ViGEmClient.vcxproj">
-      <Project>{7db06674-1f4f-464b-8e1c-172e9587f9dc}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

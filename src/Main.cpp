@@ -27,7 +27,6 @@ SOFTWARE.
  * Error checking
  * Vibration feedback
  * Async plugin
- * Performance improvements
  */
 
 // WinAPI

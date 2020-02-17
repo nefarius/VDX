@@ -15,11 +15,12 @@ install:
     git reset --hard origin/master
     git pull > NUL
     .\bootstrap-vcpkg.bat > NUL
+    git submodule add https://github.com/ViGEm/ViGEmClient.vcpkg.git ports/vigemclient
     cd %appveyor_build_folder%
 before_build:
 - cmd: vcpkg integrate install
 - cmd: vcpkg update
-- cmd: vcpkg install sfml:x86-windows-static sfml:x64-windows-static imgui:x86-windows-static imgui:x64-windows-static imgui-sfml:x86-windows-static imgui-sfml:x64-windows-static
+- cmd: vcpkg install sfml:x86-windows-static sfml:x64-windows-static imgui:x86-windows-static imgui:x64-windows-static imgui-sfml:x86-windows-static  imgui-sfml:x64-windows-static vigemclient:x86-windows-static vigemclient:x64-windows-static
 - ps: Invoke-WebRequest "https://downloads.vigem.org/other/nefarius/vpatch/vpatch.exe" -OutFile vpatch.exe
 - cmd: vpatch.exe --stamp-version "%APPVEYOR_BUILD_VERSION%" --target-file ".\src\%APPVEYOR_PROJECT_NAME%.vcxproj" --vcxproj.inf-time-stamp
 - cmd: vpatch.exe --stamp-version "%APPVEYOR_BUILD_VERSION%" --target-file ".\src\%APPVEYOR_PROJECT_NAME%.rc" --resource.file-version --resource.product-version

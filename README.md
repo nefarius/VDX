@@ -17,6 +17,7 @@ Adds ViGEm support to Xbox 360/One controllers and unmodified x360ce application
 - Visual Studio **2019** ([Community Edition](https://www.visualstudio.com/thank-you-downloading-visual-studio/?sku=Community&rel=16) is just fine)
 - [Follow the Vcpkg Quick Start](https://github.com/Microsoft/vcpkg#quick-start) and install the following packages:
   - `.\vcpkg.exe install sfml:x86-windows-static sfml:x64-windows-static imgui:x86-windows-static imgui:x64-windows-static imgui-sfml:x86-windows-static imgui-sfml:x64-windows-static`
+- [Follow the ViGEmClient Vcpkg Setup](https://github.com/ViGEm/ViGEmClient.vcpkg#usage)
 
 ## 3rd party credits
 

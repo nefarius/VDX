@@ -34,6 +34,7 @@ SOFTWARE.
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <Dwmapi.h>
+#include "resource.h"
 
 // ImGui + SFML helper
 #include "imgui.h"
@@ -47,8 +48,6 @@ SOFTWARE.
 // I/O
 #include <Xinput.h>
 #include <ViGEm/Client.h>
-#include <ViGEm/Util.h>
-#include "resource.h"
 
 // STL
 #include <string>

@@ -190,7 +190,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
 		// Create main window
 		ImGui::SetNextWindowSize(ImVec2(520, 140));
-		ImGui::Begin("XInput to ViGEm sample application", &isOpen,
+		ImGui::Begin("XInput to ViGEm proxy application", &isOpen,
 		             ImGuiWindowFlags_NoResize
 		             | ImGuiWindowFlags_NoCollapse
 		             | ImGuiWindowFlags_NoMove

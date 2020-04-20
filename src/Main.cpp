@@ -29,7 +29,7 @@ SOFTWARE.
  * Async plugin
  */
 
-// WinAPI
+ // WinAPI
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -63,7 +63,8 @@ static EmulationTarget g_targets[XUSER_MAX_COUNT];
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow)
 {
-	sf::RenderWindow window(sf::VideoMode(580, 200), "XInput to ViGEm proxy application", sf::Style::None);
+	auto vm = sf::VideoMode(520, 140);
+	sf::RenderWindow window(vm, "XInput to ViGEm proxy application", sf::Style::None);
 	window.setFramerateLimit(60);
 	ImGui::SFML::Init(window);
 
@@ -124,6 +125,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	}
 
 	pXInputEnable(TRUE);
+
+	// Test all input slots on first launch
+	for (auto& g_target : g_targets)
+	{
+		g_target.hasPresenceChanged = true;
+	}
 
 	XINPUT_STATE state;
 	XINPUT_GAMEPAD_SECRET secret;
@@ -189,13 +196,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 		ImGui::SFML::Update(window, deltaClock.restart());
 
 		// Create main window
-		ImGui::SetNextWindowSize(ImVec2(520, 140));
+		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+		ImGui::SetNextWindowSize(ImVec2(vm.width * 1.0f, vm.height * 1.0f));
 		ImGui::Begin("XInput to ViGEm proxy application", &isOpen,
-		             ImGuiWindowFlags_NoResize
-		             | ImGuiWindowFlags_NoCollapse
-		             | ImGuiWindowFlags_NoMove
-		             | ImGuiWindowFlags_NoSavedSettings
-		             | ImGuiWindowFlags_NoScrollbar);
+			ImGuiWindowFlags_NoResize
+			| ImGuiWindowFlags_NoCollapse
+			| ImGuiWindowFlags_NoMove
+			| ImGuiWindowFlags_NoSavedSettings
+			| ImGuiWindowFlags_NoScrollbar);
 
 		if (!isOpen) break;
 
@@ -238,8 +246,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 			ImGui::PushItemWidth(230);
 			ImGui::PushID(i);
 			ImGui::Combo("##dummy",
-			             reinterpret_cast<int*>(&pad.targetType),
-			             "Xbox 360 Controller\0DualShock 4 Controller\0\0");
+				reinterpret_cast<int*>(&pad.targetType),
+				"Xbox 360 Controller\0DualShock 4 Controller\0\0");
 			ImGui::PopID();
 			ImGui::NextColumn();
 
@@ -300,7 +308,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 					(pXInputGetStateSecret != nullptr)
 					&& (pXInputGetStateSecret(i, &secret) == ERROR_SUCCESS)
 					&& ((secret.wButtons & XUSB_GAMEPAD_GUIDE) != 0)
-				)
+					)
 				{
 					state.Gamepad.wButtons |= XUSB_GAMEPAD_GUIDE;
 				}
@@ -315,18 +323,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
 					break;
 				case DS4:
-					{
-						DS4_REPORT rep;
-						DS4_REPORT_INIT(&rep);
+				{
+					DS4_REPORT rep;
+					DS4_REPORT_INIT(&rep);
 
-						// The DualShock 4 expects a different report format, so we call a helper 
-						// function which will translate buttons and axes 1:1 from XUSB to DS4
-						// format and submit it to the update function afterwards.
-						XUSB_TO_DS4_REPORT(reinterpret_cast<PXUSB_REPORT>(&state.Gamepad), &rep);
+					// The DualShock 4 expects a different report format, so we call a helper 
+					// function which will translate buttons and axes 1:1 from XUSB to DS4
+					// format and submit it to the update function afterwards.
+					XUSB_TO_DS4_REPORT(reinterpret_cast<PXUSB_REPORT>(&state.Gamepad), &rep);
 
-						vigem_target_ds4_update(client, pad.target, rep);
-					}
-					break;
+					vigem_target_ds4_update(client, pad.target, rep);
+				}
+				break;
 				}
 			}
 

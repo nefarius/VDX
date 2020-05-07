@@ -6,7 +6,7 @@ platform:
 configuration:
 - Release
 cache:
-- C:\Tools\vcpkg -> appveyor.yml
+- C:\Tools\vcpkg -> appveyor.yml, README.md
 install:
 - cmd: git submodule -q update --init
 - cmd: |

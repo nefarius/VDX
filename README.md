@@ -1,10 +1,10 @@
 # XInput/x360ce to ViGEm sample application
 
-Adds ViGEm support to Xbox 360/One controllers and unmodified x360ce application.
+Adds ViGEm support to Xbox 360/One controllers and unmodified x360ce (v3.x) application.
 
 [![Build status](https://ci.appveyor.com/api/projects/status/5bsea7nmggf08w2n?svg=true)](https://ci.appveyor.com/project/nefarius/vdx) [![Discord](https://img.shields.io/discord/346756263763378176.svg)](https://discord.vigem.org) [![Website](https://img.shields.io/website-up-down-green-red/https/vigem.org.svg?label=ViGEm.org)](https://vigem.org/) [![GitHub followers](https://img.shields.io/github/followers/nefarius.svg?style=social&label=Follow)](https://github.com/nefarius) [![Twitter Follow](https://img.shields.io/twitter/follow/nefariusmaximus.svg?style=social&label=Follow)](https://twitter.com/nefariusmaximus)
 
-![explorer_2018-08-31_21-56-18.png](https://lh3.googleusercontent.com/-Ib62elVsRtQ/W4mdcwQj0uI/AAAAAAAABuM/ajU1PiueT7IRHfO68wTKhuaAdgTsPZFEgCHMYCw/s0/explorer_2018-08-31_21-56-18.png)
+![explorer_ishsggszhv.png](https://forums.vigem.org/assets/uploads/files/explorer_ishsggszhv.png)
 
 ## How to use
 

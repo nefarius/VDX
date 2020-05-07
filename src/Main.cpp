@@ -53,22 +53,25 @@ SOFTWARE.
 #include <string>
 #include <iosfwd>
 #include <sstream>
+#include <array>
 
 // Internals
 #include "VDX.h"
 
 
-static EmulationTarget g_targets[XUSER_MAX_COUNT];
+static std::array<EmulationTarget, XUSER_MAX_COUNT> g_targets;
+static XInputSetState_t g_pXInputSetState = nullptr;
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow)
 {
-	auto vm = sf::VideoMode(520, 140);
+	auto vm = sf::VideoMode(550, 140);
 	sf::RenderWindow window(vm, "XInput to ViGEm proxy application", sf::Style::None);
+	// NOTE: this is also the controller polling frequency, up it if unsatisfied ;)
 	window.setFramerateLimit(60);
 	ImGui::SFML::Init(window);
 
-	apply_imgui_style();
+	//apply_imgui_style();
 
 	// Enable window transparency
 	MARGINS margins;
@@ -99,6 +102,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	const auto pXInputEnable = reinterpret_cast<VOID(WINAPI*)(BOOL)>(GetProcAddress(xInputMod, "XInputEnable"));
 	const auto pXInputGetState = reinterpret_cast<DWORD(WINAPI*)(DWORD, XINPUT_STATE*)>(GetProcAddress(
 		xInputMod, "XInputGetState"));
+	g_pXInputSetState = reinterpret_cast<XInputSetState_t>(GetProcAddress(xInputMod, "XInputSetState"));
 	const auto pXInputGetCapabilities = reinterpret_cast<DWORD(WINAPI*)(DWORD, DWORD, XINPUT_CAPABILITIES*)>(
 		GetProcAddress(xInputMod, "XInputGetCapabilities"));
 	/*
@@ -108,7 +112,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	 */
 	const auto pXInputGetStateSecret = reinterpret_cast<int(__stdcall*)(int, XINPUT_GAMEPAD_SECRET*)>(GetProcAddress(
 		xInputMod, (LPCSTR)100));
-
 	if (pXInputGetStateSecret == nullptr)
 	{
 		MessageBox(window.getSystemHandle(), L"XBOX Guide button not readable", L"Warning", MB_ICONWARNING);
@@ -266,6 +269,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 						// Disconnect target
 						pad.isTargetConnected = !VIGEM_SUCCESS(vigem_target_remove(client, pad.target));
 
+						switch (pad.targetType)
+						{
+						case X360:
+							vigem_target_x360_unregister_notification(pad.target);
+							break;
+						case DS4:
+							vigem_target_ds4_unregister_notification(pad.target);
+							break;
+						}
+												
 						// Free memory
 						vigem_target_free(pad.target);
 					}
@@ -292,6 +305,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 							return -1;
 						}
 
+						// Store user index
+						pad.userIndex = i;
+						
+						// Register rumble feedback handler
+						switch (pad.targetType)
+						{
+						case X360:
+							vigem_target_x360_register_notification(client, pad.target, notify_x360, static_cast<LPVOID>(&g_targets[i]));
+							break;
+						case DS4:
+							vigem_target_ds4_register_notification(client, pad.target, notify_ds4, static_cast<LPVOID>(&g_targets[i]));
+							break;
+						}
+						
 						// Update state
 						pad.isTargetConnected = vigem_target_is_attached(pad.target);
 					}
@@ -357,4 +384,45 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	ImGui::SFML::Shutdown();
 
 	return 0;
+}
+
+//
+// Invoked when rumble requests come in for x360 target
+// 
+VOID CALLBACK notify_x360(
+	PVIGEM_CLIENT Client,
+	PVIGEM_TARGET Target,
+	UCHAR LargeMotor,
+	UCHAR SmallMotor,
+	UCHAR LedNumber,
+	LPVOID UserData
+)
+{
+	const auto pad = static_cast<EmulationTarget*>(UserData);
+
+	XINPUT_VIBRATION vibration;
+	vibration.wLeftMotorSpeed = LargeMotor * 257;
+	vibration.wRightMotorSpeed = SmallMotor * 257;
+
+	g_pXInputSetState(pad->userIndex, &vibration);
+}
+
+//
+// Invoked when rumble requests come in for DS4 target
+// 
+VOID CALLBACK notify_ds4(
+	PVIGEM_CLIENT Client,
+	PVIGEM_TARGET Target,
+	UCHAR LargeMotor,
+	UCHAR SmallMotor,
+	DS4_LIGHTBAR_COLOR LightbarColor,
+	LPVOID UserData)
+{
+	const auto pad = static_cast<EmulationTarget*>(UserData);
+
+	XINPUT_VIBRATION vibration;
+	vibration.wLeftMotorSpeed = LargeMotor * 257;
+	vibration.wRightMotorSpeed = SmallMotor * 257;
+
+	g_pXInputSetState(pad->userIndex, &vibration);
 }

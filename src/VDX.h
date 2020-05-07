@@ -24,11 +24,18 @@ enum EmulationTargetType : int
 struct EmulationTarget
 {
 	//
+	// Pad index
+	// 
+	int userIndex;
+	
+	//
 	// Is x360ce reporting a device for the current user index
 	// 
 	bool isSourceConnected;
 
-	
+	//
+	// Set to true if pad has been (dis-)connected
+	// 
 	bool hasPresenceChanged;
 
 	//
@@ -48,6 +55,11 @@ struct EmulationTarget
 	// 
 	EmulationTargetType targetType;
 };
+
+typedef DWORD(WINAPI* XInputSetState_t)(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration);
+
+EVT_VIGEM_X360_NOTIFICATION notify_x360;
+EVT_VIGEM_DS4_NOTIFICATION notify_ds4;
 
 // https://github.com/ocornut/imgui/issues/707#issuecomment-468798935
 inline void apply_imgui_style()

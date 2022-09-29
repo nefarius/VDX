@@ -5,8 +5,6 @@ platform:
 - x64
 configuration:
 - Release
-cache:
-- C:\Tools\vcpkg -> appveyor.yml, README.md
 install:
 - cmd: git submodule -q update --init
 before_build:

@@ -1,0 +1,12 @@
+{
+  "name": "vdx",
+  "version": "1.0.0",
+  "description": "VDX",
+  "license": "MIT",
+  "supports": "!(arm | uwp)",
+  "dependencies": [
+	"sfml",
+	"imgui",
+	"imgui-sfml"
+  ]
+}

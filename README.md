@@ -4,7 +4,7 @@ Adds ViGEm support to Xbox 360/One controllers and unmodified x360ce (v3.x) appl
 
 [![Build status](https://ci.appveyor.com/api/projects/status/5bsea7nmggf08w2n?svg=true)](https://ci.appveyor.com/project/nefarius/vdx) [![Discord](https://img.shields.io/discord/346756263763378176.svg)](https://discord.vigem.org) [![Website](https://img.shields.io/website-up-down-green-red/https/vigem.org.svg?label=ViGEm.org)](https://vigem.org/) [![GitHub followers](https://img.shields.io/github/followers/nefarius.svg?style=social&label=Follow)](https://github.com/nefarius) [![Twitter Follow](https://img.shields.io/twitter/follow/nefariusmaximus.svg?style=social&label=Follow)](https://twitter.com/nefariusmaximus)
 
-![explorer_ishsggszhv.png](https://forums.vigem.org/assets/uploads/files/explorer_ishsggszhv.png)
+![explorer_fkGCP5FSPx.png](assets/explorer_fkGCP5FSPx.png)
 
 ## How to use
 

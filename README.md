@@ -12,7 +12,7 @@ Adds ViGEm support to Xbox 360/One controllers and unmodified x360ce (v3.x) appl
 
 ## How to use
 
-👉 [Follow this guide](https://forums.vigem.org/topic/272/x360ce-to-vigem).
+Make sure ViGEmBus is installed. Then simply launch VDX. Plug in one or more Xbox 360 or One-comparible controller(s), select the desired output emulation and press `Connect`. The controller inputs should now be mirrored on a newly created virtual controller.
 
 ## How to build
 

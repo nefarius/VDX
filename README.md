@@ -6,6 +6,12 @@ Adds ViGEm support to Xbox 360/One controllers and unmodified x360ce (v3.x) appl
 
 ![explorer_fkGCP5FSPx.png](assets/explorer_fkGCP5FSPx.png)
 
+---
+
+⚠️ **This is a demo app. Do not open feature requests, they will be closed without comments, thank you!**
+
+---
+
 ## Downloads
 
 👉 [Grab the highest version from here](https://buildbot.vigem.org/builds/VDX/master/).

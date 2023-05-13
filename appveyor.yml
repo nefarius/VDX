@@ -23,6 +23,6 @@ deploy:
   on:
     appveyor_repo_tag: true
 cache:
-- "C:\Tools\vcpkg\installed" -> appveyor.yml
-- "C:\Tools\vcpkg\buildtrees" -> appveyor.yml
-- "C:\Tools\vcpkg\downloads" -> appveyor.yml
+- C:\Tools\vcpkg\installed -> appveyor.yml
+- C:\Tools\vcpkg\buildtrees -> appveyor.yml
+- C:\Tools\vcpkg\downloads -> appveyor.yml

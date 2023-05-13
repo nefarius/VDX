@@ -7,6 +7,7 @@ configuration:
 - Release
 install:
 - cmd: git submodule -q update --init
+- cmd: vcpkg integrate install
 before_build:
 - ps: Invoke-WebRequest "https://downloads.vigem.org/other/nefarius/vpatch/vpatch.exe" -OutFile vpatch.exe
 - cmd: vpatch.exe --stamp-version "%APPVEYOR_BUILD_VERSION%" --target-file ".\src\%APPVEYOR_PROJECT_NAME%.vcxproj" --vcxproj.inf-time-stamp
